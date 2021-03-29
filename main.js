@@ -6,6 +6,18 @@ var globals = {
 var theThing;
 
 $(document).ready(function () {
+    $('#api_uri').val(globals.api_uri);
+    $('#api_uri').change(function() { globals.api_uri = $('#api_uri').val();});
+    $('#bearer').val(globals.bearer);
+    $('#bearer').change(function() {
+        globals.bearer = $('#bearer').val();
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('Authorization', 'Bearer ' + globals.bearer);
+            }
+        })
+    });
+
     $('#thingsTable').on('click', 'tr', function(event) {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
         refreshThing($(this).text());
@@ -29,12 +41,6 @@ $(document).ready(function () {
 
     $('#putFeature').click(function() {
         putFeature($('#featureId').val(), $('#featureValue').val());
-    });
-
-    $.ajaxSetup({
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + globals.bearer);
-        }
     });
     
     $('#searchThings').click(searchThings);
