@@ -36,7 +36,7 @@ $(document).ready(function () {
     });
 
     $('#putAttribute').click(function() {
-        putAttribute($('#attributePath').val(), $('#attributeValue').val() );
+        modifyThing('/attributes/', $('#attributePath').val(), '"' + $('#attributeValue').val() + '"');
     })
 
     // Features ---------------------------------
@@ -47,7 +47,7 @@ $(document).ready(function () {
     });
 
     $('#putFeature').click(function() {
-        putFeature($('#featureId').val(), $('#featureValue').val());
+        modifyThing('/features/', $('#featureId').val(), $('#featureValue').val());
     });
     
     // Policies ---------------------------------
@@ -72,11 +72,11 @@ $(document).ready(function () {
     });
 
     $('#putPolicySubject').click(function() {
-        putPolicy('/subjects/', $('#policySubjectId').val(), $('#policySubjectValue').val());
+        modifyPolicy('/subjects/', $('#policySubjectId').val(), $('#policySubjectValue').val());
     });
 
     $('#putPolicyResource').click(function () {
-        putPolicy('/resources/', $('#policyResourceId').val(), $('#policyResourceValue').val());
+        modifyPolicy('/resources/', $('#policyResourceId').val(), $('#policyResourceValue').val());
     })
 });
 
@@ -137,15 +137,6 @@ var refreshThing = function(thingId) {
         });
 };
 
-refreshPolicyEntry = function() {
-    // we reload the full policy, even if only the selected entry is updated
-    $.getJSON(settings.api_uri + '/policies/' + thePolicy.policyId)
-        .done(function(policy, status) {
-            thePolicy = policy;
-            refillPolicySubjectsAndRessources();
-        })
-}
-
 var addTableRow = function(table, key, value, selected) {
     var row = table.insertRow();
     row.insertCell(0).innerHTML = key;
@@ -155,7 +146,16 @@ var addTableRow = function(table, key, value, selected) {
     if (selected) {
         row.classList.add('bg-info');
     }
+    
+}
 
+refreshPolicyEntry = function() {
+    // we reload the full policy, even if only the selected entry is updated
+    $.getJSON(settings.api_uri + '/policies/' + thePolicy.policyId)
+        .done(function(policy, status) {
+            thePolicy = policy;
+            refillPolicySubjectsAndRessources();
+        })
 }
 
 function refillPolicySubjectsAndRessources() {
@@ -177,15 +177,7 @@ function setBearerHeader() {
     });
 }
 
-function putAttribute(key, value) {
-    put('/attributes/', key, '"' + value + '"');
-}
-
-function putFeature(key, value) {
-    put('/features/', key, value);
-}
-
-function put(type, key, value) {
+function modifyThing(type, key, value) {
     if (key) {
         if (value) {
             $.ajax(settings.api_uri + '/things/' + theThing.thingId + type + key, {
@@ -207,7 +199,7 @@ function put(type, key, value) {
     }
 }
 
-function putPolicy(type, key, value) {
+function modifyPolicy(type, key, value) {
     if (thePolicyEntry && key) {
         if (value) {
             $.ajax(settings.api_uri + '/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
