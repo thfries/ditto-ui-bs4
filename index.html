@@ -10,90 +10,163 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </head>
 <body>
+    <nav class="navbar navbar-expand bg-info navbar-dark">
+        <a class="navbar-brand"><img src="https://www.eclipse.org/ditto/images/ditto_allwhite_symbolonly.svg" style="height:30px;"></a>
+        <a class="navbar-brand"><img src="https://www.eclipse.org/ditto/images/ditto_allwhite_textonly.svg" style="height:30px;"></a>
+    </nav>
     <div class="container-fluid">
-        <h1>Ditto Debug UI</h1>
-        <div class="row">
-            <div class="col-md-12">
-                <h5>Globals</h5>
-                <input type="text" class="form-control form-control-sm" id="api_uri" placeholder="API URI"></input>
-                <input type="text" class="form-control form-control-sm" id="bearer" placeholder="Bearer Token"></input>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4" id="table-wrapper">
-                <h5>Things</h5>
-                <div class="btn-group" role="group">
-                    <input type="text" class="form-control form-control-sm" id="search-filter"></input>
-                    <button id="searchThings" type="button">
-                        <i class="fa fa-search"></i>
-                    </button>
-                    <button id="createThing" type="button">
-                        <i class="fa fa-plus-square"></i>
-                    </button>
+        <!-- Things -------------------------------------------------------------------->
+        <h5 data-toggle="collapse" href="#collapseThings" role="button" aria-expanded="true" aria-controls="collapseThings">Things</h5>
+        <div class="collapse show" id="collapseThings">
+            <div class="row">
+                <div class="col-md-4" id="table-wrapper">
+                    <div class="input-group input-group-sm" role="group">
+                        <input type="text" class="form-control form-control-sm" id="search-filter"></input>
+                        <button id="searchThings" type="button">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        <!--                     
+                        <button id="createThing" type="button">
+                            <i class="fa fa-plus-square"></i>
+                        </button>-->
+                    </div>
+                    <table class="table table-striped table-hover table-sm" id="thingsTable">
+                        <tbody id="thingsTableBody"></tbody>
+                    </table>
                 </div>
-                <table class="table table-striped table-hover table-sm" id="thingsTable">
-                    <thead>
-                    <tr>
-                        <th>Id</th>
-                    </tr>
-                    </thead>
-                    <tbody id="thingsTableBody"></tbody>
-                </table>
-            </div>
-
-            <div class="col-md-8" id="details">
-                <h5>Thing Details</h5>
-                <table class="table table-striped table-hover table-sm" id="thingDetails">
-                    <tbody id="thingDetailsTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <h5>Attributes</h5>
-                <table class="table table-striped table-hover table-sm" id="attributesTable">
-                    <tbody id="attributesTableBody"></tbody>
-                </table>
-            </div>
-            <div class="col-md-8">
-                <h5>Create/Update/Delete Attribute</h5>
-                <div class="input-group input-group-sm">
-                    <label class="col-md-2">attributePath</label>
-                    <input type="text" class="form-control form-control-sm" id="attributePath"></input>
-                </div>
-                <div class="input-group input-group-sm">
-                    <label class="col-md-2">Value</label>
-                    <input type="text" class="form-control form-control-sm" id="attributeValue"></input>
-                    <button type="button" id="putAttribute">
-                        <i class="fa fa-save"></i>
-                    </button>
+    
+                <div class="col-md-8" id="details">
+                    <h6>Thing Details</h6>
+                    <table class="table table-striped table-hover table-sm" id="thingDetails">
+                        <tbody id="thingDetailsTableBody"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <h5>Features</h5>
-                <table class="table table-striped table-hover table-sm" id="featuresTable">
-                    <thead>
-                    <tr>
-                        <th>FeatureId</th>
-                    </tr>
-                    </thead>
-                    <tbody id="featuresTableBody"></tbody>
-                </table>
-            </div>
-            <div class="col-md-8">
-                <h5>Create/Update/Delete Feature</h5>
-                <div class="input-group input-group-sm">
-                    <label class="col-md-2">FeatureId</label>
-                    <input type="text" class="form-control form-control-sm" id="featureId"></input>
+        <!-- Attributes ---------------------------------------------------------------->
+        <h5 data-toggle="collapse" href="#collapseAttributes" role="button" aria-expanded="true" aria-controls="collapseAttributes">Attributes</h5>
+        <div class="collapse show" id="collapseAttributes">
+            <div class="row">
+                <div class="col-md-4">
+                    <table class="table table-striped table-hover table-sm" id="attributesTable">
+                        <tbody id="attributesTableBody"></tbody>
+                    </table>
                 </div>
-                <div class="input-group input-group-sm">
-                    <label class="col-md-2">Value</label>
-                    <textarea class="form-control form-control-sm" rows="10" style="height:100%;" id="featureValue"></textarea>
-                    <button type="button" id="putFeature">
-                        <i class="fa fa-save"></i>
-                    </button>
+                <div class="col-md-8">
+                    <h6>Create/Update/Delete Attribute</h6>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">attributePath</label>
+                        <input type="text" class="form-control form-control-sm" id="attributePath"></input>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Value</label>
+                        <input type="text" class="form-control form-control-sm" id="attributeValue"></input>
+                        <button type="button" id="putAttribute">
+                            <i class="fa fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Features ------------------------------------------------------------------>
+        <h5 data-toggle="collapse" href="#collapseFeatures" role="button" aria-expanded="true" aria-controls="collapseFeatures">Features</h5>
+        <div class="collapse show" id="collapseFeature">
+            <div class="row">
+                <div class="col-md-4">
+                    <table class="table table-striped table-hover table-sm" id="featuresTable">
+                        <tbody id="featuresTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="col-md-4">
+                    <h6>Create/Update/Delete Feature</h6>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">FeatureId</label>
+                        <input type="text" class="form-control form-control-sm" id="featureId"></input>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Value</label>
+                        <textarea class="form-control form-control-sm" rows="10" style="height:100%;" id="featureValue"></textarea>
+                        <button type="button" id="putFeature">
+                            <i class="fa fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h6>Message to Feature</h6>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Subject</label>
+                        <input type="text" class="form-control form-control-sm" id="messageFeatureSubject"></input>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Payload</label>
+                        <textarea class="form-control form-control-sm" rows="10" style="height:100%;" id="messageFeaturePayload"></textarea>
+                        <button type="button" id="messageFeature">
+                            <i class="fa fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Policy -------------------------------------------------------------------->
+        <h5 data-toggle="collapse" href="#collapsePolicy" role="button" aria-expanded="false" aria-controls="collapsePolicy">Policy</h5>
+        <div class="collapse" id=collapsePolicy>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm" role="group">
+                        <input type="text" class="form-control form-control-sm" id="thePolicyId"></input>
+                        <button id="refreshPolicy" type="button">
+                            <i class="fa fa-refresh"></i>
+                        </button>
+                    </div>
+                    <table class="table table-striped table-hover table-sm" id="policyEntriesTable">
+                        <tbody id="policyEntriesTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="col-md-4">
+                    <h6>Subjects</h6>
+                    <table class="table table-striped table-hover table-sm" id="policySubjectsTable">
+                        <tbody></tbody>
+                    </table>
+                    <h6>Ressources</h6>
+                    <table class="table table-striped table-hover table-sm" id="policyResourcesTable">
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="col-md-4">
+                    <h6>Create/Update Subject</h6>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Subject</label>
+                        <input type="text" class="form-control form-control-sm" id="policySubjectId"></input>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Value</label>
+                        <input type="text" class="form-control form-control-sm" id="policySubjectValue"></input>
+                        <button type="button" id="putPolicySubject">
+                            <i class="fa fa-save"></i>
+                        </button>
+                    </div>
+                    <h6>Create/Update Ressource</h6>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Ressource</label>
+                        <input type="text" class="form-control form-control-sm" id="policyResourceId"></input>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Value</label>
+                        <input type="text" class="form-control form-control-sm" id="policyResourceValue"></input>
+                        <button type="button" id="putPolicyRessource">
+                            <i class="fa fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Settings ------------------------------------------------------------------->
+        <h5 data-toggle="collapse" href="#collapseSettings" role="button" aria-expanded="false" aria-controls="collapseSettings">Settings</h5>
+        <div class="collapse" id="collapseSettings">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" class="form-control form-control-sm" id="api_uri" placeholder="API URI"></input>
+                    <input type="text" class="form-control form-control-sm" id="bearer" placeholder="Bearer Token"></input>
                 </div>
             </div>
         </div>
