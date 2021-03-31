@@ -1,6 +1,6 @@
 var settings = {
     'api_uri': 'https://things.eu-1.bosch-iot-suite.com/api/2',
-    'bearer':  null
+    'bearer':  'eyJhbGciOiJSUzI1NiIsImtpZCI6InB1YmxpYzo5YzI0MTg0OC01MmQyLTRkM2YtYmFmOS1mNzE3OTYxMmE3YWMiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOltdLCJjbGllbnRfaWQiOiJmMTAwYTJjYi1mMjY4LTQ3ZGQtYTdiOS1kZDNkZDdiNDUxZDAiLCJleHAiOjE2MTcyMjI1NDksImV4dCI6e30sImlhdCI6MTYxNzIxODk0OSwiaXNzIjoiaHR0cHM6Ly9hY2Nlc3MuYm9zY2gtaW90LXN1aXRlLmNvbS92Mi8iLCJqdGkiOiI2ZTE1ZDAyZi00Y2FlLTQxNWYtYjJiZS1hNzFlMGU0MzMxMzciLCJuYmYiOjE2MTcyMTg5NDksInNjcCI6WyJzZXJ2aWNlOmlvdC1odWItcHJvZDp0OWRjOTg5MGU0NGQ3NDE0YWFhNGRkMTA0ZDkwNTlmZmRfaHViL2Z1bGwtYWNjZXNzIiwic2VydmljZTppb3QtdGhpbmdzLWV1LTE6OWRjOTg5MGUtNDRkNy00MTRhLWFhNGQtZDEwNGQ5MDU5ZmZkX3RoaW5ncy9mdWxsLWFjY2VzcyJdLCJzdWIiOiJmMTAwYTJjYi1mMjY4LTQ3ZGQtYTdiOS1kZDNkZDdiNDUxZDAifQ.bfNtPnSe75zB9oyaYq0Ette6s90s3wlvxmi8JqImloINcU9mJTsIYC29xFWnnuhagvkJUJfJid97guHKuMW0Tm3qxzsQLa2JHXEXfmrmRnD98j08Vk62C5bjqQ9rYYFgu22bBKqbAZfKEMEJeXdiLzwLZi3aZdFDWjdHSW_zYnfr--5UNvRnApGeF1xdKn8t73lcN2gw7MnQciko1iXlYpKt4r2WVLgAT2a_H3M2g3Wa7ZzsHRl_Jj2nbOSxMdt7XSYYHgD7VIFcEoxnsNSm-6QRw9C5cE3dmtjcH3RBd-uTsuTuc4BbBCNR4pu_oKKUTvai5R1FdfNryXpLGpX3cLjHdAv-CUIqEelPwOiWlTAjAnx-a4ckILFswd0lRAdC56KtzSiqO3G8Gg822WP_DJBeWel-MxBMdcm6CakitQkSoDF25bznCcs6jL6Tnh1fgvW4enod89pdnwEy_gT6bMZdgDLnx9cgDAS4Pje9Eza06uZJFjMMVfTIYD4VLbBCu0yKx-JzfERCWfK0v2bA3dundsuMPX17bsjtkAnoMgN_Ea7Pz3nXa2IVpoxhzYo9iQlFRu2nUcroFik3jglp3vxBqy_TYgQofX3TyvivnBsF-SW3RSje-oT61cG6d_eP2cPSLzGoVuztJrqXs7998Lg-91GYnBzirdOlHS5J_DM'
 }
 
 var theThing;
@@ -54,14 +54,7 @@ $(document).ready(function () {
     $('#policyEntriesTable').on('click', 'tr', function(event) {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
         thePolicyEntry = $(this).text();
-        $('#policySubjectsTable').empty();
-        for (var key of Object.keys(thePolicy.entries[thePolicyEntry].subjects)) {
-            addTableRow($('#policySubjectsTable')[0], key, JSON.stringify(thePolicy.entries[thePolicyEntry].subjects[key]));
-        }
-        $('#policyResourcesTable').empty();
-        for (var key of Object.keys(thePolicy.entries[thePolicyEntry].resources)) {
-            addTableRow($('#policyResourcesTable')[0], key, JSON.stringify(thePolicy.entries[thePolicyEntry].resources[key]));
-        }
+        refillPolicySubjectsAndRessources();
     });
 
     $('#policySubjectsTable').on('click', 'tr', function(event) {
@@ -79,14 +72,18 @@ $(document).ready(function () {
     });
 
     $('#putPolicySubject').click(function() {
-        console.log(thePolicyEntry);
+        putPolicy('/subjects/', $('#policySubjectId').val(), $('#policySubjectValue').val());
     });
+
+    $('#putPolicyResource').click(function () {
+        putPolicy('/resources/', $('#policyResourceId').val(), $('#policyResourceValue').val());
+    })
 });
 
 var searchThings = function() {
     $.getJSON(settings.api_uri + "/search/things"
     + "?fields=thingId"
-    + "&option=limit(0,200),sort(%2BthingId)")
+    + "&option=sort(%2BthingId)")
         .done(function(searchResult) {
             $('#thingsTable').empty();
             for (t in searchResult.items) {
@@ -123,19 +120,53 @@ var refreshThing = function(thingId) {
             // Update policy
             $('#thePolicyId').val(thePolicy.policyId);
             $('#policyEntriesTable').empty();
+            $('#policySubjectsTable').empty();
+            $('#policyResourcesTable').empty();
+            var isPolicyEntryValid = false;
             for (var key of Object.keys(thePolicy.entries)) {
-                addTableRow($('#policyEntriesTable')[0], key);
+                if (key === thePolicyEntry) {
+                    isPolicyEntryValid = true;
+                    addTableRow($('#policyEntriesTable')[0], key, null, true);
+                } else {
+                    addTableRow($('#policyEntriesTable')[0], key, null, false);
+                }
+            }
+            if (!isPolicyEntryValid) {
+                thePolicyEntry = null;
             }
         });
 };
 
-var addTableRow = function(table, key, value) {
+refreshPolicyEntry = function() {
+    // we reload the full policy, even if only the selected entry is updated
+    $.getJSON(settings.api_uri + '/policies/' + thePolicy.policyId)
+        .done(function(policy, status) {
+            thePolicy = policy;
+            refillPolicySubjectsAndRessources();
+        })
+}
+
+var addTableRow = function(table, key, value, selected) {
     var row = table.insertRow();
     row.insertCell(0).innerHTML = key;
     if (value) {
         row.insertCell(1).innerHTML = value;
     }
+    if (selected) {
+        row.classList.add('bg-info');
+    }
 
+}
+
+function refillPolicySubjectsAndRessources() {
+    $('#policySubjectsTable').empty();
+    for (var key of Object.keys(thePolicy.entries[thePolicyEntry].subjects)) {
+        addTableRow($('#policySubjectsTable')[0], key, JSON.stringify(thePolicy.entries[thePolicyEntry].subjects[key]));
+    }
+    $('#policyResourcesTable').empty();
+    for (var key of Object.keys(thePolicy.entries[thePolicyEntry].resources)) {
+        addTableRow($('#policyResourcesTable')[0], key, JSON.stringify(thePolicy.entries[thePolicyEntry].resources[key]));
+    }
 }
 
 function setBearerHeader() {
@@ -173,6 +204,30 @@ function put(type, key, value) {
                 }
             });
         }
+    }
+}
+
+function putPolicy(type, key, value) {
+    if (thePolicyEntry && key) {
+        if (value) {
+            $.ajax(settings.api_uri + '/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
+                type: 'PUT',
+                contentType: 'application/json',
+                data: value,
+                success: function (response) {
+                    refreshPolicyEntry();
+                }
+            })
+        } else {
+            $.ajax(settings.api_uri + '/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
+                type: 'DELETE',
+                success: function (response) {
+                    refreshPolicyEntry();
+                }
+            })
+        }
+    } else {
+        alert('No Policy Entry selected or no key is set!');
     }
 }
 
