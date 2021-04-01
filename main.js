@@ -36,7 +36,7 @@ $(document).ready(function () {
     });
 
     $('#putAttribute').click(function() {
-        modifyThing('/attributes/', $('#attributePath').val(), '"' + $('#attributeValue').val() + '"');
+        modifyThing('/attributes/', $('#attributePath').val(), $('#attributeValue').val());
     })
 
     // Features ---------------------------------
@@ -54,8 +54,12 @@ $(document).ready(function () {
     $('#policyEntriesTable').on('click', 'tr', function(event) {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
         thePolicyEntry = $(this).text();
+        $('#thePolicyEntry').val(thePolicyEntry);
         refillPolicySubjectsAndRessources();
     });
+
+    $('#createPolicyEntry').click(function() { return addOrDeletePolicyEntry('PUT');});
+    $('#deletePolicyEntry').click(function() { return addOrDeletePolicyEntry('DELETE');});
 
     $('#policySubjectsTable').on('click', 'tr', function(event) {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
@@ -72,11 +76,11 @@ $(document).ready(function () {
     });
 
     $('#putPolicySubject').click(function() {
-        modifyPolicy('/subjects/', $('#policySubjectId').val(), $('#policySubjectValue').val());
+        modifyPolicyEntry('/subjects/', $('#policySubjectId').val(), $('#policySubjectValue').val());
     });
 
     $('#putPolicyResource').click(function () {
-        modifyPolicy('/resources/', $('#policyResourceId').val(), $('#policyResourceValue').val());
+        modifyPolicyEntry('/resources/', $('#policyResourceId').val(), $('#policyResourceValue').val());
     })
 });
 
@@ -90,7 +94,7 @@ var searchThings = function() {
                 $('#thingsTable')[0].insertRow().insertCell(0).innerHTML = searchResult.items[t].thingId;
             }
         });
-}
+};
 
 var refreshThing = function(thingId) {
     $.getJSON(settings.api_uri + "/things/" + thingId + "?fields=thingId%2Cattributes%2Cfeatures%2C_created%2C_modified%2C_revision%2C_policy")
@@ -119,21 +123,7 @@ var refreshThing = function(thingId) {
             
             // Update policy
             $('#thePolicyId').val(thePolicy.policyId);
-            $('#policyEntriesTable').empty();
-            $('#policySubjectsTable').empty();
-            $('#policyResourcesTable').empty();
-            var isPolicyEntryValid = false;
-            for (var key of Object.keys(thePolicy.entries)) {
-                if (key === thePolicyEntry) {
-                    isPolicyEntryValid = true;
-                    addTableRow($('#policyEntriesTable')[0], key, null, true);
-                } else {
-                    addTableRow($('#policyEntriesTable')[0], key, null, false);
-                }
-            }
-            if (!isPolicyEntryValid) {
-                thePolicyEntry = null;
-            }
+            refreshPolicy();
         });
 };
 
@@ -147,16 +137,21 @@ var addTableRow = function(table, key, value, selected) {
         row.classList.add('bg-info');
     }
     
-}
+};
 
-refreshPolicyEntry = function() {
-    // we reload the full policy, even if only the selected entry is updated
+var refreshPolicy = function() {
+    $('#policyEntriesTable').empty();
     $.getJSON(settings.api_uri + '/policies/' + thePolicy.policyId)
         .done(function(policy, status) {
             thePolicy = policy;
-            refillPolicySubjectsAndRessources();
+            for (var key of Object.keys(thePolicy.entries)) {
+                addTableRow($('#policyEntriesTable')[0], key, null, key === thePolicyEntry);
+                if (key === thePolicyEntry) {
+                    refillPolicySubjectsAndRessources();
+                }
+            };
         })
-}
+};
 
 function refillPolicySubjectsAndRessources() {
     $('#policySubjectsTable').empty();
@@ -167,7 +162,7 @@ function refillPolicySubjectsAndRessources() {
     for (var key of Object.keys(thePolicy.entries[thePolicyEntry].resources)) {
         addTableRow($('#policyResourcesTable')[0], key, JSON.stringify(thePolicy.entries[thePolicyEntry].resources[key]));
     }
-}
+};
 
 function setBearerHeader() {
     $.ajaxSetup({
@@ -175,11 +170,14 @@ function setBearerHeader() {
             xhr.setRequestHeader('Authorization', 'Bearer ' + settings.bearer);
         }
     });
-}
+};
 
 function modifyThing(type, key, value) {
     if (key) {
         if (value) {
+            if (type === '/attributes/') {
+                value = '"' + value + '"';
+            }
             $.ajax(settings.api_uri + '/things/' + theThing.thingId + type + key, {
                 type: 'PUT',
                 contentType: 'application/json',
@@ -197,9 +195,22 @@ function modifyThing(type, key, value) {
             });
         }
     }
-}
+};
 
-function modifyPolicy(type, key, value) {
+var addOrDeletePolicyEntry = function(method) {
+    var label = $('#thePolicyEntry').val();
+    if (label) {
+        $.ajax(settings.api_uri + '/policies/' + thePolicy.policyId + '/entries/' + label, {
+            type: method,
+            data: JSON.stringify({ subjects: {}, resources: {}}),
+            contentType: 'application/json',
+            success: refreshPolicy,
+            error: function(errorObject) {console.log(errorObject);}
+        });
+    }
+};
+
+function modifyPolicyEntry(type, key, value) {
     if (thePolicyEntry && key) {
         if (value) {
             $.ajax(settings.api_uri + '/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
@@ -207,19 +218,19 @@ function modifyPolicy(type, key, value) {
                 contentType: 'application/json',
                 data: value,
                 success: function (response) {
-                    refreshPolicyEntry();
+                    refreshPolicy();
                 }
             })
         } else {
             $.ajax(settings.api_uri + '/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
                 type: 'DELETE',
                 success: function (response) {
-                    refreshPolicyEntry();
+                    refreshPolicy();
                 }
             })
         }
     } else {
         alert('No Policy Entry selected or no key is set!');
     }
-}
+};
 
