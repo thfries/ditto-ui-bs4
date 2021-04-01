@@ -60,6 +60,7 @@ $(document).ready(function () {
         refillPolicySubjectsAndRessources();
     });
 
+    $('#refreshPolicy').click(function() { refreshPolicy($('#thePolicyId').val());})
     $('#createPolicyEntry').click(function() { return addOrDeletePolicyEntry('PUT');});
     $('#deletePolicyEntry').click(function() { return addOrDeletePolicyEntry('DELETE');});
 
@@ -98,8 +99,9 @@ var searchThings = function() {
         });
 };
 
-var refreshThing = function() {
-    $.getJSON(settings.api_uri + "/things/" + theThing.thingId + "?fields=thingId%2Cattributes%2Cfeatures%2C_created%2C_modified%2C_revision%2C_policy")
+var refreshThing = function(thingId) {
+    thingId = thingId || theThing.thingId;
+    $.getJSON(settings.api_uri + "/things/" + thingId + "?fields=thingId%2Cattributes%2Cfeatures%2C_created%2C_modified%2C_revision%2C_policy")
         .done(function(thing, status) {
             theThing = thing;
             thePolicy = thing._policy;
@@ -151,12 +153,23 @@ function modifyThing(type, key, value) {
 };
 
 var messageFeature = function() {
+    var subject = $('#messageFeatureSubject').val();
+    var feature = $('#featureId').val();
+    var payload = $('#messageFeaturePayload').val();
+    if (subject && feature && payload) {
+        $.post(settings.api_uri + '/things/' + theThing.thingId + '/features/' + feature + '/inbox/messages/' + subject + '?timeout=' + $('#messageTimeout').val(),
+            payload,
+            function() {console.log('message sent')}
+        );
+
+    }
 
 };
 
-var refreshPolicy = function() {
+var refreshPolicy = function(policyId) {
+    policyId = policyId || thePolicy.policyId;
     $('#policyEntriesTable').empty();
-    $.getJSON(settings.api_uri + '/policies/' + thePolicy.policyId)
+    $.getJSON(settings.api_uri + '/policies/' + policyId)
         .done(function(policy, status) {
             thePolicy = policy;
             for (var key of Object.keys(thePolicy.entries)) {
