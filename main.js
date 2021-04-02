@@ -42,12 +42,19 @@ $(document).ready(function () {
     // Features ---------------------------------
     $('#featuresTable').on('click', 'tr', function(event) {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
-        $('#featureId').val($(this).text());
-        $('#featureValue').val(JSON.stringify(theThing.features[$(this).text()], null, 4));
+        var featureId = $(this).text();
+        $('#featureId').val(featureId);
+        $('#featureDefinition').val(theThing.features[featureId].definition);
+        $('#featureProperties').val(JSON.stringify(theThing.features[featureId].properties, null, 4));
+        $('#featureDesireProperties').val(JSON.stringify(theThing.features[featureId].desiredProperties, null, 4));
     });
 
     $('#putFeature').click(function() {
-        modifyThing('/features/', $('#featureId').val(), $('#featureValue').val());
+        var featureObject = {};
+        if ($('#featureDefinition').val()) { featureObject.definition = $('#featureDefinition').val().split(',');};
+        if ($('#featureProperties').val()) { featureObject.properties = JSON.parse($('#featureProperties').val());};
+        if ($('#featureDesiredProperties').val()) { featureObject.desiredProperties = JSON.parse($('#featureDesiredProperties').val());};
+        modifyThing('/features/', $('#featureId').val(), JSON.stringify(featureObject));
     });
 
     $('#messageFeature').click(messageFeature);
