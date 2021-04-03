@@ -11,18 +11,6 @@ var theConnections;
 var connectionIndex;
 
 $(document).ready(function () {
-    // Settings ----------------------------------
-    $('#api_uri').val(settings.api_uri);
-    $('#api_uri').change(function() { settings.api_uri = $('#api_uri').val();});
-    $('#bearer').val(settings.bearer);
-    $('#bearer').change(function() {
-        settings.bearer = $('#bearer').val();
-        setBearerHeader();
-    });
-    if (settings.bearer) {
-        setBearerHeader();
-    }
-
     // Things -----------------------------------
     $('#searchThings').click(searchThings);
 
@@ -117,6 +105,29 @@ $(document).ready(function () {
     })
 
     $('#modifyConnection').click(modifyConnection);
+
+    // Settings ----------------------------------
+    fillSettings();
+
+    $('#settingsTable').on('click', 'tr', function(event) {
+        $(this).addClass('bg-info').siblings().removeClass('bg-info');
+        var key = $(this).children(":first").text();
+        $('#settingsKey').val(key);
+        $('#settingsValue').val(settings[key]);
+    });
+
+    $('#saveSetting').click(function() {
+        var key = $('#settingsKey').val(); 
+        settings[key] = $('#settingsValue').val();
+        fillSettings();
+        if (key === 'bearer') {
+            setBearerHeader();
+        }
+    })
+
+    if (settings.bearer) {
+        setBearerHeader();
+    }
 });
 
 var searchThings = function() {
@@ -193,9 +204,7 @@ var messageFeature = function() {
             payload,
             function() {console.log('message sent')}
         );
-
     }
-
 };
 
 var refreshPolicy = function(policyId) {
@@ -286,6 +295,13 @@ var modifyConnection = function() {
     })
 }
 
+function fillSettings() {
+    $('#settingsTable').empty();
+    for (var key of Object.keys(settings)) {
+        addTableRow($('#settingsTable')[0], key, truncate(settings[key],50));
+    };
+}
+
 var addTableRow = function(table, key, value, selected) {
     var row = table.insertRow();
     row.insertCell(0).innerHTML = key;
@@ -304,5 +320,9 @@ function setBearerHeader() {
             xhr.setRequestHeader('Authorization', 'Bearer ' + settings.bearer);
         }
     });
+};
+
+function truncate(str, n) {
+    return (str && str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
 };
 
