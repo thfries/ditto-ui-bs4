@@ -1,14 +1,17 @@
 var settings = {
     'api_uri': 'https://things.eu-1.bosch-iot-suite.com/api/2',
-    'bearer':  null
+    'bearer':  null,
+    'solutionId': null
 }
 
 var theThing;
 var thePolicy;
 var thePolicyEntry;
+var theConnections;
+var connectionIndex;
 
 $(document).ready(function () {
-    // Globals ----------------------------------
+    // Settings ----------------------------------
     $('#api_uri').val(settings.api_uri);
     $('#api_uri').change(function() { settings.api_uri = $('#api_uri').val();});
     $('#bearer').val(settings.bearer);
@@ -92,6 +95,28 @@ $(document).ready(function () {
     $('#putPolicyResource').click(function () {
         modifyPolicyEntry('/resources/', $('#policyResourceId').val(), $('#policyResourceValue').val());
     })
+
+    // Connections ---------------------------------
+    $('#loadConnections').click(loadConnections);    
+    $('#connectionsTable').on('click', 'tr', function(event) {
+        $(this).addClass('bg-info').siblings().removeClass('bg-info');
+        connectionIndex = $(this).index();
+        $('#connectionId').val(theConnections[connectionIndex].id);
+        $('#connectionJson').val(JSON.stringify(theConnections[connectionIndex], null, 4));
+        if (theConnections[connectionIndex].mappingDefinitions.hasOwnProperty('javascript')) {
+            $('#connectionIncomingScript').val(theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript);
+            $('#connectionOutgoingScript').val(theConnections[connectionIndex].mappingDefinitions.javascript.options.outgoingScript);
+        } else {
+            $('#connectionIncomingScript').val('');
+            $('#connectionOutgoingScript').val('');
+        }
+    });
+
+    $('#connectionIncomingScript').change(function() {
+        theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript = $('#connectionIncomingScript').val();
+    })
+
+    $('#modifyConnection').click(modifyConnection);
 });
 
 var searchThings = function() {
@@ -235,6 +260,31 @@ function modifyPolicyEntry(type, key, value) {
         alert('No Policy Entry selected or no key is set!');
     }
 };
+
+var loadConnections = function() {
+    $.getJSON(settings.api_uri + '/solutions/' + settings.solutionId + '/connections')
+        .done(function(connections) {
+            theConnections = connections;
+            $('#connectionsTable').empty();
+            for (var c = 0; c < connections.length; c++) {
+                var row = $('#connectionsTable')[0].insertRow();
+                row.insertCell(0).innerHTML = connections[c].name;
+                row.insertCell(1).innerHTML = connections[c].connectionStatus;
+            }
+        });
+
+}
+
+var modifyConnection = function() {
+    $.ajax(settings.api_uri + '/solutions/' + settings.solutionId + '/connections/' + theConnections[connectionIndex].id, {
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(theConnections[connectionIndex]),
+        success: function (response) {
+            $('#connectionJson').val(JSON.stringify(theConnections[connectionIndex], null, 4));
+        }
+    })
+}
 
 var addTableRow = function(table, key, value, selected) {
     var row = table.insertRow();

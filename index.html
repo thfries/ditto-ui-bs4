@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style type='text/css'>
+        textarea {
+         white-space: pre;
+         overflow-wrap:    normal;
+         overflow-x:  scroll;
+        }
+    </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -19,7 +26,7 @@
         <h5 data-toggle="collapse" href="#collapseThings" role="button" aria-expanded="true" aria-controls="collapseThings">Things</h5>
         <div class="collapse show" id="collapseThings">
             <div class="row">
-                <div class="col-md-4" id="table-wrapper">
+                <div class="col-md-4">
                     <div class="input-group input-group-sm" role="group">
                         <input type="text" class="form-control form-control-sm" id="search-filter"></input>
                         <button id="searchThings" type="button">
@@ -55,7 +62,7 @@
                 <div class="col-md-8">
                     <h6>Create/Update/Delete Attribute</h6>
                     <div class="input-group input-group-sm">
-                        <label class="col-md-2">attributePath</label>
+                        <label class="col-md-2">AttributePath</label>
                         <input type="text" class="form-control form-control-sm" id="attributePath"></input>
                         <button type="button" id="putAttribute">
                             <i class="fa fa-save"></i>
@@ -92,11 +99,11 @@
                     </div>
                     <div class="input-group input-group-sm">
                         <label class="col-md-2">Properties</label>
-                        <textarea class="form-control form-control-sm" rows="7" style="height:100%;" id="featureProperties"></textarea>
+                        <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="featureProperties"></textarea>
                     </div>
                     <div class="input-group input-group-sm">
                         <label class="col-md-2">Desired Properties</label>
-                        <textarea class="form-control form-control-sm" rows="7" style="height:100%;" id="featureDesiredProperties"></textarea>
+                        <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="featureDesiredProperties"></textarea>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -114,7 +121,7 @@
                     </div>
                     <div class="input-group input-group-sm">
                         <label class="col-md-2">Payload</label>
-                        <textarea class="form-control form-control-sm" rows="15" style="height:100%;" id="messageFeaturePayload"></textarea>
+                        <textarea class="form-control form-control-sm" rows="15" style="height:100%;" spellcheck="false" id="messageFeaturePayload"></textarea>
                     </div>
                 </div>
             </div>
@@ -178,6 +185,46 @@
                     <div class="input-group input-group-sm">
                         <label class="col-md-2">Value</label>
                         <input type="text" class="form-control form-control-sm" id="policyResourceValue"></input>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Connections -------------------------------------------------------------------->
+        <h5 data-toggle="collapse" href="#collapseConnections" role="button" aria-expanded="false" aria-controls="collapseConnections">Connections</h5>
+        <div class="collapse" id=collapseConnections>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm" role="group">
+                        <label>List Connections</input>
+                        <button id="loadConnections" type="button">
+                            <i class="fa fa-refresh"></i>
+                        </button>
+                    </div>
+                    <table class="table table-striped table-hover table-sm" id="connectionsTable">
+                        <tbody id="connectionsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="col-md-4">
+                    <h6>Modify Connection</h6>
+                    <div class="input-group input-group-sm">
+                        <label class="col-md-2">Id</label>
+                        <input type="text" class="form-control form-control-sm" id="connectionId"></input>
+                        <button type="button" id="modifyConnection">
+                            <i class="fa fa-save"></i>
+                        </button>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <textarea class="form-control form-control-sm" rows="30" style="height:100%;" spellcheck="false" id="connectionJson"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h6>Incoming JavaScript Mapping</h6>
+                    <div class="input-group input-group-sm">
+                        <textarea class="form-control form-control-sm" rows="15" style="height:100%;" spellcheck="false" id="connectionIncomingScript"></textarea>
+                    </div>
+                    <h6>Outgoing JavaScript Mapping</h6>
+                    <div class="input-group input-group-sm">
+                        <textarea class="form-control form-control-sm" rows="15" style="height:100%;" spellcheck="false" id="connectionOutgoingScript"></textarea>
                     </div>
                 </div>
             </div>
