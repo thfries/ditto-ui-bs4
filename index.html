@@ -5,13 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <style type='text/css'>
-        textarea {
-            white-space: pre;
-            overflow-wrap:    normal;
-            overflow-x:  scroll;
-        }
-    </style>
+    <link rel="stylesheet" href="index.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -21,7 +15,7 @@
         <a class="navbar-brand"><img src="https://www.eclipse.org/ditto/images/ditto_allwhite_symbolonly.svg" style="height:30px;"></a>
         <a class="navbar-brand"><img src="https://www.eclipse.org/ditto/images/ditto_allwhite_textonly.svg" style="height:30px;"></a>
     </nav>
-    <div class="container-fluid">
+    <div class="container-fluid StickyContent">
         <!-- Things -------------------------------------------------------------------->
         <h5 data-toggle="collapse" href="#collapseThings" role="button" aria-expanded="true" aria-controls="collapseThings">Things</h5>
         <div class="collapse show" id="collapseThings">
@@ -251,6 +245,23 @@
                         <label class="col-md-2">Value</label>
                         <input type="text" class="form-control form-control-sm" id="settingsValue"></input>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- Console ------------------------------------------------------------------->
+    <div class="StickyFooter">
+        <h5 class="colorHeader" data-toggle="collapse" href="#collapseConsole" role="button" aria-expanded="false" aria-controls="collapseConsole">Output</h5>
+        <div class="collapse" id="collapseConsole">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-striped table-hover table-sm" id="consoleTable">
+                        <tbody id="consoleTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>Details</h6>
+                    <textarea class="form-control form-control-sm" rows="4" style="height:100%;" spellcheck="false" id="consoleDetails"></textarea>
                 </div>
             </div>
         </div>

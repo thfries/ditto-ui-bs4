@@ -139,7 +139,7 @@ var searchThings = function() {
             for (t in searchResult.items) {
                 $('#thingsTable')[0].insertRow().insertCell(0).innerHTML = searchResult.items[t].thingId;
             }
-        });
+        }).fail(output);
 };
 
 var refreshThing = function(thingId) {
@@ -175,6 +175,7 @@ var refreshThing = function(thingId) {
 };
 
 function modifyThing(type, key, value) {
+    if (!check(theThing, 'No thing loaded and selected')) { return; }
     if (key) {
         if (value) {
             if (type === '/attributes/') {
@@ -189,9 +190,12 @@ function modifyThing(type, key, value) {
         } else {
             $.ajax(settings.api_uri + '/things/' + theThing.thingId + type + key, {
                 type: 'DELETE',
-                success: refreshThing
+                success: refreshThing,
+                error: output
             });
         }
+    } else {
+        addTableRow($('consoleTable'), 'ERROR', 'No key set (AttributePath, FeatureId');
     }
 };
 
@@ -271,6 +275,7 @@ function modifyPolicyEntry(type, key, value) {
 };
 
 var loadConnections = function() {
+    if (!check(settings.solutionId), 'SolutionId not set') {return; };
     $.getJSON(settings.api_uri + '/solutions/' + settings.solutionId + '/connections')
         .done(function(connections) {
             theConnections = connections;
@@ -285,13 +290,15 @@ var loadConnections = function() {
 }
 
 var modifyConnection = function() {
+    if (!check(settings.solutionId && theConnections), 'SolutionId not set or connections not loaded') {return; };
     $.ajax(settings.api_uri + '/solutions/' + settings.solutionId + '/connections/' + theConnections[connectionIndex].id, {
         type: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify(theConnections[connectionIndex]),
         success: function (response) {
             $('#connectionJson').val(JSON.stringify(theConnections[connectionIndex], null, 4));
-        }
+        },
+        error: output
     })
 }
 
@@ -313,6 +320,17 @@ var addTableRow = function(table, key, value, selected) {
     }
     
 };
+
+var output = function(xhr, status, error) {
+    addTableRow($('#consoleTable')[0], status, xhr.responseText);
+}
+
+function check(condition, message) {
+    if (!condition) {
+        addTableRow($('#consoleTable')[0], 'ERROR', message);
+        return condition;
+    }
+}
 
 function setBearerHeader() {
     $.ajaxSetup({
