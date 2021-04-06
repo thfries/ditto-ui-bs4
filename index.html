@@ -11,16 +11,20 @@
             overflow-wrap:    normal;
             overflow-x:  scroll;
         }
+        .bg-info {
+            background-color: #3a8c9a !important;
+        }
+        .navbar {
+            background-color: #3a8c9a;
+            color: white;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </head>
 <body>
-    <nav class="navbar navbar-expand bg-info navbar-dark">
-        <a class="navbar-brand"><img src="https://www.eclipse.org/ditto/images/ditto_allwhite_symbolonly.svg" style="height:30px;"></a>
-        <a class="navbar-brand"><img src="https://www.eclipse.org/ditto/images/ditto_allwhite_textonly.svg" style="height:30px;"></a>
-    </nav>
+    <nav class="navbar navbar-expand navbar-dark"><h4>Ditto Debug UI</h4></nav>
     <div class="container-fluid">
         <!-- Things -------------------------------------------------------------------->
         <h5 data-toggle="collapse" href="#collapseThings" role="button" aria-expanded="true" aria-controls="collapseThings">Things</h5>
@@ -208,7 +212,7 @@
                     <h6>Modify Connection</h6>
                     <div class="input-group input-group-sm">
                         <label class="col-md-2">Id</label>
-                        <input type="text" class="form-control form-control-sm" id="connectionId"></input>
+                        <input type="text" class="form-control form-control-sm" disabled="true" id="connectionId"></input>
                         <button type="button" id="modifyConnection">
                             <i class="fa fa-save"></i>
                         </button>
@@ -254,6 +258,13 @@
                 </div>
             </div>
         </div>
+    </div>
+    <!-- Notifications to user ----------------------------------------------------------------->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5; right: 0; bottom: 0">
+        <div class="toast bg-warning" role="alert" data-delay="2000" aria-live="assertive" aria-atomic="true" id="errorToast">
+            <div class="toast-header"></div>
+            <div class="toast-body"></div>
+        </div>        
     </div>
     <script src="main.js"></script>   
 </body>

@@ -103,6 +103,12 @@ $(document).ready(function () {
     $('#connectionIncomingScript').change(function() {
         theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript = $('#connectionIncomingScript').val();
     })
+    $('#connectionOutgoingScript').change(function() {
+        theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript = $('#connectionOutgoingScript').val();
+    })
+    $('#connectionJson').change(function() {
+        theConnections[connectionIndex] = JSON.parse($('#connectionJson').val());
+    })
 
     $('#modifyConnection').click(modifyConnection);
 
@@ -139,7 +145,7 @@ var searchThings = function() {
             for (t in searchResult.items) {
                 $('#thingsTable')[0].insertRow().insertCell(0).innerHTML = searchResult.items[t].thingId;
             }
-        });
+        }).fail(showError);
 };
 
 var refreshThing = function(thingId) {
@@ -171,27 +177,29 @@ var refreshThing = function(thingId) {
             // Update policy
             $('#thePolicyId').val(thePolicy.policyId);
             refreshPolicy();
-        });
+        }).fail(showError);
 };
 
 function modifyThing(type, key, value) {
-    if (key) {
-        if (value) {
-            if (type === '/attributes/') {
-                value = '"' + value + '"';
-            }
-            $.ajax(settings.api_uri + '/things/' + theThing.thingId + type + key, {
-                type: 'PUT',
-                contentType: 'application/json',
-                data: value,
-                success: refreshThing
-            });
-        } else {
-            $.ajax(settings.api_uri + '/things/' + theThing.thingId + type + key, {
-                type: 'DELETE',
-                success: refreshThing
-            });
+    if (!theThing) { showError(null, 'Error', 'No Thing selected'); return; }
+    if (!key) { showError(null, 'Error', 'FeatureId is empty'); return; } 
+    if (value) {
+        if (type === '/attributes/') {
+            value = '"' + value + '"';
         }
+        $.ajax(settings.api_uri + '/things/' + theThing.thingId + type + key, {
+            type: 'PUT',
+            contentType: 'application/json',
+            data: value,
+            success: refreshThing,
+            error: showError
+        });
+    } else {
+        $.ajax(settings.api_uri + '/things/' + theThing.thingId + type + key, {
+            type: 'DELETE',
+            success: refreshThing,
+            error: showError
+        });
     }
 };
 
@@ -204,10 +212,13 @@ var messageFeature = function() {
             payload,
             function() {console.log('message sent')}
         );
+    } else {
+        showError(null, 'Error', 'FeatureId or Subject or Payload is empty');
     }
 };
 
 var refreshPolicy = function(policyId) {
+    if (!thePolicy) { showError(null, 'Error', 'No Policy selected'); return; }
     policyId = policyId || thePolicy.policyId;
     $('#policyEntriesTable').empty();
     $.getJSON(settings.api_uri + '/policies/' + policyId)
@@ -219,7 +230,7 @@ var refreshPolicy = function(policyId) {
                     refillPolicySubjectsAndRessources();
                 }
             };
-        })
+        }).fail(showError);
 };
 
 function refillPolicySubjectsAndRessources() {
@@ -243,6 +254,8 @@ var addOrDeletePolicyEntry = function(method) {
             success: refreshPolicy,
             error: function(errorObject) {console.log(errorObject);}
         });
+    } else {
+        showError(null, 'Error', 'Entry is empty');
     }
 };
 
@@ -253,24 +266,23 @@ function modifyPolicyEntry(type, key, value) {
                 type: 'PUT',
                 contentType: 'application/json',
                 data: value,
-                success: function (response) {
-                    refreshPolicy();
-                }
+                success: refreshPolicy,
+                error: showError
             })
         } else {
             $.ajax(settings.api_uri + '/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
                 type: 'DELETE',
-                success: function (response) {
-                    refreshPolicy();
-                }
+                success: refreshPolicy,
+                error: showError
             })
         }
     } else {
-        alert('No Policy Entry selected or no key is set!');
+        showError(null, 'Error', 'No Policy Entry selected or Subject or Ressource is empty');
     }
 };
 
 var loadConnections = function() {
+    if (!settings.solutionId) { showError(null, 'Error', 'SolutinId is empty'); return; };
     $.getJSON(settings.api_uri + '/solutions/' + settings.solutionId + '/connections')
         .done(function(connections) {
             theConnections = connections;
@@ -280,18 +292,20 @@ var loadConnections = function() {
                 row.insertCell(0).innerHTML = connections[c].name;
                 row.insertCell(1).innerHTML = connections[c].connectionStatus;
             }
-        });
+        }).fail(showError);
 
 }
 
 var modifyConnection = function() {
+    if (!settings.solutionId) { showError(null, 'Error', 'SolutinId is empty'); return; };
     $.ajax(settings.api_uri + '/solutions/' + settings.solutionId + '/connections/' + theConnections[connectionIndex].id, {
         type: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify(theConnections[connectionIndex]),
         success: function (response) {
             $('#connectionJson').val(JSON.stringify(theConnections[connectionIndex], null, 4));
-        }
+        },
+        error: showError
     })
 }
 
@@ -326,3 +340,8 @@ function truncate(str, n) {
     return (str && str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
 };
 
+function showError(xhr, status, message) {
+    $('.toast-Header').text(xhr ? xhr.status : status);
+    $('.toast-Body').text(xhr ? xhr.responseText : message);
+    $('#errorToast').toast('show');
+}
