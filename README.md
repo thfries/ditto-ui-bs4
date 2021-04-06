@@ -1,6 +1,8 @@
 # ditto-ui-bs4
 
-## Frontend screenshot
+## Frontend screenshots
 
 ![](./images/screenshot.png)
+![](./images/screenshotPolicy.png)
+![](./images/screenshotConnections.png)
 
