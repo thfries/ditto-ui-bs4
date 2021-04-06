@@ -45,7 +45,8 @@ $(document).ready(function () {
         if ($('#featureDefinition').val()) { featureObject.definition = $('#featureDefinition').val().split(',');};
         if ($('#featureProperties').val()) { featureObject.properties = JSON.parse($('#featureProperties').val());};
         if ($('#featureDesiredProperties').val()) { featureObject.desiredProperties = JSON.parse($('#featureDesiredProperties').val());};
-        modifyThing('/features/', $('#featureId').val(), JSON.stringify(featureObject));
+        var featureValue = JSON.stringify(featureObject);
+        modifyThing('/features/', $('#featureId').val(), featureValue === '{}' ? null : featureValue);
     });
 
     $('#messageFeature').click(messageFeature);
