@@ -1,0 +1,9 @@
+textarea {
+    white-space: pre;
+    overflow-wrap:    normal;
+    overflow-x:  scroll;
+}
+.bg-info {
+    background-color: #3a8c9a !important;
+    color: white !important;
+}

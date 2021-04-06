@@ -28,7 +28,7 @@ $(document).ready(function () {
 
     $('#putAttribute').click(function() {
         modifyThing('/attributes/', $('#attributePath').val(), $('#attributeValue').val());
-    })
+    });
 
     // Features ---------------------------------
     $('#featuresTable').on('click', 'tr', function(event) {
@@ -58,7 +58,7 @@ $(document).ready(function () {
         refillPolicySubjectsAndRessources();
     });
 
-    $('#refreshPolicy').click(function() { refreshPolicy($('#thePolicyId').val());})
+    $('#refreshPolicy').click(function() { refreshPolicy($('#thePolicyId').val());});
     $('#createPolicyEntry').click(function() { return addOrDeletePolicyEntry('PUT');});
     $('#deletePolicyEntry').click(function() { return addOrDeletePolicyEntry('DELETE');});
 
@@ -82,7 +82,7 @@ $(document).ready(function () {
 
     $('#putPolicyResource').click(function () {
         modifyPolicyEntry('/resources/', $('#policyResourceId').val(), $('#policyResourceValue').val());
-    })
+    });
 
     // Connections ---------------------------------
     $('#loadConnections').click(loadConnections);    
@@ -102,13 +102,13 @@ $(document).ready(function () {
 
     $('#connectionIncomingScript').change(function() {
         theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript = $('#connectionIncomingScript').val();
-    })
+    });
     $('#connectionOutgoingScript').change(function() {
         theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript = $('#connectionOutgoingScript').val();
-    })
+    });
     $('#connectionJson').change(function() {
         theConnections[connectionIndex] = JSON.parse($('#connectionJson').val());
-    })
+    });
 
     $('#modifyConnection').click(modifyConnection);
 
@@ -307,14 +307,14 @@ var modifyConnection = function() {
         },
         error: showError
     })
-}
+};
 
 function fillSettings() {
     $('#settingsTable').empty();
     for (var key of Object.keys(settings)) {
         addTableRow($('#settingsTable')[0], key, truncate(settings[key],50));
     };
-}
+};
 
 var addTableRow = function(table, key, value, selected) {
     var row = table.insertRow();
