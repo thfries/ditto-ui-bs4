@@ -222,8 +222,8 @@
             </div>
         </div>
         <!-- Settings ------------------------------------------------------------------->
-        <h5 data-toggle="collapse" href="#collapseSettings" role="button" aria-expanded="false" aria-controls="collapseSettings">Settings</h5>
-        <div class="collapse" id="collapseSettings">
+        <h5 data-toggle="collapse" href="#collapseSettings" role="button" aria-expanded="true" aria-controls="collapseSettings">Settings</h5>
+        <div class="collapse show" id="collapseSettings">
             <div class="row">
                 <div class="col-md-6">
                     <table class="table table-striped table-hover table-sm" id="settingsTable">
@@ -250,8 +250,12 @@
     <!-- Notifications to user ----------------------------------------------------------------->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5; right: 0; bottom: 0">
         <div class="toast hide bg-warning" role="alert" data-delay="2000" aria-live="assertive" aria-atomic="true" id="errorToast">
-            <div class="toast-header"></div>
-            <div class="toast-body"></div>
+            <div class="toast-header" id="errorHeader"></div>
+            <div class="toast-body" id="errorBody"></div>
+        </div>        
+        <div class="toast hide bg-success" role="alert" data-delay="2000" aria-live="assertive" aria-atomic="true" id="successToast">
+            <div class="toast-header" id="successHeader"></div>
+            <div class="toast-body" id=successBody></div>
         </div>        
     </div>
 </body>

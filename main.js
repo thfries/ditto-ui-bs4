@@ -2,13 +2,50 @@ var settings = {
     'api_uri': 'https://things.eu-1.bosch-iot-suite.com/api/2',
     'bearer':  null,
     'solutionId': null
-}
+};
+
+const config = {
+    things: {
+        listConnections: {
+            path: '/solutions/{{solutionId}}/connections',
+            method: 'GET',
+            body: null
+        },
+        retrieveConnection: {
+            path: '/solutions/{{solutionId}}/connections/{{connectionId}}',
+            method: 'GET',
+            body: null
+        },
+        modifyConnection: {
+            path: '/solutions/{{solutionId}}/connections/{{connectionId}}',
+            method: 'PUT',
+            body: '{{connectionJson}}'
+        }
+    },
+    ditto: {
+        listConnections: {
+            path: '/devops/piggyback/connectivity',
+            method: 'POST',
+            body: '{ "targetActorSelection": "/user/connectivityRoot/connectionIdsRetrieval/singleton", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveAllConnectionIds" } }'
+        },
+        retrieveConnection: {
+            path: '/devops/piggyback/connectivity',
+            method: 'POST',
+            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveConnection", "connectionId": "{{connectionId}}" } }'
+        },
+        modifyConnection: {
+            path: '/devops/piggyback/connectivity',
+            method: 'POST',
+            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:modifyConnection", "connection": {{connectionJson}} } }' 
+        }
+    }    
+};
 
 var theThing;
 var thePolicy;
 var thePolicyEntry;
-var theConnections;
-var connectionIndex;
+var connectionIdList;
+var theConnection;
 
 $(document).ready(function () {
     // Things -----------------------------------
@@ -86,35 +123,44 @@ $(document).ready(function () {
     });
 
     // Connections ---------------------------------
-    $('#loadConnections').click(loadConnections);    
+    $('#loadConnections').click(function() { callConnectionsAPI(config[env()].listConnections, function(connections) {
+        connectionIdList = [];
+        $('#connectionsTable').empty();
+        for (var c = 0; c < connections.length; c++) {
+            var id = env() === 'things' ? connections[c].id : connections[c];
+            connectionIdList.push(id);
+            $('#connectionsTable')[0].insertRow().insertCell(0).innerHTML = id;
+        };
+    })});    
+
     $('#connectionsTable').on('click', 'tr', function(event) {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
-        connectionIndex = $(this).index();
-        $('#connectionId').val(theConnections[connectionIndex].id);
-        $('#connectionJson').val(JSON.stringify(theConnections[connectionIndex], null, 4));
-        if (theConnections[connectionIndex].mappingDefinitions.hasOwnProperty('javascript')) {
-            $('#connectionIncomingScript').val(theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript);
-            $('#connectionOutgoingScript').val(theConnections[connectionIndex].mappingDefinitions.javascript.options.outgoingScript);
-        } else {
-            $('#connectionIncomingScript').val('');
-            $('#connectionOutgoingScript').val('');
-        }
+        callConnectionsAPI(config[env()].retrieveConnection, function(connection) {
+            theConnection = connection;
+            var withJavaScript = theConnection.mappingDefinitions.hasOwnProperty('javascript');
+            $('#connectionId').val(theConnection.id);
+            $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
+            $('#connectionIncomingScript').val(withJavaScript ? theConnection.mappingDefinitions.javascript.options.incomingScript : '');
+            $('#connectionOutgoingScript').val(withJavaScript ? theConnection.mappingDefinitions.javascript.options.outgoingScript : '');
+        }, $(this).text());
     });
 
     $('#connectionIncomingScript').change(function() {
-        theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript = $('#connectionIncomingScript').val();
+        theConnection.mappingDefinitions.javascript.options.incomingScript = $('#connectionIncomingScript').val();
+        $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
     });
     $('#connectionOutgoingScript').change(function() {
-        theConnections[connectionIndex].mappingDefinitions.javascript.options.incomingScript = $('#connectionOutgoingScript').val();
+        theConnection.mappingDefinitions.javascript.options.incomingScript = $('#connectionOutgoingScript').val();
+        $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
     });
     $('#connectionJson').change(function() {
-        theConnections[connectionIndex] = JSON.parse($('#connectionJson').val());
+        theConnection = JSON.parse($('#connectionJson').val());
     });
 
-    $('#modifyConnection').click(modifyConnection);
+    $('#modifyConnection').click(function() { callConnectionsAPI(config[env()].modifyConnection, showSuccess, $('#connectionId').val()); });
 
     // Settings ----------------------------------
-    fillSettings();
+    fillSettingsTable();
 
     $('#settingsTable').on('click', 'tr', function(event) {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
@@ -126,7 +172,7 @@ $(document).ready(function () {
     $('#saveSetting').click(function() {
         var key = $('#settingsKey').val(); 
         settings[key] = $('#settingsValue').val();
-        fillSettings();
+        fillSettingsTable();
         if (key === 'bearer') {
             setBearerHeader();
         }
@@ -282,39 +328,29 @@ function modifyPolicyEntry(type, key, value) {
     }
 };
 
-var loadConnections = function() {
-    if (!settings.solutionId) { showError(null, 'Error', 'SolutinId is empty'); return; };
-    $.getJSON(settings.api_uri + '/solutions/' + settings.solutionId + '/connections')
-        .done(function(connections) {
-            theConnections = connections;
-            $('#connectionsTable').empty();
-            for (var c = 0; c < connections.length; c++) {
-                var row = $('#connectionsTable')[0].insertRow();
-                row.insertCell(0).innerHTML = connections[c].name;
-                row.insertCell(1).innerHTML = connections[c].connectionStatus;
-            }
-        }).fail(showError);
-
-}
-
-var modifyConnection = function() {
-    if (!settings.solutionId) { showError(null, 'Error', 'SolutinId is empty'); return; };
-    $.ajax(settings.api_uri + '/solutions/' + settings.solutionId + '/connections/' + theConnections[connectionIndex].id, {
-        type: 'PUT',
+function callConnectionsAPI(params, successCallback, connectionId) {
+    console.log(settings.api_uri + params.path.replace('{{solutionId}}', settings.solutionId).replace('{{connectionId}}', connectionId));
+    console.log(params.body ? params.body.replace('{{connectionId}}', connectionId).replace('{{connectionJson}}', JSON.stringify(theConnection)) : null);
+    
+    if (env() === 'things' && !settings.solutionId) { showError(null, 'Error', 'SolutionId is empty'); return; };
+    $.ajax(settings.api_uri + params.path.replace('{{solutionId}}', settings.solutionId).replace('{{connectionId}}', connectionId), {
+        type: params.method,
+        data: params.body ? params.body.replace('{{connectionId}}', connectionId).replace('{{connectionJson}}', JSON.stringify(theConnection)) : null,
         contentType: 'application/json',
-        data: JSON.stringify(theConnections[connectionIndex]),
-        success: function (response) {
-            $('#connectionJson').val(JSON.stringify(theConnections[connectionIndex], null, 4));
-        },
+        success: successCallback,
         error: showError
-    })
+    });
 };
 
-function fillSettings() {
+function fillSettingsTable() {
     $('#settingsTable').empty();
     for (var key of Object.keys(settings)) {
-        addTableRow($('#settingsTable')[0], key, truncate(settings[key],50));
+        addTableRow($('#settingsTable')[0], key, settings[key] ? truncate(settings[key],50) : ' ');
     };
+};
+
+function env() {
+    return settings.api_uri.startsWith('https://things') ? 'things' : 'ditto';
 };
 
 var addTableRow = function(table, key, value, selected) {
@@ -342,7 +378,13 @@ function truncate(str, n) {
 };
 
 function showError(xhr, status, message) {
-    $('.toast-Header').text(xhr ? xhr.status : status);
-    $('.toast-Body').text(xhr ? xhr.responseText : message);
+    $('#errorHeader').text(xhr ? xhr.status : status);
+    $('#errorBody').text(xhr ? xhr.responseText : message);
     $('#errorToast').toast('show');
+}
+
+function showSuccess(data, status, xhr) {
+    $('#successHeader').text(xhr.status ? xhr.status : status);
+    $('#successBody').text(status);
+    $('#successToast').toast('show');
 }
