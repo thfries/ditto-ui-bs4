@@ -29,15 +29,15 @@
                             <i class="fa fa-plus-square"></i>
                         </button>-->
                     </div>
-                    <table class="table table-striped table-hover table-sm" id="thingsTable">
-                        <tbody id="thingsTableBody"></tbody>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="thingsTable"></tbody>
                     </table>
                 </div>
     
                 <div class="col-md-8" id="details">
                     <h6>Thing Details</h6>
-                    <table class="table table-striped table-hover table-sm" id="thingDetails">
-                        <tbody id="thingDetailsTableBody"></tbody>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="thingDetails"></tbody>
                     </table>
                 </div>
             </div>
@@ -47,8 +47,8 @@
         <div class="collapse show" id="collapseAttributes">
             <div class="row">
                 <div class="col-md-4">
-                    <table class="table table-striped table-hover table-sm" id="attributesTable">
-                        <tbody id="attributesTableBody"></tbody>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="attributesTable"></tbody>
                     </table>
                 </div>
                 <div class="col-md-8">
@@ -72,8 +72,8 @@
         <div class="collapse show" id="collapseFeatures">
             <div class="row">
                 <div class="col-md-4">
-                    <table class="table table-striped table-hover table-sm" id="featuresTable">
-                        <tbody id="featuresTableBody"></tbody>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="featuresTable"></tbody>
                     </table>
                 </div>
                 <div class="col-md-4">
@@ -139,18 +139,18 @@
                             <i class="fa fa-plus-square"></i>
                         </button>
                     </div>
-                    <table class="table table-striped table-hover table-sm" id="policyEntriesTable">
-                        <tbody id="policyEntriesTableBody"></tbody>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="policyEntriesTable"></tbody>
                     </table>
                 </div>
                 <div class="col-md-4">
                     <h6>Subjects</h6>
-                    <table class="table table-striped table-hover table-sm" id="policySubjectsTable">
-                        <tbody></tbody>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="policySubjectsTable"></tbody>
                     </table>
                     <h6>Ressources</h6>
-                    <table class="table table-striped table-hover table-sm" id="policyResourcesTable">
-                        <tbody></tbody>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="policyResourcesTable"></tbody>
                     </table>
                 </div>
                 <div class="col-md-4">
@@ -188,23 +188,26 @@
                 <div class="col-md-4">
                     <div class="input-group input-group-sm" role="group">
                         <label>List Connections</input>
-                        <button id="loadConnections" type="button">
-                            <i class="fa fa-refresh"></i>
-                        </button>
-                    </div>
-                    <table class="table table-striped table-hover table-sm" id="connectionsTable">
-                        <tbody id="connectionsTableBody"></tbody>
+                            <button id="loadConnections" type="button">
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                        </div>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="connectionsTable"></tbody>
                     </table>
                 </div>
                 <div class="col-md-4">
-                    <h6>Modify Connection</h6>
+                    <h6>Create/Update/Delete Connection</h6>
                     <div class="input-group input-group-sm">
                         <label class="col-md-2">Id</label>
                         <input type="text" class="form-control form-control-sm" disabled="true" id="connectionId"></input>
                         <button type="button" id="modifyConnection">
                             <i class="fa fa-save"></i>
                         </button>
-                    </div>
+                        <button id="createConnection" type="button">
+                            <i class="fa fa-plus-square"></i>
+                        </button>
+                </div>
                     <div class="input-group input-group-sm">
                         <textarea class="form-control form-control-sm" rows="30" style="height:100%;" spellcheck="false" id="connectionJson"></textarea>
                     </div>
@@ -226,8 +229,8 @@
         <div class="collapse show" id="collapseSettings">
             <div class="row">
                 <div class="col-md-6">
-                    <table class="table table-striped table-hover table-sm" id="settingsTable">
-                        <tbody id="settingsTableBody"></tbody>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="settingsTable"></tbody>
                     </table>
                 </div>
                 <div class="col-md-6">
@@ -249,7 +252,7 @@
     </div>
     <!-- Notifications to user ----------------------------------------------------------------->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5; right: 0; bottom: 0">
-        <div class="toast hide bg-warning" role="alert" data-delay="2000" aria-live="assertive" aria-atomic="true" id="errorToast">
+        <div class="toast hide bg-warning" role="alert" data-delay="5000" aria-live="assertive" aria-atomic="true" id="errorToast">
             <div class="toast-header" id="errorHeader"></div>
             <div class="toast-body" id="errorBody"></div>
         </div>        
