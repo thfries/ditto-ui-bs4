@@ -1,10 +1,10 @@
 var settings = {
-    api_uri: 'https://things.eu-1.bosch-iot-suite.com',
-//    api_uri: 'http://localhost:8080',
+//    api_uri: 'https://things.eu-1.bosch-iot-suite.com',
+    api_uri: 'http://localhost:8080',
     solutionId: null,
     bearer:  null,
     usernamePassword: null,
-    useBasicAuth: true
+    useBasicAuth: 'true'
 };
 
 const config = {
@@ -12,54 +12,64 @@ const config = {
         listConnections: {
             path: '/api/2/solutions/{{solutionId}}/connections',
             method: 'GET',
-            body: null
+            body: null,
+            unwrapJsonPath: null
         },
         retrieveConnection: {
             path: '/api/2/solutions/{{solutionId}}/connections/{{connectionId}}',
             method: 'GET',
-            body: null
+            body: null,
+            unwrapJsonPath: null
         },
         createConnection: {
             path: '/api/2/solutions/{{solutionId}}/connections',
             method: 'POST',
-            body: '{{connectionJson}}'
+            body: '{{connectionJson}}',
+            unwrapJsonPath: null
         },
         modifyConnection: {
             path: '/api/2/solutions/{{solutionId}}/connections/{{connectionId}}',
             method: 'PUT',
-            body: '{{connectionJson}}'
+            body: '{{connectionJson}}',
+            unwrapJsonPath: null
         },
         deleteConnection: {
             path: '/api/2/solutions/{{solutionId}}/connections/{{connectionId}}',
             method: 'DELETE',
-            body: null
+            body: null,
+            unwrapJsonPath: null
         }
     },
     ditto: {
         listConnections: {
             path: '/devops/piggyback/connectivity',
             method: 'POST',
-            body: '{ "targetActorSelection": "/user/connectivityRoot/connectionIdsRetrieval/singleton", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveAllConnectionIds" } }'
+            body: '{ "targetActorSelection": "/user/connectivityRoot/connectionIdsRetrieval/singleton", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveAllConnectionIds" } }',
+            unwrapJsonPath: '?.?.connectionIds'
         },
         retrieveConnection: {
             path: '/devops/piggyback/connectivity',
             method: 'POST',
-            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveConnection", "connectionId": "{{connectionId}}" } }'
+            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveConnection", "connectionId": "{{connectionId}}" } }',
+            unwrapJsonPath: '?.?.connection'
         },
         createConnection: {
             path: '/devops/piggyback/connectivity',
             method: 'POST',
-            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:createConnection", "connection": {{connectionJson}} } }' 
+            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:createConnection", "connection": {{connectionJson}} } }',
+            unwrapJsonPath: '?.?.connection' 
         },
         modifyConnection: {
             path: '/devops/piggyback/connectivity',
             method: 'POST',
-            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:modifyConnection", "connection": {{connectionJson}} } }' 
+            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:modifyConnection", "connection": {{connectionJson}} } }',
+            unwrapJsonPath: null
         },
         deleteConnection: {
             path: '/devops/piggyback/connectivity',
             method: 'POST',
-            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:deleteConnection", "connectionId": "{{connectionId}}" } }'
+            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:deleteConnection", "connectionId": "{{connectionId}}" } }',
+            unwrapJsonPath: null
         }
     }    
 };
@@ -245,9 +255,11 @@ var refreshThing = function(thingId) {
             
             // Update attributes table
             $('#attributesTable').empty();
-            for (var key of Object.keys(thing.attributes)) {
-                addTableRow($('#attributesTable')[0], key, thing.attributes[key]);
-            };
+            if (thing.attributes) {
+                for (var key of Object.keys(thing.attributes)) {
+                    addTableRow($('#attributesTable')[0], key, thing.attributes[key]);
+                };
+            }
             
             // Update features table
             $('#featuresTable').empty();
@@ -383,7 +395,14 @@ function callConnectionsAPI(params, successCallback, connectionId) {
         type: params.method,
         data: params.body ? params.body.replace('{{connectionId}}', connectionId).replace('{{connectionJson}}', JSON.stringify(theConnection)) : null,
         contentType: 'application/json',
-        success: successCallback,
+        success: function(data, status, xhr) {
+            if (params.unwrapJsonPath) {
+                params.unwrapJsonPath.split('.').forEach(function(node) {
+                    data = data[node];
+                });
+            };
+            successCallback(data, status, xhr);
+        },
         error: showError
     });
 };
