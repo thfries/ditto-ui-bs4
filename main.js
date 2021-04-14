@@ -81,17 +81,19 @@ var connectionIdList;
 var theConnection;
 
 $(document).ready(function () {
+    $('.table').on('click', 'tr', function() {
+        $(this).addClass('bg-info').siblings().removeClass('bg-info');
+    });
+
     // Things -----------------------------------
     $('#searchThings').click(searchThings);
 
     $('#thingsTable').on('click', 'tr', function(event) {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
         refreshThing($(this).text());
     });
 
     // Attributes -------------------------------
     $('#attributesTable').on('click', 'tr', function(event) {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
         $('#attributePath').val($(this).children(":first").text());
         $('#attributeValue').val($(this).children(":nth-child(2)").text());
     });
@@ -102,7 +104,6 @@ $(document).ready(function () {
 
     // Features ---------------------------------
     $('#featuresTable').on('click', 'tr', function(event) {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
         var featureId = $(this).text();
         $('#featureId').val(featureId);
         $('#featureDefinition').val(theThing.features[featureId].definition);
@@ -125,7 +126,6 @@ $(document).ready(function () {
     $('#refreshPolicy').click(refreshPolicy);
 
     $('#policyEntriesTable').on('click', 'tr', function(event) {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
         thePolicyEntry = $(this).text();
         $('#thePolicyEntry').val(thePolicyEntry);
         refillPolicySubjectsAndRessources();
@@ -135,14 +135,12 @@ $(document).ready(function () {
     $('#deletePolicyEntry').click(function() { return addOrDeletePolicyEntry('DELETE');});
 
     $('#policySubjectsTable').on('click', 'tr', function(event) {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
         var subject = $(this).children(":first").text();
         $('#policySubjectId').val(subject);
         $('#policySubjectValue').val(JSON.stringify(thePolicy.entries[thePolicyEntry].subjects[subject]));
     });
 
     $('#policyResourcesTable').on('click', 'tr', function(event) {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
         var ressource = $(this).children(":first").text();
         $('#policyResourceId').val(ressource);
         $('#policyResourceValue').val(JSON.stringify(thePolicy.entries[thePolicyEntry].resources[ressource]));
@@ -163,18 +161,13 @@ $(document).ready(function () {
         if (env() === 'things') {
             delete theConnection['id'];            
         }
-        // var a = $('#connectionsTable');
-        // var b = a.children('.bg-info');
-        // b.removeClass('bg-info');
         callConnectionsAPI(config[env()].createConnection, function(newConnection) {
             connectionIdList.push(newConnection.id);
             addTableRow($('#connectionsTable')[0], newConnection.id);
-            // $('#theConnectionId').val(newConnection.id);
         });
     });
 
     $('#connectionsTable').on('click', 'tr', function(event) {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
         callConnectionsAPI(config[env()].retrieveConnection, function(connection) {
             theConnection = connection;
             var withJavaScript = theConnection.mappingDefinitions.hasOwnProperty('javascript');
@@ -209,7 +202,6 @@ $(document).ready(function () {
     fillSettingsTable();
 
     $('#settingsTable').on('click', 'tr', function(event) {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
         var key = $(this).children(":first").text();
         $('#settingsKey').val(key);
         $('#settingsValue').val(settings[key]);
@@ -242,7 +234,8 @@ var searchThings = function() {
 
 var refreshThing = function(thingId) {
     $.getJSON(settings.api_uri + "/api/2/things/" + thingId + "?fields=thingId%2Cattributes%2Cfeatures%2C_created%2C_modified%2C_revision%2C_policy")
-        .done(function(thing, status) {
+        .done(function(thing, status, xhr) {
+            showSuccess(null, status, xhr);
             theThing = thing;
             thePolicy = thing._policy;
             // Update fields of Thing table
@@ -303,7 +296,7 @@ var messageFeature = function() {
     if (subject && feature && payload) {
         $.post(settings.api_uri + '/api/2/things/' + theThing.thingId + '/features/' + feature + '/inbox/messages/' + subject + '?timeout=' + $('#messageTimeout').val(),
             payload,
-            function() {console.log('message sent')}
+            showSuccess
         );
     } else {
         showError(null, 'Error', 'FeatureId or Subject or Payload is empty');
@@ -314,7 +307,8 @@ var refreshPolicy = function() {
     var policyId = thePolicy ? thePolicy.policyId : $('#thePolicyId').val();
     if (policyId === '') { showError(null, 'Error', 'policyId is empty'); return; }
     $.getJSON(settings.api_uri + '/api/2/policies/' + policyId)
-        .done(function(policy) {
+        .done(function(policy, status, xhr) {
+            showSuccess(null, status, xhr);
             thePolicy = policy;
             $('#policyEntriesTable').empty();
             for (var key of Object.keys(thePolicy.entries)) {
@@ -339,7 +333,7 @@ function refillPolicySubjectsAndRessources() {
 
 var addOrDeletePolicyEntry = function(method) {
     var label = $('#thePolicyEntry').val();
-    if (label) {
+    if (label && !(label === thePolicyEntry)) {
         $.ajax(settings.api_uri + '/api/2/policies/' + thePolicy.policyId + '/entries/' + label, {
             type: method,
             data: JSON.stringify({ subjects: {}, resources: {}}),
@@ -348,7 +342,7 @@ var addOrDeletePolicyEntry = function(method) {
             error: showError
         });
     } else {
-        showError(null, 'Error', 'Entry is empty');
+        showError(null, 'Error', 'Entry already exists or is empty');
     }
 };
 
