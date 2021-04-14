@@ -2,6 +2,7 @@ textarea {
     white-space: pre;
     overflow-wrap:    normal;
     overflow-x:  scroll;
+    font-family: Monospace;
 }
 .bg-info {
     background-color: #3a8c9a !important;
