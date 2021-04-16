@@ -26,9 +26,17 @@ Yes, e.g.:
 ![](./images/screenshotConnections.png)
 
 ## Installation
-The UI consists only of a static content. You can use it by:
-- Option 1: You can use it directly from the github repository 
-- Option 2: Copy into your project and change your nginx configuration to server the files 
+The UI consists only of a static web content. You can:
+- Option 1: use it directly from the github repository e.g. by
+```
+https://cdn.statically.io/gh/thfries/ditto-ui-bs4/main/index.html
+```
+- Option 2: Copy into your project and change your nginx configuration to serve the files
+- Option 3: Use the docker nginx image, e.g. by
+```
+docker run -it --rm -d -p 8085:80 --name ditto-ui -v "~/ditto-ui-bs4:/usr/share/nginx/html" nginx
+```
+ 
 
 ## Usage
 ### Initial Setup
