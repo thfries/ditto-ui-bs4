@@ -183,7 +183,7 @@ $(document).ready(function () {
         $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
     });
     $('#connectionOutgoingScript').change(function() {
-        theConnection.mappingDefinitions.javascript.options.incomingScript = $('#connectionOutgoingScript').val();
+        theConnection.mappingDefinitions.javascript.options.outgoingScript = $('#connectionOutgoingScript').val();
         $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
     });
     $('#connectionJson').change(function() {
