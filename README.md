@@ -1,5 +1,5 @@
 # ditto-ui-bs4
-This is a simple debug UI for [Eclipse Ditto](https://www.eclipse.org/ditto/). It is implemented with plain HTML and JavaScript using Bootstrap 4 and jQuery (almost vanilla JS). 
+This is a simple debug UI for [Eclipse Ditto](https://www.eclipse.org/ditto/). It is implemented with plain HTML and JavaScript using Bootstrap 4 and jQuery. 
 
 ## Features
 - Search Things
