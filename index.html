@@ -9,6 +9,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="config.js"></script>
     <script src="main.js"></script>
   </head>
 <body>
@@ -21,13 +22,12 @@
                 <div class="col-md-4">
                     <div class="input-group input-group-sm" role="group">
                         <input type="text" class="form-control form-control-sm" id="search-filter"></input>
-                        <button id="searchThings" type="button">
+                        <button id="searchThings" type="button" data-toggle="tooltip" title="Search things">
                             <i class="fa fa-search"></i>
                         </button>
-                        <!--                     
-                        <button id="createThing" type="button">
+                        <button id="createThing" type="button" data-toggle="tooltip" title="Create an empty thing with a default policy">
                             <i class="fa fa-plus-square"></i>
-                        </button>-->
+                        </button>
                     </div>
                     <table class="table table-striped table-hover table-sm">
                         <tbody id="thingsTable"></tbody>
@@ -201,10 +201,10 @@
                     <div class="input-group input-group-sm">
                         <label class="col-md-2">Id</label>
                         <input type="text" class="form-control form-control-sm" disabled="true" id="connectionId"></input>
-                        <button type="button" id="modifyConnection">
+                        <button type="button" id="modifyConnection" data-toggle="tooltip" title="Modify connection">
                             <i class="fa fa-save"></i>
                         </button>
-                        <button id="createConnection" type="button">
+                        <button id="createConnection" type="button" data-toggle="tooltip" title="Create a new connection (id is mandatory for Ditto and ignored for Things)">
                             <i class="fa fa-plus-square"></i>
                         </button>
                 </div>
@@ -228,12 +228,19 @@
         <h5 data-toggle="collapse" href="#collapseSettings" role="button" aria-expanded="true" aria-controls="collapseSettings">Settings</h5>
         <div class="collapse show" id="collapseSettings">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <h6>Environments</h6>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody id="settingsEnvTable"></tbody>
+                    </table>
+                </div>
+                <div class="col-md-4">
+                    <h6>Settings</h6>
                     <table class="table table-striped table-hover table-sm">
                         <tbody id="settingsTable"></tbody>
                     </table>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <h6>Create/Update/Delete Setting</h6>
                     <div class="input-group input-group-sm">
                         <label class="col-md-2">Key</label>

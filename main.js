@@ -1,79 +1,21 @@
 var settings = {
-//    api_uri: 'https://things.eu-1.bosch-iot-suite.com',
-    api_uri: 'http://localhost:8080',
-    solutionId: null,
-    bearer:  null,
-    usernamePassword: null,
-    useBasicAuth: 'true'
-};
-
-const config = {
-    things: {
-        listConnections: {
-            path: '/api/2/solutions/{{solutionId}}/connections',
-            method: 'GET',
-            body: null,
-            unwrapJsonPath: null
-        },
-        retrieveConnection: {
-            path: '/api/2/solutions/{{solutionId}}/connections/{{connectionId}}',
-            method: 'GET',
-            body: null,
-            unwrapJsonPath: null
-        },
-        createConnection: {
-            path: '/api/2/solutions/{{solutionId}}/connections',
-            method: 'POST',
-            body: '{{connectionJson}}',
-            unwrapJsonPath: null
-        },
-        modifyConnection: {
-            path: '/api/2/solutions/{{solutionId}}/connections/{{connectionId}}',
-            method: 'PUT',
-            body: '{{connectionJson}}',
-            unwrapJsonPath: null
-        },
-        deleteConnection: {
-            path: '/api/2/solutions/{{solutionId}}/connections/{{connectionId}}',
-            method: 'DELETE',
-            body: null,
-            unwrapJsonPath: null
-        }
+    local_ditto: {
+        api_uri: 'http://localhost:8080',
+        solutionId: null,
+        bearer:  null,
+        usernamePassword: null,
+        useBasicAuth: 'true'
     },
-    ditto: {
-        listConnections: {
-            path: '/devops/piggyback/connectivity',
-            method: 'POST',
-            body: '{ "targetActorSelection": "/user/connectivityRoot/connectionIdsRetrieval/singleton", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveAllConnectionIds" } }',
-            unwrapJsonPath: '?.?.connectionIds'
-        },
-        retrieveConnection: {
-            path: '/devops/piggyback/connectivity',
-            method: 'POST',
-            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveConnection", "connectionId": "{{connectionId}}" } }',
-            unwrapJsonPath: '?.?.connection'
-        },
-        createConnection: {
-            path: '/devops/piggyback/connectivity',
-            method: 'POST',
-            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:createConnection", "connection": {{connectionJson}} } }',
-            unwrapJsonPath: '?.?.connection' 
-        },
-        modifyConnection: {
-            path: '/devops/piggyback/connectivity',
-            method: 'POST',
-            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:modifyConnection", "connection": {{connectionJson}} } }',
-            unwrapJsonPath: null
-        },
-        deleteConnection: {
-            path: '/devops/piggyback/connectivity',
-            method: 'POST',
-            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:deleteConnection", "connectionId": "{{connectionId}}" } }',
-            unwrapJsonPath: null
-        }
-    }    
+    cloud_things_aws: {
+        api_uri: 'https://things.eu-1.bosch-iot-suite.com',
+        solutionId: null,
+        bearer:  null,
+        usernamePassword: null,
+        useBasicAuth: 'false'
+    }
 };
 
+var theEnv = 'local_ditto';
 var theThing;
 var thePolicy;
 var thePolicyEntry;
@@ -81,12 +23,25 @@ var connectionIdList;
 var theConnection;
 
 $(document).ready(function () {
+
     $('.table').on('click', 'tr', function() {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });
 
     // Things -----------------------------------
     $('#searchThings').click(searchThings);
+    $('#createThing').click(function() {
+        $.ajax(settings[theEnv].api_uri + '/api/2/things', {
+            type: 'POST',
+            contentType: 'application/json',
+            data: '{}',
+            success: function(data, textStatus, xhr) {
+                showSuccess(data, textStatus, xhr);
+                searchThings();
+            },
+            error: showError
+        });
+    });
 
     $('#thingsTable').on('click', 'tr', function(event) {
         refreshThing($(this).text());
@@ -99,7 +54,8 @@ $(document).ready(function () {
     });
 
     $('#putAttribute').click(function() {
-        modifyThing('/attributes/', $('#attributePath').val(), $('#attributeValue').val());
+        var value = $('#attributeValue').val();
+        modifyThing(value ? 'PUT' : 'DELETE', '/attributes/', $('#attributePath').val(), value);
     });
 
     // Features ---------------------------------
@@ -116,8 +72,8 @@ $(document).ready(function () {
         if ($('#featureDefinition').val()) { featureObject.definition = $('#featureDefinition').val().split(',');};
         if ($('#featureProperties').val()) { featureObject.properties = JSON.parse($('#featureProperties').val());};
         if ($('#featureDesiredProperties').val()) { featureObject.desiredProperties = JSON.parse($('#featureDesiredProperties').val());};
-        var featureValue = JSON.stringify(featureObject);
-        modifyThing('/features/', $('#featureId').val(), featureValue === '{}' ? null : featureValue);
+        var featureValue = JSON.stringify(featureObject) === '{}' ? null : JSON.stringify(featureObject);
+        modifyThing(featureValue ? 'PUT' : 'DELETE', '/features/', $('#featureId').val(), featureValue === '{}' ? null : featureValue);
     });
 
     $('#messageFeature').click(messageFeature);
@@ -199,19 +155,26 @@ $(document).ready(function () {
     });
 
     // Settings ----------------------------------
+    fillSettingsEnvTable();
     fillSettingsTable();
+
+    $('#settingsEnvTable').on('click', 'tr', function(event) {
+        theEnv = $(this).children(":first").text();
+        fillSettingsTable();
+        setAuthHeader();
+    });
 
     $('#settingsTable').on('click', 'tr', function(event) {
         var key = $(this).children(":first").text();
         $('#settingsKey').val(key);
-        $('#settingsValue').val(settings[key]);
+        $('#settingsValue').val(settings[theEnv][key]);
     });
 
     $('#saveSetting').click(function() {
         var key = $('#settingsKey').val(); 
-        settings[key] = $('#settingsValue').val();
+        settings[theEnv][key] = $('#settingsValue').val();
         if (key === 'usernamePassword') {
-            settings[key] = window.btoa(settings[key]);
+            settings[theEnv][key] = window.btoa(settings[theEnv][key]);
         };
         fillSettingsTable();
         setAuthHeader();
@@ -221,7 +184,7 @@ $(document).ready(function () {
 });
 
 var searchThings = function() {
-    $.getJSON(settings.api_uri + "/api/2/search/things"
+    $.getJSON(settings[theEnv].api_uri + "/api/2/search/things"
     + "?fields=thingId"
     + "&option=sort(%2BthingId)")
         .done(function(searchResult) {
@@ -233,7 +196,7 @@ var searchThings = function() {
 };
 
 var refreshThing = function(thingId) {
-    $.getJSON(settings.api_uri + "/api/2/things/" + thingId + "?fields=thingId%2Cattributes%2Cfeatures%2C_created%2C_modified%2C_revision%2C_policy")
+    $.getJSON(settings[theEnv].api_uri + "/api/2/things/" + thingId + "?fields=thingId%2Cattributes%2Cfeatures%2C_created%2C_modified%2C_revision%2C_policy")
         .done(function(thing, status, xhr) {
             showSuccess(null, status, xhr);
             theThing = thing;
@@ -256,9 +219,11 @@ var refreshThing = function(thingId) {
             
             // Update features table
             $('#featuresTable').empty();
-            for (var key of Object.keys(thing.features)) {
-                addTableRow($('#featuresTable')[0], key);
-            };
+            if (thing.features) {
+                for (var key of Object.keys(thing.features)) {
+                    addTableRow($('#featuresTable')[0], key);
+                };
+            }
             
             // Update policy
             $('#thePolicyId').val(thePolicy.policyId);
@@ -266,27 +231,19 @@ var refreshThing = function(thingId) {
         }).fail(showError);
 };
 
-function modifyThing(type, key, value) {
+function modifyThing(method, type, key, value) {
     if (!theThing) { showError(null, 'Error', 'No Thing selected'); return; }
     if (!key) { showError(null, 'Error', 'FeatureId is empty'); return; } 
-    if (value) {
-        if (type === '/attributes/') {
-            value = '"' + value + '"';
-        }
-        $.ajax(settings.api_uri + '/api/2/things/' + theThing.thingId + type + key, {
-            type: 'PUT',
-            contentType: 'application/json',
-            data: value,
-            success: function() { refreshThing(theThing.thingId); },
-            error: showError
-        });
-    } else {
-        $.ajax(settings.api_uri + '/api/2/things/' + theThing.thingId + type + key, {
-            type: 'DELETE',
-            success: function() { refreshThing(theThing.thingId); },
-            error: showError
-        });
-    }
+    if (type === '/attributes/') {
+        value = '"' + value + '"';
+    };
+    $.ajax(settings[theEnv].api_uri + '/api/2/things/' + theThing.thingId + type + key, {
+        type: method,
+        contentType: 'application/json',
+        data: value,
+        success: function() { refreshThing(theThing.thingId); },
+        error: showError
+    });
 };
 
 var messageFeature = function() {
@@ -294,7 +251,7 @@ var messageFeature = function() {
     var feature = $('#featureId').val();
     var payload = $('#messageFeaturePayload').val();
     if (subject && feature && payload) {
-        $.post(settings.api_uri + '/api/2/things/' + theThing.thingId + '/features/' + feature + '/inbox/messages/' + subject + '?timeout=' + $('#messageTimeout').val(),
+        $.post(settings[theEnv].api_uri + '/api/2/things/' + theThing.thingId + '/features/' + feature + '/inbox/messages/' + subject + '?timeout=' + $('#messageTimeout').val(),
             payload,
             showSuccess
         );
@@ -306,7 +263,7 @@ var messageFeature = function() {
 var refreshPolicy = function() {
     var policyId = thePolicy ? thePolicy.policyId : $('#thePolicyId').val();
     if (policyId === '') { showError(null, 'Error', 'policyId is empty'); return; }
-    $.getJSON(settings.api_uri + '/api/2/policies/' + policyId)
+    $.getJSON(settings[theEnv].api_uri + '/api/2/policies/' + policyId)
         .done(function(policy, status, xhr) {
             showSuccess(null, status, xhr);
             thePolicy = policy;
@@ -334,7 +291,7 @@ function refillPolicySubjectsAndRessources() {
 var addOrDeletePolicyEntry = function(method) {
     var label = $('#thePolicyEntry').val();
     if (label && !(label === thePolicyEntry)) {
-        $.ajax(settings.api_uri + '/api/2/policies/' + thePolicy.policyId + '/entries/' + label, {
+        $.ajax(settings[theEnv].api_uri + '/api/2/policies/' + thePolicy.policyId + '/entries/' + label, {
             type: method,
             data: JSON.stringify({ subjects: {}, resources: {}}),
             contentType: 'application/json',
@@ -349,7 +306,7 @@ var addOrDeletePolicyEntry = function(method) {
 function modifyPolicyEntry(type, key, value) {
     if (thePolicyEntry && key) {
         if (value) {
-            $.ajax(settings.api_uri + '/api/2/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
+            $.ajax(settings[theEnv].api_uri + '/api/2/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
                 type: 'PUT',
                 contentType: 'application/json',
                 data: value,
@@ -357,7 +314,7 @@ function modifyPolicyEntry(type, key, value) {
                 error: showError
             })
         } else {
-            $.ajax(settings.api_uri + '/api/2/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
+            $.ajax(settings[theEnv].api_uri + '/api/2/policies/' + thePolicy.policyId + '/entries/' + thePolicyEntry + type + key, {
                 type: 'DELETE',
                 success: refreshPolicy,
                 error: showError
@@ -381,11 +338,8 @@ var loadConnections = function() {
 };
 
 function callConnectionsAPI(params, successCallback, connectionId) {
-    console.log(settings.api_uri + params.path.replace('{{solutionId}}', settings.solutionId).replace('{{connectionId}}', connectionId));
-    console.log(params.body ? params.body.replace('{{connectionId}}', connectionId).replace('{{connectionJson}}', JSON.stringify(theConnection)) : null);
-    
-    if (env() === 'things' && !settings.solutionId) { showError(null, 'Error', 'SolutionId is empty'); return; };
-    $.ajax(settings.api_uri + params.path.replace('{{solutionId}}', settings.solutionId).replace('{{connectionId}}', connectionId), {
+    if (env() === 'things' && !settings[theEnv].solutionId) { showError(null, 'Error', 'SolutionId is empty'); return; };
+    $.ajax(settings[theEnv].api_uri + params.path.replace('{{solutionId}}', settings[theEnv].solutionId).replace('{{connectionId}}', connectionId), {
         type: params.method,
         data: params.body ? params.body.replace('{{connectionId}}', connectionId).replace('{{connectionJson}}', JSON.stringify(theConnection)) : null,
         contentType: 'application/json',
@@ -401,15 +355,22 @@ function callConnectionsAPI(params, successCallback, connectionId) {
     });
 };
 
+function fillSettingsEnvTable() {
+    $('#settingsEnvTable').empty();
+    for (var key of Object.keys(settings)) {
+        addTableRow($('#settingsEnvTable')[0], key, null, key === theEnv);
+    };
+}
+
 function fillSettingsTable() {
     $('#settingsTable').empty();
-    for (var key of Object.keys(settings)) {
-        addTableRow($('#settingsTable')[0], key, settings[key] ? truncate(settings[key],50) : ' ');
+    for (var key of Object.keys(settings[theEnv])) {
+        addTableRow($('#settingsTable')[0], key, settings[theEnv][key] ? truncate(settings[theEnv][key],50) : ' ');
     };
 };
 
 function env() {
-    return settings.api_uri.startsWith('https://things') ? 'things' : 'ditto';
+    return settings[theEnv].api_uri.startsWith('https://things') ? 'things' : 'ditto';
 };
 
 var addTableRow = function(table, key, value, selected) {
@@ -425,8 +386,8 @@ var addTableRow = function(table, key, value, selected) {
 };
 
 function setAuthHeader() {
-    if (!settings.bearer && !settings.usernamePassword) { return; };
-    var auth = settings.useBasicAuth === 'true' ? 'Basic ' + settings.usernamePassword : 'Bearer ' + settings.bearer;
+    if (!settings[theEnv].bearer && !settings[theEnv].usernamePassword) { return; };
+    var auth = settings[theEnv].useBasicAuth === 'true' ? 'Basic ' + settings[theEnv].usernamePassword : 'Bearer ' + settings[theEnv].bearer;
     $.ajaxSetup({
         beforeSend: function (xhr) {
             xhr.setRequestHeader('Authorization', auth);
