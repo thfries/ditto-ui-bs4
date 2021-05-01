@@ -344,12 +344,16 @@ function callConnectionsAPI(params, successCallback, connectionId) {
         data: params.body ? params.body.replace('{{connectionId}}', connectionId).replace('{{connectionJson}}', JSON.stringify(theConnection)) : null,
         contentType: 'application/json',
         success: function(data, status, xhr) {
-            if (params.unwrapJsonPath) {
-                params.unwrapJsonPath.split('.').forEach(function(node) {
-                    data = data[node];
-                });
-            };
-            successCallback(data, status, xhr);
+            if(data['?'] && data['?']['?'].status >= 400) {
+                showError(null, data['?']['?'].status, JSON.stringify(data['?']['?'].payload));
+            } else {
+                if (params.unwrapJsonPath) {
+                    params.unwrapJsonPath.split('.').forEach(function(node) {
+                        data = data[node];
+                    });
+                };
+                successCallback(data, status, xhr);
+            }
         },
         error: showError
     });
