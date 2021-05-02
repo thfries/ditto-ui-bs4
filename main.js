@@ -131,7 +131,7 @@ $(document).ready(function () {
             $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
             $('#connectionIncomingScript').val(withJavaScript ? theConnection.mappingDefinitions.javascript.options.incomingScript : '');
             $('#connectionOutgoingScript').val(withJavaScript ? theConnection.mappingDefinitions.javascript.options.outgoingScript : '');
-        }, $(this).text());
+        }, $(this)[0].id);
     });
 
     $('#connectionIncomingScript').change(function() {
@@ -332,9 +332,19 @@ var loadConnections = function() {
         for (var c = 0; c < connections.length; c++) {
             var id = env() === 'things' ? connections[c].id : connections[c];
             connectionIdList.push(id);
-            $('#connectionsTable')[0].insertRow().insertCell(0).innerHTML = id;
+            var row = $('#connectionsTable')[0].insertRow();
+            row.id = id;
+            row.insertCell(0).innerHTML = id;
+            callConnectionsAPI(config[env()].retrieveStatus, updateConnectionRow(row, 'liveStatus', -1), id);
+            callConnectionsAPI(config[env()].retrieveConnection, updateConnectionRow(row, 'name', 0), id);
         };
     });
+};
+
+var updateConnectionRow = function (targetRow, fieldToExtract, index) {
+    return function(data) {
+        targetRow.insertCell(index).innerHTML = data[fieldToExtract];
+    };
 };
 
 function callConnectionsAPI(params, successCallback, connectionId) {

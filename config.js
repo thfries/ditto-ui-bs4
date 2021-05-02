@@ -29,6 +29,12 @@ const config = {
             method: 'DELETE',
             body: null,
             unwrapJsonPath: null
+        },
+        retrieveStatus: {
+            path: '/api/2/solutions/{{solutionId}}/connections/{{connectionId}}/status',
+            method: 'GET',
+            body: null,
+            unwrapJsonPath: null,
         }
     },
     ditto: {
@@ -61,6 +67,12 @@ const config = {
             method: 'POST',
             body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:deleteConnection", "connectionId": "{{connectionId}}" } }',
             unwrapJsonPath: null
+        },
+        retrieveStatus: {
+            path: '/devops/piggyback/connectivity',
+            method: 'POST',
+            body: '{ "targetActorSelection": "/system/sharding/connection", "headers": { "aggregate": false }, "piggybackCommand": { "type": "connectivity.commands:retrieveConnectionStatus", "connectionId": "{{connectionId}}" } }',
+            unwrapJsonPath: '?.?'
         }
     }    
 };
