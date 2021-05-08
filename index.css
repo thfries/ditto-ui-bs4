@@ -8,3 +8,9 @@ textarea {
     background-color: #3a8c9a !important;
     color: white !important;
 }
+
+.scrollable-table {
+    position: relative;
+    height: 200px;
+    overflow: auto;    
+}

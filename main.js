@@ -184,8 +184,10 @@ $(document).ready(function () {
 });
 
 var searchThings = function() {
+    var filter = $('#search-filter').val();
     $.getJSON(settings[theEnv].api_uri + "/api/2/search/things"
     + "?fields=thingId"
+    + (filter != '' ? "&filter=" + encodeURIComponent(filter) : '')
     + "&option=sort(%2BthingId)")
         .done(function(searchResult) {
             $('#thingsTable').empty();
@@ -415,7 +417,7 @@ function truncate(str, n) {
 
 function showError(xhr, status, message) {
     $('#errorHeader').text(xhr ? xhr.status : status);
-    $('#errorBody').text(xhr ? (xhr.responseJSON ? JSON.stringify(xhr.responseJSON, null, 2) : xhr.responseText) : message);
+    $('#errorBody').text(xhr ? (xhr.responseJSON ? JSON.stringify(xhr.responseJSON, null, 2) : xhr.statusText) : message);
     $('#errorToast').toast('show');
 }
 
