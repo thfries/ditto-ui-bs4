@@ -1,9 +1,14 @@
+body { 
+    padding-top: 60px; 
+}
+
 textarea {
     white-space: pre;
     overflow-wrap:    normal;
     overflow-x:  scroll;
     font-family: Monospace;
 }
+
 .bg-info {
     background-color: #3a8c9a !important;
     color: white !important;
@@ -14,3 +19,17 @@ textarea {
     height: 200px;
     overflow: auto;    
 }
+
+.ace_container{
+    position: relative;
+    height:350px;
+}
+
+.script_editor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+

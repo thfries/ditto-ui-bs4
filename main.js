@@ -24,6 +24,10 @@ var theConnection;
 
 $(document).ready(function () {
 
+    $(".nav-item").on("click", function(){
+        $(this).addClass("active").siblings().removeClass("active");
+     });
+
     $('.table').on('click', 'tr', function() {
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });
@@ -111,6 +115,11 @@ $(document).ready(function () {
     });
 
     // Connections ---------------------------------
+    var incomingEditor = ace.edit("connectionIncomingScript");
+    incomingEditor.session.setMode("ace/mode/javascript");
+    var outgoingEditor = ace.edit("connectionOutgoingScript");
+    outgoingEditor.session.setMode("ace/mode/javascript");
+
     $('#loadConnections').click(loadConnections);
     
     $('#createConnection').click(function() {
@@ -129,17 +138,17 @@ $(document).ready(function () {
             var withJavaScript = theConnection.mappingDefinitions.hasOwnProperty('javascript');
             $('#connectionId').val(theConnection.id);
             $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
-            $('#connectionIncomingScript').val(withJavaScript ? theConnection.mappingDefinitions.javascript.options.incomingScript : '');
-            $('#connectionOutgoingScript').val(withJavaScript ? theConnection.mappingDefinitions.javascript.options.outgoingScript : '');
+            incomingEditor.setValue(withJavaScript ? theConnection.mappingDefinitions.javascript.options.incomingScript : '', -1);
+            outgoingEditor.setValue(withJavaScript ? theConnection.mappingDefinitions.javascript.options.outgoingScript : '', -1);
         }, $(this)[0].id);
     });
 
-    $('#connectionIncomingScript').change(function() {
-        theConnection.mappingDefinitions.javascript.options.incomingScript = $('#connectionIncomingScript').val();
+    incomingEditor.on('blur', function() {
+        theConnection.mappingDefinitions.javascript.options.incomingScript = incomingEditor.getValue();
         $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
     });
-    $('#connectionOutgoingScript').change(function() {
-        theConnection.mappingDefinitions.javascript.options.outgoingScript = $('#connectionOutgoingScript').val();
+    outgoingEditor.on('blur', function() {
+        theConnection.mappingDefinitions.javascript.options.outgoingScript = outgoingEditor.getValue();
         $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
     });
     $('#connectionJson').change(function() {
@@ -251,11 +260,18 @@ function modifyThing(method, type, key, value) {
 var messageFeature = function() {
     var subject = $('#messageFeatureSubject').val();
     var feature = $('#featureId').val();
+    var timeout = $('#messageTimeout').val();
     var payload = $('#messageFeaturePayload').val();
     if (subject && feature && payload) {
-        $.post(settings[theEnv].api_uri + '/api/2/things/' + theThing.thingId + '/features/' + feature + '/inbox/messages/' + subject + '?timeout=' + $('#messageTimeout').val(),
+        $('#messageFeatureResponse').val('');
+        $.post(settings[theEnv].api_uri + '/api/2/things/' + theThing.thingId + '/features/' + feature + '/inbox/messages/' + subject + '?timeout=' + timeout,
             payload,
-            showSuccess
+            function(data, status, xhr) {
+                showSuccess(data, status, xhr);
+                if (timeout > 0) {
+                    $('#messageFeatureResponse').val(data);
+                };
+            }
         );
     } else {
         showError(null, 'Error', 'FeatureId or Subject or Payload is empty');
@@ -356,7 +372,7 @@ function callConnectionsAPI(params, successCallback, connectionId) {
         data: params.body ? params.body.replace('{{connectionId}}', connectionId).replace('{{connectionJson}}', JSON.stringify(theConnection)) : null,
         contentType: 'application/json',
         success: function(data, status, xhr) {
-            if(data['?'] && data['?']['?'].status >= 400) {
+            if(data && data['?'] && data['?']['?'].status >= 400) {
                 showError(null, data['?']['?'].status, JSON.stringify(data['?']['?'].payload));
             } else {
                 if (params.unwrapJsonPath) {
@@ -373,8 +389,10 @@ function callConnectionsAPI(params, successCallback, connectionId) {
 
 function fillSettingsEnvTable() {
     $('#settingsEnvTable').empty();
+    $("#environmentSelector").empty();
     for (var key of Object.keys(settings)) {
         addTableRow($('#settingsEnvTable')[0], key, null, key === theEnv);
+        $('#environmentSelector').append($('<option></option>').text(key));
     };
 }
 
