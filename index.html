@@ -34,7 +34,7 @@
         </div>
         <ul class="navbar-nav w-50">
             <a class="nav-link active">Environment:</a>
-            <select class="form-control" id="environmentSelector">
+            <select class="form-control form-control-sm" id="environmentSelector">
             </select>            
         </ul>
     </nav>
@@ -278,34 +278,9 @@
             <!-- Settings ------------------------------------------------------------------->
             <h5>Settings</h5>
             <hr/>
-            <div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <h6>Environments</h6>
-                        <table class="table table-striped table-hover table-sm">
-                            <tbody id="settingsEnvTable"></tbody>
-                        </table>
-                    </div>
-                    <div class="col-md-4">
-                        <h6>Settings</h6>
-                        <table class="table table-striped table-hover table-sm">
-                            <tbody id="settingsTable"></tbody>
-                        </table>
-                    </div>
-                    <div class="col-md-4">
-                        <h6>Create/Update/Delete Setting</h6>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Key</label>
-                            <input type="text" class="form-control form-control-sm" id="settingsKey"></input>
-                            <button type="button" id="saveSetting">
-                                <i class="fa fa-save"></i>
-                            </button>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Value</label>
-                            <input type="text" class="form-control form-control-sm" id="settingsValue"></input>
-                        </div>
-                    </div>
+            <div style="position: relative; height:600px">
+                <div>
+                    <div class="script_editor" id="settingsEditor"></div>
                 </div>
             </div>
         </div>

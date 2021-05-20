@@ -3,7 +3,7 @@ var settings = {
         api_uri: 'http://localhost:8080',
         solutionId: null,
         bearer:  null,
-        usernamePassword: null,
+        usernamePassword: 'ditto:ditto',
         useBasicAuth: 'true'
     },
     cloud_things_aws: {
@@ -15,7 +15,7 @@ var settings = {
     }
 };
 
-var theEnv = 'local_ditto';
+var theEnv;
 var theThing;
 var thePolicy;
 var thePolicyEntry;
@@ -164,30 +164,17 @@ $(document).ready(function () {
     });
 
     // Settings ----------------------------------
-    fillSettingsEnvTable();
-    fillSettingsTable();
+    var settingsEditor = ace.edit("settingsEditor");
+    settingsEditor.session.setMode("ace/mode/json");
 
-    $('#settingsEnvTable').on('click', 'tr', function(event) {
-        theEnv = $(this).children(":first").text();
-        fillSettingsTable();
+    settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
+    updateSettings(settingsEditor);
+    settingsEditor.on('blur', function() { return updateSettings(settingsEditor);});
+
+    $('#environmentSelector').on('change', function() {
+        theEnv = this.value;
         setAuthHeader();
     });
-
-    $('#settingsTable').on('click', 'tr', function(event) {
-        var key = $(this).children(":first").text();
-        $('#settingsKey').val(key);
-        $('#settingsValue').val(settings[theEnv][key]);
-    });
-
-    $('#saveSetting').click(function() {
-        var key = $('#settingsKey').val(); 
-        settings[theEnv][key] = $('#settingsValue').val();
-        if (key === 'usernamePassword') {
-            settings[theEnv][key] = window.btoa(settings[theEnv][key]);
-        };
-        fillSettingsTable();
-        setAuthHeader();
-    })
 
     setAuthHeader();
 });
@@ -387,13 +374,15 @@ function callConnectionsAPI(params, successCallback, connectionId) {
     });
 };
 
-function fillSettingsEnvTable() {
-    $('#settingsEnvTable').empty();
+function updateSettings(editor) {
+    settings = JSON.parse(editor.getValue());
     $("#environmentSelector").empty();
+    if (theEnv && !settings[theEnv]) { theEnv = null;};
     for (var key of Object.keys(settings)) {
-        addTableRow($('#settingsEnvTable')[0], key, null, key === theEnv);
+        if (!theEnv) { theEnv = key; }
         $('#environmentSelector').append($('<option></option>').text(key));
     };
+    $('#environmentSelector').val(theEnv);
 }
 
 function fillSettingsTable() {
