@@ -135,7 +135,7 @@ $(document).ready(function () {
     $('#connectionsTable').on('click', 'tr', function(event) {
         callConnectionsAPI(config[env()].retrieveConnection, function(connection) {
             theConnection = connection;
-            var withJavaScript = theConnection.mappingDefinitions.hasOwnProperty('javascript');
+            var withJavaScript = theConnection.mappingDefinitions && theConnection.mappingDefinitions.javascript;
             $('#connectionId').val(theConnection.id);
             $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
             incomingEditor.setValue(withJavaScript ? theConnection.mappingDefinitions.javascript.options.incomingScript : '', -1);
@@ -256,7 +256,7 @@ var messageFeature = function() {
             function(data, status, xhr) {
                 showSuccess(data, status, xhr);
                 if (timeout > 0) {
-                    $('#messageFeatureResponse').val(data);
+                    $('#messageFeatureResponse').val(JSON.stringify(data, null, 2));
                 };
             }
         );
@@ -410,7 +410,7 @@ var addTableRow = function(table, key, value, selected) {
 
 function setAuthHeader() {
     if (!settings[theEnv].bearer && !settings[theEnv].usernamePassword) { return; };
-    var auth = settings[theEnv].useBasicAuth === 'true' ? 'Basic ' + settings[theEnv].usernamePassword : 'Bearer ' + settings[theEnv].bearer;
+    var auth = settings[theEnv].useBasicAuth === 'true' ? 'Basic ' + window.btoa(settings[theEnv].usernamePassword) : 'Bearer ' + settings[theEnv].bearer;
     $.ajaxSetup({
         beforeSend: function (xhr) {
             xhr.setRequestHeader('Authorization', auth);
