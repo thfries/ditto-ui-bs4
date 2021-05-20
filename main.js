@@ -190,6 +190,7 @@ var searchThings = function() {
             for (t in searchResult.items) {
                 $('#thingsTable')[0].insertRow().insertCell(0).innerHTML = searchResult.items[t].thingId;
             }
+            $('#filter-examples').append($('<option>', {text: filter}));
         }).fail(showError);
 };
 
@@ -211,7 +212,7 @@ var refreshThing = function(thingId) {
             $('#attributesTable').empty();
             if (thing.attributes) {
                 for (var key of Object.keys(thing.attributes)) {
-                    addTableRow($('#attributesTable')[0], key, thing.attributes[key]);
+                    addTableRow($('#attributesTable')[0], key, JSON.stringify(thing.attributes[key]));
                 };
             }
             
