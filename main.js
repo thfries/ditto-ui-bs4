@@ -4,14 +4,14 @@ var settings = {
         solutionId: null,
         bearer:  null,
         usernamePassword: 'ditto:ditto',
-        useBasicAuth: 'true'
+        useBasicAuth: true
     },
     cloud_things_aws: {
         api_uri: 'https://things.eu-1.bosch-iot-suite.com',
         solutionId: null,
         bearer:  null,
         usernamePassword: null,
-        useBasicAuth: 'false'
+        useBasicAuth: false
     }
 };
 
@@ -210,19 +210,35 @@ var refreshThing = function(thingId) {
             
             // Update attributes table
             $('#attributesTable').empty();
+            var count = 0;
             if (thing.attributes) {
                 for (var key of Object.keys(thing.attributes)) {
                     addTableRow($('#attributesTable')[0], key, JSON.stringify(thing.attributes[key]));
+                    count++;
                 };
             }
+            $('#attributeCount').text(count > 0 ? count : "");
             
             // Update features table
             $('#featuresTable').empty();
+            count = 0;
             if (thing.features) {
                 for (var key of Object.keys(thing.features)) {
                     addTableRow($('#featuresTable')[0], key);
+                    count++;
                 };
             }
+            $('#featureCount').text(count > 0 ? count : "");
+
+            // Update edit thing area
+            var thingCopy = theThing;
+            delete thingCopy['_revision'];
+            delete thingCopy['_created'];
+            delete thingCopy['_modified'];
+            delete thingCopy['_policy'];
+            thingCopy.policyId = thePolicy.policyId;
+            $('#thingId').val(theThing.thingId);
+            $('#thingJson').val(JSON.stringify(thingCopy, null, 2));
             
             // Update policy
             $('#thePolicyId').val(thePolicy.policyId);
@@ -411,7 +427,7 @@ var addTableRow = function(table, key, value, selected) {
 
 function setAuthHeader() {
     if (!settings[theEnv].bearer && !settings[theEnv].usernamePassword) { return; };
-    var auth = settings[theEnv].useBasicAuth === 'true' ? 'Basic ' + window.btoa(settings[theEnv].usernamePassword) : 'Bearer ' + settings[theEnv].bearer;
+    var auth = settings[theEnv].useBasicAuth ? 'Basic ' + window.btoa(settings[theEnv].usernamePassword) : 'Bearer ' + settings[theEnv].bearer;
     $.ajaxSetup({
         beforeSend: function (xhr) {
             xhr.setRequestHeader('Authorization', auth);

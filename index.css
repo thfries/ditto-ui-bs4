@@ -14,6 +14,14 @@ textarea {
     color: white !important;
 }
 
+.badge-info {
+    background-color: #3a8c9a !important;
+}
+
+.nav-tabs > li > a {
+    color: #3a8c9a;
+}
+
 .scrollable-table {
     position: relative;
     height: 200px;
@@ -31,5 +39,14 @@ textarea {
     right: 0;
     bottom: 0;
     left: 0;
+}
+
+.input-group-prepend {
+    width : 15%;
+}
+  
+.input-group-prepend label {
+    width: 100%;
+    overflow: hidden;
 }
 

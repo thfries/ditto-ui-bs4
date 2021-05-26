@@ -34,8 +34,7 @@
         </div>
         <ul class="navbar-nav w-50">
             <a class="nav-link active">Environment:</a>
-            <select class="form-control form-control-sm" id="environmentSelector">
-            </select>            
+            <select class="form-control form-control-sm" id="environmentSelector"></select>            
         </ul>
     </nav>
     <div class="container-fluid py-3 overflowauto" id="page-content">
@@ -57,11 +56,11 @@
                                     <option>like(attributes/key1,"known-chars-at-start*")</option>
                                 </datalist>
                             </input>
-                            <button id="searchThings" type="button" data-toggle="tooltip" title="Search things">
-                                <i class="fa fa-search"></i>
+                            <button id="searchThings" class="btn btn-secondary btn-sm" data-toggle="tooltip" title="Search things">
+                                search
                             </button>
-                            <button id="createThing" type="button" data-toggle="tooltip" title="Create an empty thing with a default policy">
-                                <i class="fa fa-plus-square"></i>
+                            <button id="createThing" class="btn btn-secondary btn-sm" data-toggle="tooltip" title="Create an empty thing with a default policy">
+                                create
                             </button>
                         </div>
                         <div class="table-wrapper-scroll-y scrollable-table">
@@ -72,15 +71,38 @@
                     </div>
         
                     <div class="col-md-6" id="details">
-                        <h6>Thing Details</h6>
-                        <table class="table table-striped table-hover table-sm">
-                            <tbody id="thingDetails"></tbody>
-                        </table>
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                              <a class="nav-link active" data-toggle="tab" href="#tabThingDetails">Thing Details</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link" data-toggle="tab" href="#tabModifyThing">Modify Thing</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane container active" id="tabThingDetails">
+                                <table class="table table-striped table-hover table-sm">
+                                    <tbody id="thingDetails"></tbody>
+                                </table>
+                            </div>
+                            <div class="tab-pane container fade" id="tabModifyThing">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">thingId</label>
+                                    </div>
+                                    <input type="text" class="form-control" id="thingId">
+                                    <button class="btn btn-secondary btn-sm" id="putThing">save</button>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="thingJson"></textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <!-- Attributes ---------------------------------------------------------------->
-            <h5 data-toggle="collapse" href="#collapseAttributes" role="button" aria-expanded="true" aria-controls="collapseAttributes">Attributes</h5>
+            <h5 data-toggle="collapse" href="#collapseAttributes" role="button" aria-expanded="true" aria-controls="collapseAttributes">Attributes <span class="badge badge-info" id="attributeCount"></span></h5>
             <hr/>
             <div class="collapse show" id="collapseAttributes">
                 <div class="row">
@@ -90,23 +112,33 @@
                         </table>
                     </div>
                     <div class="col-md-8">
-                        <h6>Create/Update/Delete Attribute</h6>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">AttributePath</label>
-                            <input type="text" class="form-control form-control-sm" id="attributePath"></input>
-                            <button type="button" id="putAttribute">
-                                <i class="fa fa-save"></i>
-                            </button>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Value</label>
-                            <input type="text" class="form-control form-control-sm" id="attributeValue"></input>
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                              <a class="nav-link active">Create/Update/Delete Attribute</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane container active">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">AttributePath</label>
+                                    </div>
+                                    <input type="text" class="form-control" id="attributePath"></input>
+                                    <button class="btn btn-secondary btn-sm" id="putAttribute">save</button>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Value</label>
+                                    </div>
+                                    <input type="text" class="form-control form-control-sm" id="attributeValue"></input>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- Features ------------------------------------------------------------------>
-            <h5 data-toggle="collapse" href="#collapseFeatures" role="button" aria-expanded="true" aria-controls="collapseFeatures">Features</h5>
+            <h5 data-toggle="collapse" href="#collapseFeatures" role="button" aria-expanded="true" aria-controls="collapseFeatures">Features <span class="badge badge-info" id="featureCount"></span></h5>
             <hr/>
             <div class="collapse show" id="collapseFeatures">
                 <div class="row">
@@ -115,48 +147,70 @@
                             <tbody id="featuresTable"></tbody>
                         </table>
                     </div>
-                    <div class="col-md-4">
-                        <h6>Create/Update/Delete Feature</h6>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">FeatureId</label>
-                            <input type="text" class="form-control form-control-sm" id="featureId"></input>
-                            <button type="button" id="putFeature">
-                                <i class="fa fa-save"></i>
-                            </button>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Definition</label>
-                            <input type="text" class="form-control form-control-sm" id="featureDefinition"></input>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Properties</label>
-                            <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="featureProperties"></textarea>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Desired Properties</label>
-                            <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="featureDesiredProperties"></textarea>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <h6>Message to Feature</h6>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Subject</label>
-                            <input type="text" class="form-control form-control-sm" id="messageFeatureSubject"></input>
-                            <button type="button" id="messageFeature">
-                                <i class="fa fa-paper-plane"></i>
-                            </button>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Timeout</label>
-                            <input type="number" class="form-control form-control-sm" id="messageTimeout" value="0"></input>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Payload</label>
-                            <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="messageFeaturePayload"></textarea>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <label class="col-md-2">Response</label>
-                            <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="messageFeatureResponse"></textarea>
+                    <div class="col-md-8">
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                              <a class="nav-link active" data-toggle="tab" href="#tabCrudFeature">Create/Update/Delete Feature</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link" data-toggle="tab" href="#tabMessage2Feature">Message to Feature</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane container active" id="tabCrudFeature">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">FeatureId</label>
+                                    </div>
+                                    <input type="text" class="form-control" id="featureId">
+                                    <button class="btn btn-secondary btn-sm" id="putFeature">save</button>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Definition</label>
+                                    </div>
+                                    <input type="text" class="form-control" id="featureDefinition"></input>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Properties</label>
+                                    </div>
+                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="featureProperties"></textarea>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Desired Properties</label>
+                                    </div>
+                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="featureDesiredProperties"></textarea>
+                                </div>
+                            </div>
+                            <div class="tab-pane container fade" id="tabMessage2Feature">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Subject</label>
+                                    </div>
+                                    <input type="text" class="form-control" id="messageFeatureSubject"></input>
+                                    <button class="btn btn-secondary btn-sm" id="messageFeature">send</button>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Timeout</label>
+                                    </div>
+                                    <input type="number" class="form-control form-control-sm" id="messageTimeout" value="0"></input>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Payload</label>
+                                    </div>
+                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="messageFeaturePayload"></textarea>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Response</label>
+                                    </div>
+                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="messageFeatureResponse"></textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -170,19 +224,21 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="input-group input-group-sm" role="group">
-                            <input type="text" class="form-control form-control-sm" id="thePolicyId"></input>
-                            <button id="refreshPolicy" type="button" title="Load policy with the given ID">
-                                <i class="fa fa-refresh"></i>
+                            <input type="text" class="form-control form-control-sm" placeholder="policyId" id="thePolicyId"></input>
+                            <button id="refreshPolicy" class="btn btn-secondary btn-sm" title="Load policy with the given ID">
+                                load
                             </button>
                         </div>
                         <div class="input-group input-group-sm">
-                            <label class="col-md-4">Create/Delete Entry</label>
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">Entry</label>
+                            </div>
                             <input type="text" class="form-control form-control-sm" id="thePolicyEntry"></input>
-                            <button id="deletePolicyEntry" type="button" title="Delete the selected policy entry">
-                                <i class="fa fa-trash"></i>
+                            <button id="deletePolicyEntry" class="btn btn-secondary btn-sm" title="Delete the selected policy entry">
+                                delete
                             </button>
-                            <button id="createPolicyEntry" type="button" title="Create a policy entry with the given name">
-                                <i class="fa fa-plus-square"></i>
+                            <button id="createPolicyEntry" class="btn btn-secondary btn-sm" title="Create a policy entry with the given name">
+                                create
                             </button>
                         </div>
                         <table class="table table-striped table-hover table-sm">
@@ -202,26 +258,34 @@
                     <div class="col-md-4">
                         <h6>Create/Update/Delete Subject</h6>
                         <div class="input-group input-group-sm">
-                            <label class="col-md-2">Subject</label>
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">Subject</label>
+                            </div>
                             <input type="text" class="form-control form-control-sm" id="policySubjectId"></input>
-                            <button type="button" id="putPolicySubject">
-                                <i class="fa fa-save"></i>
+                            <button class="btn btn-secondary btn-sm" id="putPolicySubject">
+                                save
                             </button>
                         </div>
                         <div class="input-group input-group-sm">
-                            <label class="col-md-2">Value</label>
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">Value</label>
+                            </div>
                             <input type="text" class="form-control form-control-sm" id="policySubjectValue"></input>
                         </div>
                         <h6>Create/Update/Delete Ressource</h6>
                         <div class="input-group input-group-sm">
-                            <label class="col-md-2">Ressource</label>
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">Ressource</label>
+                            </div>
                             <input type="text" class="form-control form-control-sm" id="policyResourceId"></input>
-                            <button type="button" id="putPolicyResource">
-                                <i class="fa fa-save"></i>
+                            <button class="btn btn-secondary btn-sm" id="putPolicyResource">
+                                save
                             </button>
                         </div>
                         <div class="input-group input-group-sm">
-                            <label class="col-md-2">Value</label>
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">Value</label>
+                            </div>
                             <input type="text" class="form-control form-control-sm" id="policyResourceValue"></input>
                         </div>
                     </div>
