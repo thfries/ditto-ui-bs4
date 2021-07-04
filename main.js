@@ -79,7 +79,7 @@ $(document).ready(function () {
     });
 
     $('#thingsTable').on('click', 'tr', function(event) {
-        refreshThing($(this).text());
+        refreshThing($(this)[0].id);
     });
 
     // Attributes -------------------------------
@@ -216,7 +216,8 @@ let searchThings = function() {
     let filter = $('#search-filter').val();
     let fields = $('#search-fields').val();
     $.getJSON(settings[theEnv].api_uri + "/api/2/search/things"
-    + "?fields=" + fields
+    + "?fields=thingId"
+    + (fields != '' ? "," + fields : '')
     + (filter != '' ? "&filter=" + encodeURIComponent(filter) : '')
     + "&option=sort(%2BthingId)")
         .done(function(searchResult) {
@@ -224,6 +225,8 @@ let searchThings = function() {
             for (let t in searchResult.items) {
                 let item = searchResult.items[t];
                 let row = $('#thingsTable')[0].insertRow();
+                row.id = item.thingId;
+                row.insertCell(0).innerHTML = item.thingId;
                 for (let key of fields.split(',')) {
                     let elem = JSONPath({json: item, path: key.replace(/\//g, '.')});
                     row.insertCell(-1).innerHTML = elem;
