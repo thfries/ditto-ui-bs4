@@ -1,4 +1,4 @@
-const config = {
+export let config = {
     things: {
         listConnections: {
             path: '/api/2/solutions/{{solutionId}}/connections',
