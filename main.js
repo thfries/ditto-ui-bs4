@@ -22,6 +22,8 @@ var thePolicyEntry;
 var connectionIdList;
 var theConnection;
 
+var thingJsonEditor;
+
 $(document).ready(function () {
 
     $(".nav-item").on("click", function(){
@@ -33,6 +35,18 @@ $(document).ready(function () {
     });
 
     // Things -----------------------------------
+    thingJsonEditor = ace.edit("thingJsonEditor");
+    thingJsonEditor.session.setMode("ace/mode/json");
+
+    // make ace editor resize when user changes height
+    $(".resizable_pane").mouseup(function(event) {
+        var oldHeight = $(this).data('oldHeight');
+        if (oldHeight && oldHeight != $(this).height()) {
+            window.dispatchEvent(new Event('resize'))
+        }
+        $(this).data('oldHeight', $(this).height());
+    });
+
     $('#searchThings').click(searchThings);
     $('#createThing').click(function() {
         $.ajax(settings[theEnv].api_uri + '/api/2/things', {
@@ -45,6 +59,18 @@ $(document).ready(function () {
             },
             error: showError
         });
+    });
+
+    $('#putThing').click(function() {
+        var thingId = $('#thingId').val();
+        var thingJson = thingJsonEditor.getValue();
+        if (!thingId) { showError(null, 'Error', 'thingId must not be empty'); return; };
+        callDittoREST(
+            thingJson ? 'PUT' : 'DELETE',
+            '/things/' + thingId,
+            thingJson,
+            function() { thingJson ? refreshThing(thingId) : searchThings(); }
+        );
     });
 
     $('#thingsTable').on('click', 'tr', function(event) {
@@ -115,6 +141,8 @@ $(document).ready(function () {
     });
 
     // Connections ---------------------------------
+    var connectionEditor = ace.edit("connectionEditor");
+    connectionEditor.session.setMode("ace/mode/json");
     var incomingEditor = ace.edit("connectionIncomingScript");
     incomingEditor.session.setMode("ace/mode/javascript");
     var outgoingEditor = ace.edit("connectionOutgoingScript");
@@ -137,7 +165,7 @@ $(document).ready(function () {
             theConnection = connection;
             var withJavaScript = theConnection.mappingDefinitions && theConnection.mappingDefinitions.javascript;
             $('#connectionId').val(theConnection.id);
-            $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
+            connectionEditor.setValue(JSON.stringify(theConnection, null, 2));
             incomingEditor.setValue(withJavaScript ? theConnection.mappingDefinitions.javascript.options.incomingScript : '', -1);
             outgoingEditor.setValue(withJavaScript ? theConnection.mappingDefinitions.javascript.options.outgoingScript : '', -1);
         }, $(this)[0].id);
@@ -145,14 +173,14 @@ $(document).ready(function () {
 
     incomingEditor.on('blur', function() {
         theConnection.mappingDefinitions.javascript.options.incomingScript = incomingEditor.getValue();
-        $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
+        connectionEditor.setValue(JSON.stringify(theConnection, null, 2));
     });
     outgoingEditor.on('blur', function() {
         theConnection.mappingDefinitions.javascript.options.outgoingScript = outgoingEditor.getValue();
-        $('#connectionJson').val(JSON.stringify(theConnection, null, 4));
+        connectionEditor.setValue(JSON.stringify(theConnection, null, 2));
     });
-    $('#connectionJson').change(function() {
-        theConnection = JSON.parse($('#connectionJson').val());
+    connectionEditor.on('blur', function() {
+        theConnection = JSON.parse(connectionEditor.getValue());
     });
 
     $('#modifyConnection').click(function() {
@@ -238,7 +266,7 @@ var refreshThing = function(thingId) {
             delete thingCopy['_policy'];
             thingCopy.policyId = thePolicy.policyId;
             $('#thingId').val(theThing.thingId);
-            $('#thingJson').val(JSON.stringify(thingCopy, null, 2));
+            thingJsonEditor.setValue(JSON.stringify(thingCopy, null, 2));
             
             // Update policy
             $('#thePolicyId').val(thePolicy.policyId);
@@ -367,6 +395,16 @@ var updateConnectionRow = function (targetRow, fieldToExtract, index) {
     return function(data) {
         targetRow.insertCell(index).innerHTML = data[fieldToExtract];
     };
+};
+
+function callDittoREST(method, path, body, success) {
+    $.ajax(settings[theEnv].api_uri + '/api/2' + path, {
+        type: method,
+        contentType: 'application/json',
+        data: body,
+        success: success,
+        error: showError
+    });
 };
 
 function callConnectionsAPI(params, successCallback, connectionId) {

@@ -43,8 +43,8 @@
             <h5>Things</h5>
             <hr/>
             <div>
-                <div class="row">
-                    <div class="col-md-6">
+                <div class="row resizable_pane" style="height:300px;">
+                    <div class="col-md-6 resizable_flex_column">
                         <div class="input-group input-group-sm" role="group">
                             <input type="text" class="form-control form-control-sm" placeholder="filter" id="search-filter" list="filter-examples">
                                 <datalist id="filter-examples">
@@ -63,38 +63,40 @@
                                 create
                             </button>
                         </div>
-                        <div class="table-wrapper-scroll-y scrollable-table">
+                        <div class="table-wrap">
                             <table class="table table-striped table-hover table-sm">
                                 <tbody id="thingsTable"></tbody>
                             </table>
                         </div>
                     </div>
         
-                    <div class="col-md-6" id="details">
+                    <div class="col-md-6 resizable_flex_column" id="details">
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
                               <a class="nav-link active" data-toggle="tab" href="#tabThingDetails">Thing Details</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" data-toggle="tab" href="#tabModifyThing">Modify Thing</a>
+                              <a class="nav-link" data-toggle="tab" href="#tabModifyThing">Create/Update/Delete Thing</a>
                             </li>
                         </ul>
-                        <div class="tab-content">
+                        <div class="tab-content" style="flex-grow:1;">
                             <div class="tab-pane container active" id="tabThingDetails">
                                 <table class="table table-striped table-hover table-sm">
                                     <tbody id="thingDetails"></tbody>
                                 </table>
                             </div>
-                            <div class="tab-pane container fade" id="tabModifyThing">
-                                <div class="input-group input-group-sm">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">thingId</label>
+                            <div class="tab-pane container fade" style="height:100%;" id="tabModifyThing">
+                                <div class="resizable_flex_column">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">thingId</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="thingId">
+                                        <button class="btn btn-secondary btn-sm" id="putThing">save</button>
                                     </div>
-                                    <input type="text" class="form-control" id="thingId">
-                                    <button class="btn btn-secondary btn-sm" id="putThing">save</button>
-                                </div>
-                                <div class="input-group input-group-sm">
-                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="thingJson"></textarea>
+                                    <div class="ace_container" style="flex-grow: 1;">
+                                        <div class="script_editor" id="thingJsonEditor"></div>
+                                    </div>            
                                 </div>
                             </div>
                         </div>
@@ -297,14 +299,13 @@
             <h5>Connections</h5>
             <hr/>
             <div>
-                <div class="row">
+                <div class="row resizable_pane">
                     <div class="col-md-4">
                         <div class="input-group input-group-sm" role="group">
-                            <label>List Connections</input>
-                                <button id="loadConnections" type="button">
-                                    <i class="fa fa-refresh"></i>
-                                </button>
-                            </div>
+                            <button class="btn btn-secondary btn-sm" id="loadConnections">
+                                list connections
+                            </button>
+                        </div>
                         <table class="table table-striped table-hover table-sm">
                             <tbody id="connectionsTable"></tbody>
                         </table>
@@ -312,30 +313,40 @@
                     <div class="col-md-4">
                         <h6>Create/Update/Delete Connection</h6>
                         <div class="input-group input-group-sm">
-                            <label class="col-md-2">Id</label>
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">Id</label>
+                            </div>
                             <input type="text" class="form-control form-control-sm" disabled="true" id="connectionId"></input>
-                            <button type="button" id="modifyConnection" data-toggle="tooltip" title="Modify connection">
-                                <i class="fa fa-save"></i>
+                            <button class="btn btn-secondary btn-sm" id="modifyConnection" data-toggle="tooltip" title="Modify connection">
+                                save
                             </button>
-                            <button id="createConnection" type="button" data-toggle="tooltip" title="Create a new connection (id is mandatory for Ditto and ignored for Things)">
-                                <i class="fa fa-plus-square"></i>
+                            <button class="btn btn-secondary btn-sm" id="createConnection" data-toggle="tooltip" title="Create a new connection (id is mandatory for Ditto and ignored for Things)">
+                                create
                             </button>
-                    </div>
-                        <div class="input-group input-group-sm">
-                            <textarea class="form-control form-control-sm" rows="30" style="height:100%;" spellcheck="false" id="connectionJson"></textarea>
+                        </div>
+                        <!--
+                                <div class="input-group input-group-sm">
+
+                                <textarea class="form-control form-control-sm" rows="30" style="height:100%;" spellcheck="false" id="connectionJson"></textarea>
+                            </div>
+                            -->
+                        <div class="ace_container" style="height:600px;">
+                            <div class="script_editor" id="connectionEditor"></div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4" style="display:flex; flex-direction:column;">
                         <h6>Incoming JavaScript Mapping</h6>
-                        <div class="ace_container">
+                        <div class="ace_container" style="flex-grow:1;">
                             <div class="script_editor" id="connectionIncomingScript"></div>
                         </div>
                         <h6>Outgoing JavaScript Mapping</h6>
-                        <div class="ace_container">
+                        <div class="ace_container" style="flex-grow:1;">
                             <div class="script_editor" id="connectionOutgoingScript"></div>
                         </div>
                     </div>
                 </div>
+                <!-- <div class="row" style="height:300px;">
+                </div> -->
             </div>
         </div>
         <div class="collapse" id="collapseSettings" data-parent="#page-content">
