@@ -22,6 +22,8 @@ let settings = {
 
 let theEnv;
 let theThing;
+let theAttribute;
+let theFeature;
 let thePolicy;
 let thePolicyEntry;
 let connectionIdList;
@@ -84,8 +86,8 @@ $(document).ready(function () {
 
     // Attributes -------------------------------
     $('#attributesTable').on('click', 'tr', function(event) {
-        $('#attributePath').val($(this).children(":first").text());
-        $('#attributeValue').val($(this).children(":nth-child(2)").text());
+        theAttribute = $(this).children(":first").text();
+        refreshAttribute(theThing, theAttribute);
     });
 
     $('#putAttribute').click(function() {
@@ -95,11 +97,8 @@ $(document).ready(function () {
 
     // Features ---------------------------------
     $('#featuresTable').on('click', 'tr', function(event) {
-        let featureId = $(this).text();
-        $('#featureId').val(featureId);
-        $('#featureDefinition').val(theThing.features[featureId].definition);
-        $('#featureProperties').val(JSON.stringify(theThing.features[featureId].properties, null, 4));
-        $('#featureDesireProperties').val(JSON.stringify(theThing.features[featureId].desiredProperties, null, 4));
+        theFeature = $(this).text();
+        refreshFeature(theThing, theFeature);
     });
 
     $('#putFeature').click(function() {
@@ -253,24 +252,42 @@ let refreshThing = function(thingId) {
             // Update attributes table
             $('#attributesTable').empty();
             let count = 0;
+            let thingHasAttribute = false;
             if (thing.attributes) {
                 for (let key of Object.keys(thing.attributes)) {
-                    addTableRow($('#attributesTable')[0], key, JSON.stringify(thing.attributes[key]));
+                    if (key === theAttribute) {
+                        refreshAttribute(thing, key);
+                        thingHasAttribute = true;
+                    };
+                    addTableRow($('#attributesTable')[0], key, JSON.stringify(thing.attributes[key]), key === theAttribute);
                     count++;
                 };
             }
             $('#attributeCount').text(count > 0 ? count : "");
+            if (!thingHasAttribute) {
+                theAttribute = false;
+                refreshAttribute();
+            }
             
             // Update features table
             $('#featuresTable').empty();
             count = 0;
+            let thingHasFeature = false
             if (thing.features) {
                 for (let key of Object.keys(thing.features)) {
-                    addTableRow($('#featuresTable')[0], key);
+                    if (key === theFeature) {
+                        refreshFeature(thing, key);
+                        thingHasFeature = true;
+                    };
+                    addTableRow($('#featuresTable')[0], key, null, key === theFeature);
                     count++;
                 };
             }
             $('#featureCount').text(count > 0 ? count : "");
+            if (!thingHasFeature) {
+                theFeature = false;
+                refreshFeature();
+            }
 
             // Update edit thing area
             let thingCopy = theThing;
@@ -287,6 +304,18 @@ let refreshThing = function(thingId) {
             refreshPolicy();
         }).fail(showError);
 };
+
+function refreshAttribute(thing, attribute) {
+    $('#attributePath').val(thing ? attribute : '');
+    $('#attributeValue').val(thing ? JSON.stringify(thing.attributes[attribute]) : '');
+}
+
+function refreshFeature(thing, feature) {
+    $('#featureId').val(thing ? feature : '');
+    $('#featureDefinition').val(thing ? thing.features[feature].definition : '');
+    $('#featureProperties').val(thing ? JSON.stringify(thing.features[feature].properties, null, 4) : '');
+    $('#featureDesireProperties').val(thing ? JSON.stringify(thing.features[feature].desiredProperties, null, 4) : '');
+}
 
 function modifyThing(method, type, key, value) {
     if (!theThing) { showError(null, 'Error', 'No Thing selected'); return; }
