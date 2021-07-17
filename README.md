@@ -12,10 +12,12 @@ This is a simple debug UI for [Eclipse Ditto](https://www.eclipse.org/ditto/). I
 
 ## Open Issues
 Yes, e.g.:
-- Search parameters for searching things
-- Paging for big lists
+- Create thing with given ID
+- Delete thing
+- Modify policy of a thing
+- Paging for things list
 - Treatment for Namespaces
-- Create Thing
+- Get/Refresh bearer token
 - Message to Thing
 - ...?
 
@@ -27,6 +29,7 @@ Yes, e.g.:
 
 ## Installation
 The UI consists only of a static web content. You can:
+- Option 0: Checkout and open index.html in your browser
 - Option 1: use it directly from the github repository e.g. by
 ```
 https://cdn.statically.io/gh/thfries/ditto-ui-bs4/main/index.html
@@ -41,6 +44,8 @@ docker run -it --rm -d -p 8085:80 --name ditto-ui -v "~/ditto-ui-bs4:/usr/share/
 ## Usage
 ### Initial Setup
 Configure your settings:
+Go to Settings and edit the json. There are two environments prepared as a sample: one for Ditto and one for Bosch IoT Things
+Copy and paste your settings for all environments between sessions.
 - For Bosch IoT Things set "useBasicAuth" to false and set a Bearer token for your OAuth2 client and (for managing connections) your solution Id
 - For Ditto set "useBasicAuth" to true and set a usernamePassword separated by a colon ("username:password")
 
