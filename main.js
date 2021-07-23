@@ -184,11 +184,15 @@ $(document).ready(function () {
         connectionEditor.setValue(JSON.stringify(theConnection, null, 2));
     });
     connectionEditor.on('blur', function() {
-        theConnection = JSON.parse(connectionEditor.getValue());
+        if(connectionEditor.getValue() === '') {
+            theConnection = null;
+        } else {
+            theConnection = JSON.parse(connectionEditor.getValue());
+        }
     });
 
     $('#modifyConnection').click(function() {
-        if ($('#connectionJson').val()) {
+        if (theConnection) {
             callConnectionsAPI(config[env()].modifyConnection, showSuccess, $('#connectionId').val()); 
         } else {
             callConnectionsAPI(config[env()].deleteConnection, loadConnections, $('#connectionId').val()); 
