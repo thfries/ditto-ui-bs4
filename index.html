@@ -29,13 +29,13 @@
                     <a class="nav-link" data-target="#collapseConnections:not(.show)" data-toggle="collapse" href="#">Connections</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" data-target="#collapseSettings:not(.show)" data-toggle="collapse" href="#">Settings</a>
+                    <a class="nav-link" data-target="#collapseSettings:not(.show)" data-toggle="collapse" href="#">Environments</a>
                 </li>
             </ul>
         </div>
         <ul class="navbar-nav w-50">
             <a class="nav-link active">Environment:</a>
-            <select class="form-control form-control-sm" id="environmentSelector"></select>            
+            <select class="form-control form-control-sm" id="environmentSelector" style="margin-top: auto; margin-bottom: auto;"></select>            
         </ul>
     </nav>
     <div class="container-fluid py-3 overflowauto" id="page-content">
@@ -80,7 +80,7 @@
                               <a class="nav-link active" data-toggle="tab" href="#tabThingDetails">Thing Details</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" data-toggle="tab" href="#tabModifyThing">Create/Update/Delete Thing</a>
+                              <a class="nav-link" data-toggle="tab" href="#tabModifyThing">Modify Thing</a>
                             </li>
                         </ul>
                         <div class="tab-content" style="flex-grow:1;">
@@ -96,7 +96,8 @@
                                             <label class="input-group-text">thingId</label>
                                         </div>
                                         <input type="text" class="form-control" id="thingId">
-                                        <button class="btn btn-secondary btn-sm" id="putThing">save</button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="putThing">create/update</button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="deleteThing">delete</button>
                                     </div>
                                     <div class="ace_container" style="flex-grow: 1;">
                                         <div class="script_editor" id="thingJsonEditor"></div>
@@ -120,7 +121,7 @@
                     <div class="col-md-8">
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
-                              <a class="nav-link active">Create/Update/Delete Attribute</a>
+                              <a class="nav-link active">Attribute Details</a>
                             </li>
                         </ul>
                         <div class="tab-content">
@@ -130,7 +131,8 @@
                                         <label class="input-group-text">AttributePath</label>
                                     </div>
                                     <input type="text" class="form-control" id="attributePath"></input>
-                                    <button class="btn btn-secondary btn-sm" id="putAttribute">save</button>
+                                    <button class="btn btn-secondary btn-sm" id="putAttribute">create/update</button>
+                                    <button class="btn btn-secondary btn-sm" id="deleteAttribute">delete</button>
                                 </div>
                                 <div class="input-group input-group-sm">
                                     <div class="input-group-prepend">
@@ -156,7 +158,7 @@
                     <div class="col-md-8">
                         <ul class="nav nav-tabs">
                             <li class="nav-item">
-                              <a class="nav-link active" data-toggle="tab" href="#tabCrudFeature">Create/Update/Delete Feature</a>
+                              <a class="nav-link active" data-toggle="tab" href="#tabCrudFeature">Feature Details</a>
                             </li>
                             <li class="nav-item">
                               <a class="nav-link" data-toggle="tab" href="#tabMessage2Feature">Message to Feature</a>
@@ -169,7 +171,8 @@
                                         <label class="input-group-text">FeatureId</label>
                                     </div>
                                     <input type="text" class="form-control" id="featureId">
-                                    <button class="btn btn-secondary btn-sm" id="putFeature">save</button>
+                                    <button class="btn btn-secondary btn-sm" id="putFeature">create/update</button>
+                                    <button class="btn btn-secondary btn-sm" id="deleteFeature">delete</button>
                                 </div>
                                 <div class="input-group input-group-sm">
                                     <div class="input-group-prepend">
@@ -218,6 +221,18 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Messages ------------------------------------------------------------------>
+            <h5 data-toggle="collapse" href="#collapseMessages" role="button" aria-expanded="true" aria-controls="collapseMessages">Messages <span class="badge badge-info" id="messagesCount"></span></h5>
+            <hr/>
+            <div class="collapse show" id="collapseMessages">
+                <div class="row">
+                    <div class="col">
+                        <table class="table table-striped table-hover table-sm">
+                            <tbody id="messagesTable"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -317,18 +332,25 @@
                         </div>
                     </div>
                     <div class="col-md-4 resizable_flex_column">
-                        <h6>Create/Update/Delete Connection</h6>
+                        <div class="input-group input-group-sm">
+                            <h6>Connection</h6>
+                            <div style="flex-grow: 1;"></div>
+                            <button class="btn btn-secondary btn-sm" id="createConnection" data-toggle="tooltip" title="Create a new connection (id is mandatory for Ditto and ignored for Things)">
+                                create
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="modifyConnection" data-toggle="tooltip" title="Modify connection">
+                                update
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="deleteConnection" data-toggle="tooltip" title="Delete connection">
+                                delete
+                            </button>
+
+                        </div>
                         <div class="input-group input-group-sm">
                             <div class="input-group-prepend">
                                 <label class="input-group-text">Id</label>
                             </div>
                             <input type="text" class="form-control form-control-sm" disabled="true" id="connectionId"></input>
-                            <button class="btn btn-secondary btn-sm" id="modifyConnection" data-toggle="tooltip" title="Modify connection">
-                                save
-                            </button>
-                            <button class="btn btn-secondary btn-sm" id="createConnection" data-toggle="tooltip" title="Create a new connection (id is mandatory for Ditto and ignored for Things)">
-                                create
-                            </button>
                         </div>
                         <div class="ace_container" style="flex-grow: 1;">
                             <div class="script_editor" id="connectionEditor"></div>

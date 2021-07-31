@@ -60,3 +60,11 @@ textarea {
     overflow: hidden;
 }
 
+h5 {
+    margin-top: 8;
+}
+
+hr {
+    margin-top: 0;
+}
+

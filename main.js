@@ -31,6 +31,8 @@ let theConnection;
 
 let thingJsonEditor;
 
+let ws;
+
 $(document).ready(function () {
 
     $(".nav-item").on("click", function(){
@@ -68,17 +70,8 @@ $(document).ready(function () {
         });
     });
 
-    $('#putThing').click(function() {
-        let thingId = $('#thingId').val();
-        let thingJson = thingJsonEditor.getValue();
-        if (!thingId) { showError(null, 'Error', 'thingId must not be empty'); return; };
-        callDittoREST(
-            thingJson ? 'PUT' : 'DELETE',
-            '/things/' + thingId,
-            thingJson,
-            function() { thingJson ? refreshThing(thingId) : searchThings(); }
-        );
-    });
+    $('#putThing').click(clickModifyThing('PUT'));
+    $('#deleteThing').click(clickModifyThing('DELETE'));
 
     $('#thingsTable').on('click', 'tr', function(event) {
         refreshThing($(this)[0].id);
@@ -90,10 +83,8 @@ $(document).ready(function () {
         refreshAttribute(theThing, theAttribute);
     });
 
-    $('#putAttribute').click(function() {
-        let value = $('#attributeValue').val();
-        modifyThing(value ? 'PUT' : 'DELETE', '/attributes/', $('#attributePath').val(), value);
-    });
+    $('#putAttribute').click(clickAttribute('PUT'));
+    $('#deleteAttribute').click(clickAttribute('DELETE'));
 
     // Features ---------------------------------
     $('#featuresTable').on('click', 'tr', function(event) {
@@ -101,14 +92,19 @@ $(document).ready(function () {
         refreshFeature(theThing, theFeature);
     });
 
-    $('#putFeature').click(function() {
-        let featureObject = {};
-        if ($('#featureDefinition').val()) { featureObject.definition = $('#featureDefinition').val().split(',');};
-        if ($('#featureProperties').val()) { featureObject.properties = JSON.parse($('#featureProperties').val());};
-        if ($('#featureDesiredProperties').val()) { featureObject.desiredProperties = JSON.parse($('#featureDesiredProperties').val());};
-        let featureValue = JSON.stringify(featureObject) === '{}' ? null : JSON.stringify(featureObject);
-        modifyThing(featureValue ? 'PUT' : 'DELETE', '/features/', $('#featureId').val(), featureValue === '{}' ? null : featureValue);
-    });
+    $('#putFeature').click(clickFeature('PUT'));
+    $('#deleteFeature').click(clickFeature('DELETE'));
+
+
+    // $('#featureProperties').select(function() {
+    //     let elem = $(this).val().substring($(this)[0].selectionStart,$(this)[0].selectionEnd);
+    //     console.log(elem);
+    //     console.log($(this)[0].selectionStart + " " + $(this)[0].selectionEnd);
+    //     let json = JSON.parse($(this).val());
+    //     let res = JSONPath({json: json, path: '$..' + elem, resultType: 'path'});
+    //     console.log(res);
+
+    // })
 
     $('#messageFeature').click(messageFeature);
     
@@ -188,11 +184,11 @@ $(document).ready(function () {
     });
 
     $('#modifyConnection').click(function() {
-        if ($('#connectionJson').val()) {
-            callConnectionsAPI(config[env()].modifyConnection, showSuccess, $('#connectionId').val()); 
-        } else {
-            callConnectionsAPI(config[env()].deleteConnection, loadConnections, $('#connectionId').val()); 
-        };
+        callConnectionsAPI(config[env()].modifyConnection, showSuccess, $('#connectionId').val()); 
+    });
+    
+    $('#deleteConnection').click(function() {
+        callConnectionsAPI(config[env()].deleteConnection, loadConnections, $('#connectionId').val()); 
     });
 
     // Settings ----------------------------------
@@ -206,10 +202,75 @@ $(document).ready(function () {
     $('#environmentSelector').on('change', function() {
         theEnv = this.value;
         setAuthHeader();
+        openWebSocket();
     });
 
     setAuthHeader();
+    openWebSocket();
+
 });
+
+function openWebSocket() {
+    ws = new WebSocket('ws://' + settings[theEnv].usernamePassword + '@' + settings[theEnv].api_uri + '/ws/1') //?access_token=' + settings[theEnv].bearer);
+    
+    ws.onopen = function() {
+        ws.onmessage = onMessage;
+        ws.onerror = onMessage;
+        ws.onclose = onClose;
+        ws.send('START-SEND-MESSAGES');
+    }
+};
+
+let onClose = function() {
+    console.log('WebSocket was closed');
+}
+
+let onMessage = function(message) {
+    console.log(message);
+};
+
+let clickModifyThing = function(method) {
+    return function() {
+        if (!$('#thingId').val()) { showError(null, 'Error', 'thingId is empty'); return; }
+        callDittoREST(
+            method,
+            '/things/' + $('#thingId').val(),
+            method === 'PUT' ? thingJsonEditor.getValue() : null,
+            function() { method === 'PUT' ? refreshThing(thingId) : searchThings(); }
+        );
+    };
+};
+
+let clickAttribute = function(method) {
+    return function() {
+        if (!theThing) { showError(null, 'Error', 'No Thing selected'); return; };
+        if (!$('#attributePath').val()) { showError(null, 'Error', 'AttributePath is empty'); return; };
+        callDittoREST(
+            method,
+            '/things/' + theThing.thingId + '/attributes/' + $('#attributePath').val(),
+            method === 'PUT' ? '"' + $('#attributeValue').val() + '"' : null,
+            function() { refreshThing(theThing.thingId); }
+        );
+    };
+};
+
+let clickFeature = function(method) {
+    return function() {
+        if (!theThing) { showError(null, 'Error', 'No Thing selected'); return; };
+        if (!$('#featureId').val()) { showError(null, 'Error', 'FeatureId is empty'); return; }; 
+        let featureObject = {};
+        if ($('#featureDefinition').val()) { featureObject.definition = $('#featureDefinition').val().split(',');};
+        if ($('#featureProperties').val()) { featureObject.properties = JSON.parse($('#featureProperties').val());};
+        if ($('#featureDesiredProperties').val()) { featureObject.desiredProperties = JSON.parse($('#featureDesiredProperties').val());};
+        let featureValue = JSON.stringify(featureObject) === '{}' ? null : JSON.stringify(featureObject);
+        callDittoREST(
+            method,
+            '/things/' + theThing.thingId + '/features/' + $('#featureId').val(),
+            method === 'PUT' ? featureValue : null,
+            function() { refreshThing(theThing.thingId); }
+        );
+    };
+}
 
 let searchThings = function() {
     let filter = $('#search-filter').val();
@@ -317,20 +378,16 @@ function refreshFeature(thing, feature) {
     $('#featureDesireProperties').val(thing ? JSON.stringify(thing.features[feature].desiredProperties, null, 4) : '');
 }
 
-function modifyThing(method, type, key, value) {
-    if (!theThing) { showError(null, 'Error', 'No Thing selected'); return; }
-    if (!key) { showError(null, 'Error', 'FeatureId is empty'); return; } 
-    if (type === '/attributes/') {
-        value = '"' + value + '"';
-    };
-    $.ajax(settings[theEnv].api_uri + '/api/2/things/' + theThing.thingId + type + key, {
-        type: method,
-        contentType: 'application/json',
-        data: value,
-        success: function() { refreshThing(theThing.thingId); },
-        error: showError
-    });
-};
+// function modifyThing(method, type, key, value) {
+//     if (!key) { showError(null, 'Error', 'FeatureId is empty'); return; } 
+//     $.ajax(settings[theEnv].api_uri + '/api/2/things/' + theThing.thingId + type + key, {
+//         type: method,
+//         contentType: 'application/json',
+//         data: value,
+//         success: ,
+//         error: showError
+//     });
+// };
 
 let messageFeature = function() {
     let subject = $('#messageFeatureSubject').val();
@@ -483,13 +540,6 @@ function updateSettings(editor) {
     $('#environmentSelector').val(theEnv);
 }
 
-function fillSettingsTable() {
-    $('#settingsTable').empty();
-    for (let key of Object.keys(settings[theEnv])) {
-        addTableRow($('#settingsTable')[0], key, settings[theEnv][key] ? truncate(settings[theEnv][key],50) : ' ');
-    };
-};
-
 function env() {
     return settings[theEnv].api_uri.startsWith('https://things') ? 'things' : 'ditto';
 };
@@ -514,10 +564,6 @@ function setAuthHeader() {
             xhr.setRequestHeader('Authorization', auth);
         }
     });
-};
-
-function truncate(str, n) {
-    return (str && str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
 };
 
 function showError(xhr, status, message) {
