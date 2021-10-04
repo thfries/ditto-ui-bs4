@@ -9,14 +9,19 @@ let settings = {
         solutionId: null,
         bearer:  null,
         usernamePassword: 'ditto:ditto',
-        useBasicAuth: true
+        useBasicAuth: true,
+        fieldList: []
     },
     cloud_things_aws: {
         api_uri: 'https://things.eu-1.bosch-iot-suite.com',
         solutionId: null,
         bearer:  null,
         usernamePassword: null,
-        useBasicAuth: false
+        useBasicAuth: false,
+        fieldList: [
+            {active: true, path: '/features/TypePlate'},
+            {active: false, path: '/features/ConnectionStatus'}
+        ]
     }
 };
 
@@ -28,8 +33,11 @@ let thePolicy;
 let thePolicyEntry;
 let connectionIdList;
 let theConnection;
+let theFieldIndex = -1;
 
 let thingJsonEditor;
+let featurePropertiesEditor;
+let featureDesiredPropertiesEditor;
 
 let ws;
 
@@ -40,12 +48,8 @@ $(document).ready(function () {
      });
 
     $('.table').on('click', 'tr', function() {
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
+        $(this).toggleClass('bg-info').siblings().removeClass('bg-info');
     });
-
-    // Things -----------------------------------
-    thingJsonEditor = ace.edit("thingJsonEditor");
-    thingJsonEditor.session.setMode("ace/mode/json");
 
     // make ace editor resize when user changes height
     $(".resizable_pane").mouseup(function(event) {
@@ -55,6 +59,10 @@ $(document).ready(function () {
         }
         $(this).data('oldHeight', $(this).height());
     });
+
+    // Things -----------------------------------
+    thingJsonEditor = ace.edit("thingJsonEditor");
+    thingJsonEditor.session.setMode("ace/mode/json");
 
     $('#searchThings').click(searchThings);
     $('#createThing').click(function() {
@@ -77,6 +85,73 @@ $(document).ready(function () {
         refreshThing($(this)[0].id);
     });
 
+    $('#fieldList').on('click', 'tr', function() {
+        console.log(theFieldIndex);
+        if (theFieldIndex == $(this).index()) {
+            theFieldIndex = -1;
+        } else {
+            theFieldIndex = $(this).index();
+            $('#fieldActive')[0].active = settings[theEnv].fieldList[theFieldIndex].active;
+            $('#fieldPath').val(settings[theEnv].fieldList[theFieldIndex].path);
+        }
+        // settings[theEnv].fieldList[$(this).index()].active = !settings[theEnv].fieldList[$(this).index()].active;
+        console.log('theFieldIndex: ' + theFieldIndex);
+    });
+    
+    $('#fieldActive').click(function() {
+        if (theFieldIndex < 0) { return; };
+        settings[theEnv].fieldList[theFieldIndex].active = !settings[theEnv].fieldList[theFieldIndex].active;
+        settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
+        updateEnvironment();
+        console.log('Fields: #' + settings[theEnv].fieldList.filter( f => f.active).map( f => f.path) + '#');
+        console.log('theFieldIndex: ' + theFieldIndex);
+    });
+
+    $('#fieldUpdate').click(function() {
+        if ($('#fieldPath').val() === "") { return;};
+        if (theFieldIndex < 0) {
+            settings[theEnv].fieldList.push({
+                active: true,
+                path: $('#fieldPath').val()
+            });
+            theFieldIndex = settings[theEnv].fieldList.length - 1;
+        } else {
+            settings[theEnv].fieldList[theFieldIndex].path = $('#fieldPath').val();
+        }
+        settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
+        updateEnvironment();
+        console.log('theFieldIndex: ' + theFieldIndex);
+    });
+
+    $('#fieldDelete').click(function() {
+        if (theFieldIndex < 0) { return;}
+        settings[theEnv].fieldList.splice(theFieldIndex, 1);
+        settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
+        updateEnvironment();
+        theFieldIndex = -1;
+        console.log('theFieldIndex: ' + theFieldIndex);
+    })
+
+    $('#fieldUp').click(function() {
+        if (theFieldIndex <= 0) { return;}
+        let movedItem = settings[theEnv].fieldList[theFieldIndex];
+        settings[theEnv].fieldList.splice(theFieldIndex, 1);
+        theFieldIndex--;
+        settings[theEnv].fieldList.splice(theFieldIndex, 0, movedItem);        
+        updateEnvironment();
+        console.log('theFieldIndex: ' + theFieldIndex);
+    });
+
+    $('#fieldDown').click(function() {
+        if (theFieldIndex < 0 || theFieldIndex === settings[theEnv].fieldList.length - 1) { return;}
+        let movedItem = settings[theEnv].fieldList[theFieldIndex];
+        settings[theEnv].fieldList.splice(theFieldIndex, 1);
+        theFieldIndex++;
+        settings[theEnv].fieldList.splice(theFieldIndex, 0, movedItem);        
+        updateEnvironment();
+        console.log('theFieldIndex: ' + theFieldIndex);
+    });
+
     // Attributes -------------------------------
     $('#attributesTable').on('click', 'tr', function(event) {
         theAttribute = $(this).children(":first").text();
@@ -95,17 +170,21 @@ $(document).ready(function () {
     $('#putFeature').click(clickFeature('PUT'));
     $('#deleteFeature').click(clickFeature('DELETE'));
 
+    featurePropertiesEditor = ace.edit("featurePropertiesEditor");
+    featurePropertiesEditor.session.setMode("ace/mode/json");
+    featureDesiredPropertiesEditor = ace.edit("featureDesiredPropertiesEditor");
+    featureDesiredPropertiesEditor.session.setMode("ace/mode/json");
 
-    // $('#featureProperties').select(function() {
-    //     let elem = $(this).val().substring($(this)[0].selectionStart,$(this)[0].selectionEnd);
-    //     console.log(elem);
-    //     console.log($(this)[0].selectionStart + " " + $(this)[0].selectionEnd);
-    //     let json = JSON.parse($(this).val());
-    //     let res = JSONPath({json: json, path: '$..' + elem, resultType: 'path'});
-    //     console.log(res);
-
-    // })
-
+    featurePropertiesEditor.session.getSelection().on('changeCursor', function() {
+        let position = featurePropertiesEditor.getCursorPosition();
+        let token = featurePropertiesEditor.session.getTokenAt(position.row, position.column);
+        if (!token) {return;};
+        let path = '$..' + token.value.replace(/['"]+/g, '').trim();
+        let res = JSONPath({json: JSON.parse(featurePropertiesEditor.getValue()), path: path, resultType: 'pointer'});
+        $('#featurePath').val(res);
+        theFieldIndex = -1;
+    });
+    
     $('#messageFeature').click(messageFeature);
     
     // Policies ---------------------------------
@@ -201,13 +280,8 @@ $(document).ready(function () {
 
     $('#environmentSelector').on('change', function() {
         theEnv = this.value;
-        setAuthHeader();
-        openWebSocket();
+        updateEnvironment();
     });
-
-    setAuthHeader();
-    openWebSocket();
-
 });
 
 function openWebSocket() {
@@ -259,9 +333,17 @@ let clickFeature = function(method) {
         if (!theThing) { showError(null, 'Error', 'No Thing selected'); return; };
         if (!$('#featureId').val()) { showError(null, 'Error', 'FeatureId is empty'); return; }; 
         let featureObject = {};
-        if ($('#featureDefinition').val()) { featureObject.definition = $('#featureDefinition').val().split(',');};
-        if ($('#featureProperties').val()) { featureObject.properties = JSON.parse($('#featureProperties').val());};
-        if ($('#featureDesiredProperties').val()) { featureObject.desiredProperties = JSON.parse($('#featureDesiredProperties').val());};
+        let featureProperties = featurePropertiesEditor.getValue();
+        let featureDesiredProperties = featureDesiredPropertiesEditor.getValue();
+        if ($('#featureDefinition').val()) {
+            featureObject.definition = $('#featureDefinition').val().split(',');
+        };
+        if (featureProperties) {
+            featureObject.properties = JSON.parse(featureProperties);
+        };
+        if (featureDesiredProperties) {
+            featureObject.desiredProperties = JSON.parse(featureDesiredProperties);
+        };
         let featureValue = JSON.stringify(featureObject) === '{}' ? null : JSON.stringify(featureObject);
         callDittoREST(
             method,
@@ -274,7 +356,8 @@ let clickFeature = function(method) {
 
 let searchThings = function() {
     let filter = $('#search-filter').val();
-    let fields = $('#search-fields').val();
+    // let fields = $('#search-fields').val();
+    let fields = settings[theEnv].fieldList.filter( f => f.active).map( f => f.path);
     $.getJSON(settings[theEnv].api_uri + "/api/2/search/things"
     + "?fields=thingId"
     + (fields != '' ? "," + fields : '')
@@ -282,16 +365,19 @@ let searchThings = function() {
     + "&option=sort(%2BthingId)")
         .done(function(searchResult) {
             $('#thingsTable').empty();
-            for (let t in searchResult.items) {
-                let item = searchResult.items[t];
+            searchResult.items.forEach((item, t) => {
                 let row = $('#thingsTable')[0].insertRow();
                 row.id = item.thingId;
                 row.insertCell(0).innerHTML = item.thingId;
-                for (let key of fields.split(',')) {
-                    let elem = JSONPath({json: item, path: key.replace(/\//g, '.')});
-                    row.insertCell(-1).innerHTML = elem;
-                }
-            }
+                fields.forEach((key, i) => {
+                    let path = key.replace(/\//g, '.');
+                    if (path.charAt(0) != '.') {
+                        path = '$.' + path;
+                    }
+                    let elem = JSONPath({json: item, path: path});
+                    row.insertCell(-1).innerHTML = elem.length != 0 ? elem[0] : '';
+                });
+            });
             $('#filter-examples').append($('<option>', {text: filter}));
         }).fail(showError);
 };
@@ -372,10 +458,25 @@ function refreshAttribute(thing, attribute) {
 }
 
 function refreshFeature(thing, feature) {
-    $('#featureId').val(thing ? feature : '');
-    $('#featureDefinition').val(thing ? thing.features[feature].definition : '');
-    $('#featureProperties').val(thing ? JSON.stringify(thing.features[feature].properties, null, 4) : '');
-    $('#featureDesireProperties').val(thing ? JSON.stringify(thing.features[feature].desiredProperties, null, 4) : '');
+    if (thing) {
+        $('#featureId').val(feature);
+        $('#featureDefinition').val(thing.features[feature].definition);
+        if (thing.features[feature]['properties']) {
+            featurePropertiesEditor.setValue(JSON.stringify(thing.features[feature].properties, null, 4), -1)
+        } else {
+            featurePropertiesEditor.setValue('');
+        }
+        if (thing.features[feature]['desiredProperties']) {
+            featureDesiredPropertiesEditor.setValue(JSON.stringify(thing.features[feature].desiredProperties, null, 4), -1);
+        } else {
+            featureDesiredPropertiesEditor.setValue('');
+        }
+    } else {
+        $('#featureId').val('');
+        $('#featureDefinition').val('');
+        featurePropertiesEditor.setValue('');
+        featureDesiredPropertiesEditor.setValue('');
+    }
 }
 
 // function modifyThing(method, type, key, value) {
@@ -534,10 +635,23 @@ function updateSettings(editor) {
     $("#environmentSelector").empty();
     if (theEnv && !settings[theEnv]) { theEnv = null;};
     for (let key of Object.keys(settings)) {
-        if (!theEnv) { theEnv = key; }
         $('#environmentSelector').append($('<option></option>').text(key));
+        if (!theEnv) {
+            theEnv = key;
+        };
     };
     $('#environmentSelector').val(theEnv);
+    updateEnvironment();
+}
+
+function updateEnvironment() {
+    $('#fieldList').empty();
+    for (let i = 0; i < settings[theEnv].fieldList.length; i++) {
+        let field = settings[theEnv].fieldList[i];
+        addTableRow($('#fieldList')[0], field.active, field.path, $('#fieldPath').val() === field.path);
+    }
+    setAuthHeader();
+    // openWebSocket();
 }
 
 function env() {
