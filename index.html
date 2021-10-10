@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-bootstrap/0.5pre/css/custom-theme/jquery-ui-1.10.0.custom.css" rel="stylesheet"/>
     <link rel="stylesheet" href="index.css"/>    
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous" type="text/javascript" charset="utf-8"></script>
@@ -28,7 +30,7 @@
                 <li class="nav-item">
                     <a class="nav-link" data-target="#collapseConnections:not(.show)" data-toggle="collapse" href="#">Connections</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="tabEnvironments">
                     <a class="nav-link" data-target="#collapseSettings:not(.show)" data-toggle="collapse" href="#">Environments</a>
                 </li>
             </ul>
@@ -47,25 +49,16 @@
                 <div class="row resizable_pane" style="height:300px;">
                     <div class="col-md-6 resizable_flex_column">
                         <div class="input-group input-group-sm" role="group">
-                            <input type="text" class="form-control form-control-sm" placeholder="filter" id="search-filter" list="filter-examples">
-                                <datalist id="filter-examples">
-                                    <option>eq(attributes/location,"kitchen")</option>
-                                    <option>ge(thingId,"myThing1")</option>
-                                    <option>gt(_modified,"2021-05-20T12:00")</option>
-                                    <option>exists(features/featureId)</option>
-                                    <option>and(eq(attributes/location,"kitchen"),eq(attributes/color,"red"))</option>
-                                    <option>like(attributes/key1,"known-chars-at-start*")</option>
-                                </datalist>
-                            </input>
+                            <button id="searchFavourite" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Toggle favourite for search">
+                                <i id="favIcon" class="far fa-star"></i>
+                            </button>
+                            <input type="text" class="form-control form-control-sm autocomplete" placeholder="filter" id="filterEdit"></input>
                             <button id="searchThings" class="btn btn-secondary btn-sm" data-toggle="tooltip" title="Search things">
                                 search
                             </button>
                             <button id="createThing" class="btn btn-secondary btn-sm" data-toggle="tooltip" title="Create an empty thing with a default policy">
                                 create
                             </button>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <input type="text" class="form-control form-control-sm" placeholder="fields" id="search-fields"></input>
                         </div>
                         <div class="table-wrap">
                             <table class="table table-striped table-hover table-sm">
@@ -80,7 +73,13 @@
                               <a class="nav-link active" data-toggle="tab" href="#tabThingDetails">Thing Details</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" data-toggle="tab" href="#tabModifyThing">Modify Thing</a>
+                                <a class="nav-link" data-toggle="tab" href="#tabModifyThing">Thing JSON</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#tabFieldList">Fields</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#tabFilterList">Search Filter</a>
                             </li>
                         </ul>
                         <div class="tab-content" style="flex-grow:1;">
@@ -103,6 +102,27 @@
                                         <div class="script_editor" id="thingJsonEditor"></div>
                                     </div>            
                                 </div>
+                            </div>
+                            <div class="tab-pane container" id="tabFieldList">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">Field</label>
+                                    </div>
+                                    <button class="btn btn-outline-secondary btn-sm" id="fieldActive">toggle</button>
+                                    <input type="text" class="form-control" id="fieldPath"></input>
+                                    <button class="btn btn-outline-secondary btn-sm" id="fieldUpdate">create/update</button>
+                                    <button class="btn btn-outline-secondary btn-sm" id="fieldUp">up</button>
+                                    <button class="btn btn-outline-secondary btn-sm" id="fieldDown">down</button>
+                                    <button class="btn btn-outline-secondary btn-sm" id="fieldDelete">delete</button>
+                                </div>
+                                <table class="table table-striped table-hover table-sm">
+                                    <tbody id="fieldList"></tbody>
+                                </table>
+                            </div>
+                            <div class="tab-pane container" id="tabFilterList">
+                                <table class="table table-striped table-hover table-sm">
+                                    <tbody id="filterList"></tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -180,17 +200,21 @@
                                     </div>
                                     <input type="text" class="form-control" id="featureDefinition"></input>
                                 </div>
-                                <div class="input-group input-group-sm">
+                                <div class="input-group input-group-sm resizable_pane" style="height:200px;">
                                     <div class="input-group-prepend">
                                         <label class="input-group-text">Properties</label>
                                     </div>
-                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="featureProperties"></textarea>
+                                    <div class="ace_container" style="flex-grow: 1;">
+                                        <div class="script_editor" id="featurePropertiesEditor"></div>
+                                    </div>
                                 </div>
-                                <div class="input-group input-group-sm">
+                                <div class="input-group input-group-sm resizable_pane" style="height:200px;">
                                     <div class="input-group-prepend">
                                         <label class="input-group-text">Desired Properties</label>
                                     </div>
-                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="featureDesiredProperties"></textarea>
+                                    <div class="ace_container" style="flex-grow: 1;">
+                                        <div class="script_editor" id="featureDesiredPropertiesEditor"></div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tab-pane container fade" id="tabMessage2Feature">
