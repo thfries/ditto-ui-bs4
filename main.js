@@ -10,6 +10,7 @@ let settings = {
         bearer:  null,
         usernamePassword: 'ditto:ditto',
         useBasicAuth: true,
+        filterList: [],
         fieldList: []
     },
     cloud_things_aws: {
@@ -18,6 +19,7 @@ let settings = {
         bearer:  null,
         usernamePassword: null,
         useBasicAuth: false,
+        filterList: [],
         fieldList: [
             {active: true, path: '/features/TypePlate'},
             {active: false, path: '/features/ConnectionStatus'}
@@ -40,6 +42,8 @@ let featurePropertiesEditor;
 let featureDesiredPropertiesEditor;
 
 let ws;
+
+let searchTimeout;
 
 $(document).ready(function () {
 
@@ -64,7 +68,30 @@ $(document).ready(function () {
     thingJsonEditor = ace.edit("thingJsonEditor");
     thingJsonEditor.session.setMode("ace/mode/json");
 
-    $('#searchThings').click(searchThings);
+    $('#searchFavourite').click(() => {
+        $('#favIcon').toggleClass('fas');
+        toggleFilterFavourite($('#filterEdit').val());
+    }) 
+    $('#searchThings').click(() => {
+        searchThings();
+    });
+    $('#filterEdit').on('keyup', function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            searchThings();
+        } else {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (settings[theEnv].filterList.indexOf($('#filterEdit').val()) >= 0) {
+                    $('#favIcon').addClass('fas');
+                } else {
+                    $('#favIcon').removeClass('fas');
+                }
+            }, 1000);
+        }
+    });
+    $('#filterEdit').on('click', function() {
+        $(this).select();
+    });
     $('#createThing').click(function() {
         $.ajax(settings[theEnv].api_uri + '/api/2/things', {
             type: 'POST',
@@ -101,10 +128,7 @@ $(document).ready(function () {
     $('#fieldActive').click(function() {
         if (theFieldIndex < 0) { return; };
         settings[theEnv].fieldList[theFieldIndex].active = !settings[theEnv].fieldList[theFieldIndex].active;
-        settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
-        updateEnvironment();
-        console.log('Fields: #' + settings[theEnv].fieldList.filter( f => f.active).map( f => f.path) + '#');
-        console.log('theFieldIndex: ' + theFieldIndex);
+        updateFieldList();
     });
 
     $('#fieldUpdate').click(function() {
@@ -118,18 +142,14 @@ $(document).ready(function () {
         } else {
             settings[theEnv].fieldList[theFieldIndex].path = $('#fieldPath').val();
         }
-        settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
-        updateEnvironment();
-        console.log('theFieldIndex: ' + theFieldIndex);
+        updateFieldList();
     });
 
     $('#fieldDelete').click(function() {
         if (theFieldIndex < 0) { return;}
         settings[theEnv].fieldList.splice(theFieldIndex, 1);
-        settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
-        updateEnvironment();
+        updateFieldList();
         theFieldIndex = -1;
-        console.log('theFieldIndex: ' + theFieldIndex);
     })
 
     $('#fieldUp').click(function() {
@@ -138,8 +158,7 @@ $(document).ready(function () {
         settings[theEnv].fieldList.splice(theFieldIndex, 1);
         theFieldIndex--;
         settings[theEnv].fieldList.splice(theFieldIndex, 0, movedItem);        
-        updateEnvironment();
-        console.log('theFieldIndex: ' + theFieldIndex);
+        updateFieldList();
     });
 
     $('#fieldDown').click(function() {
@@ -148,8 +167,7 @@ $(document).ready(function () {
         settings[theEnv].fieldList.splice(theFieldIndex, 1);
         theFieldIndex++;
         settings[theEnv].fieldList.splice(theFieldIndex, 0, movedItem);        
-        updateEnvironment();
-        console.log('theFieldIndex: ' + theFieldIndex);
+        updateFieldList();
     });
 
     // Attributes -------------------------------
@@ -270,13 +288,17 @@ $(document).ready(function () {
         callConnectionsAPI(config[env()].deleteConnection, loadConnections, $('#connectionId').val()); 
     });
 
-    // Settings ----------------------------------
+    // Environments ----------------------------------
     let settingsEditor = ace.edit("settingsEditor");
     settingsEditor.session.setMode("ace/mode/json");
 
     settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
     updateSettings(settingsEditor);
     settingsEditor.on('blur', function() { return updateSettings(settingsEditor);});
+
+    $('#tabEnvironments').click(function() {
+        settingsEditor.setValue(JSON.stringify(settings, null, 2), -1);
+    })
 
     $('#environmentSelector').on('change', function() {
         theEnv = this.value;
@@ -354,9 +376,18 @@ let clickFeature = function(method) {
     };
 }
 
+function buildfilterEditFilter() {
+    let query = $('#filterEdit').val();
+    let filter = settings[theEnv].fieldList.map(field => 'like(' + field.path + ',' + '"' + query + '*")').toString();
+    if (settings[theEnv].fieldList.length < 2) {
+        return filter;
+    } else {
+        return 'or(' + filter + ')';
+    };
+}; 
+
 let searchThings = function() {
-    let filter = $('#search-filter').val();
-    // let fields = $('#search-fields').val();
+    let filter = $('#filterEdit').val();
     let fields = settings[theEnv].fieldList.filter( f => f.active).map( f => f.path);
     $.getJSON(settings[theEnv].api_uri + "/api/2/search/things"
     + "?fields=thingId"
@@ -380,6 +411,17 @@ let searchThings = function() {
             });
             $('#filter-examples').append($('<option>', {text: filter}));
         }).fail(showError);
+};
+
+let toggleFilterFavourite = function(filter) {
+    if (filter === '') { return; };
+    let i = settings[theEnv].filterList.indexOf(filter);
+    if (i >= 0) {
+        settings[theEnv].filterList.splice(i, 1);
+    } else {
+        settings[theEnv].filterList.push(filter);
+    }
+    updateFilterList();
 };
 
 let refreshThing = function(thingId) {
@@ -645,14 +687,29 @@ function updateSettings(editor) {
 }
 
 function updateEnvironment() {
+    updateFieldList();
+    updateFilterList();
+    setAuthHeader();
+    // openWebSocket();
+}
+
+function updateFieldList() {
     $('#fieldList').empty();
     for (let i = 0; i < settings[theEnv].fieldList.length; i++) {
         let field = settings[theEnv].fieldList[i];
         addTableRow($('#fieldList')[0], field.active, field.path, $('#fieldPath').val() === field.path);
     }
-    setAuthHeader();
-    // openWebSocket();
-}
+};
+
+function updateFilterList() {
+    $('#filterList').empty();
+    settings[theEnv].filterList.forEach((filter,i) => {
+        addTableRow($('#filterList')[0], filter);
+    });
+    $('#filterEdit').autocomplete({
+        source: settings[theEnv].filterList
+    });
+};
 
 function env() {
     return settings[theEnv].api_uri.startsWith('https://things') ? 'things' : 'ditto';
