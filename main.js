@@ -666,6 +666,12 @@ function updateSettings(editor) {
 }
 
 function updateEnvironment() {
+    if (!settings[theEnv]['fieldList']) {
+        settings[theEnv].fieldList = [];
+    }
+    if (!settings[theEnv]['filterList']) {
+        settings[theEnv].filterList = [];
+    }
     updateFieldList();
     updateFilterList();
     setAuthHeader();
