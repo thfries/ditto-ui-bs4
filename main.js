@@ -1,32 +1,11 @@
 'use strict';
 
 import { config } from './config.js';
+import { environments } from './environments.js';
 import { JSONPath } from "https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js";
+// import { jsreports } from './lib/jsreports-all.min.js';
 
-let settings = {
-    local_ditto: {
-        api_uri: 'http://localhost:8080',
-        solutionId: null,
-        bearer:  null,
-        usernamePassword: 'ditto:ditto',
-        useBasicAuth: true,
-        filterList: [],
-        fieldList: []
-    },
-    cloud_things_aws: {
-        api_uri: 'https://things.eu-1.bosch-iot-suite.com',
-        solutionId: null,
-        bearer:  null,
-        usernamePassword: null,
-        useBasicAuth: false,
-        filterList: [],
-        fieldList: [
-            {active: true, path: '/features/TypePlate'},
-            {active: false, path: '/features/ConnectionStatus'}
-        ]
-    }
-};
-
+let settings = environments;
 let theEnv;
 let theThing;
 let theAttribute;
