@@ -1,4 +1,4 @@
-export let settings = {
+export let environments = {
     local_ditto: {
         api_uri: 'http://localhost:8080',
         solutionId: null,
