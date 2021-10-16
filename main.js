@@ -69,7 +69,9 @@ $(document).ready(function () {
         }
     });
     $('#filterEdit').on('click', function() {
-        $(this).select();
+        if ($(this)[0].selectionStart == $(this)[0].selectionEnd) {
+            $(this).select();
+        };
     });
     $('#createThing').click(function() {
         $.ajax(settings[theEnv].api_uri + '/api/2/things', {
