@@ -22,6 +22,16 @@ textarea {
     color: #3a8c9a;
 }
 
+.nav-link {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+}
+
+.no-margin {
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
 .table-wrap {
     height: 100%;
     flex-grow: 1;
