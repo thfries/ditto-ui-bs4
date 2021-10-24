@@ -61,17 +61,13 @@ textarea {
     left: 0;
 }
 
-.input-group-prepend {
-    width : 15%;
-}
-  
 .input-group-prepend label {
     width: 100%;
     overflow: hidden;
 }
 
 h5 {
-    margin-top: 8;
+    margin-bottom: 0;
 }
 
 hr {

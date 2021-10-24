@@ -188,29 +188,19 @@
                             <div class="tab-pane container active no-margin" id="tabCrudFeature">
                                 <div class="input-group input-group-sm">
                                     <div class="input-group-prepend">
-                                        <label class="input-group-text">FeatureId</label>
+                                        <label class="input-group-text">FeatureId and Definition</label>
                                     </div>
                                     <input type="text" class="form-control" id="featureId">
+                                    <input type="text" class="form-control" id="featureDefinition"></input>
                                     <button class="btn btn-secondary btn-sm" id="putFeature">create/update</button>
                                     <button class="btn btn-secondary btn-sm" id="deleteFeature">delete</button>
                                 </div>
-                                <div class="input-group input-group-sm">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Definition</label>
-                                    </div>
-                                    <input type="text" class="form-control" id="featureDefinition"></input>
-                                </div>
                                 <div class="input-group input-group-sm resizable_pane" style="height:200px;">
                                     <div class="input-group-prepend">
-                                        <label class="input-group-text">Properties</label>
+                                        <label class="input-group-text">Properties<br>and<br>Desired<br>Properties</label>
                                     </div>
                                     <div class="ace_container" style="flex-grow: 1;">
                                         <div class="script_editor" id="featurePropertiesEditor"></div>
-                                    </div>
-                                </div>
-                                <div class="input-group input-group-sm resizable_pane" style="height:200px;">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Desired Properties</label>
                                     </div>
                                     <div class="ace_container" style="flex-grow: 1;">
                                         <div class="script_editor" id="featureDesiredPropertiesEditor"></div>
@@ -220,28 +210,18 @@
                             <div class="tab-pane container fade no-margin" id="tabMessage2Feature">
                                 <div class="input-group input-group-sm">
                                     <div class="input-group-prepend">
-                                        <label class="input-group-text">Subject</label>
+                                        <label class="input-group-text">Subject and Timeout</label>
                                     </div>
                                     <input type="text" class="form-control" id="messageFeatureSubject"></input>
+                                    <input type="number" class="form-control form-control-sm" id="messageTimeout" value="10"></input>
                                     <button class="btn btn-secondary btn-sm" id="messageFeature">send</button>
                                 </div>
-                                <div class="input-group input-group-sm">
+                                <div class="input-group input-group-sm resizable_pane" style="height:200px;">
                                     <div class="input-group-prepend">
-                                        <label class="input-group-text">Timeout</label>
+                                        <label class="input-group-text">Payload<br>and<br>Response</label>
                                     </div>
-                                    <input type="number" class="form-control form-control-sm" id="messageTimeout" value="0"></input>
-                                </div>
-                                <div class="input-group input-group-sm">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Payload</label>
-                                    </div>
-                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="messageFeaturePayload"></textarea>
-                                </div>
-                                <div class="input-group input-group-sm">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Response</label>
-                                    </div>
-                                    <textarea class="form-control form-control-sm" rows="7" style="height:100%;" spellcheck="false" id="messageFeatureResponse"></textarea>
+                                    <textarea class="form-control form-control-sm" style="resize:none;" spellcheck="false" id="messageFeaturePayload">{}</textarea>
+                                    <textarea class="form-control form-control-sm" style="resize:none;" spellcheck="false" id="messageFeatureResponse"></textarea>
                                 </div>
                             </div>
                         </div>
