@@ -33,9 +33,9 @@ export function ready() {
   settingsEditor.session.setMode('ace/mode/json');
 
   settingsEditor.setValue(JSON.stringify(environments, null, 2), -1);
-  updateSettings(settingsEditor);
+  environmentsJsonChanged(settingsEditor);
   settingsEditor.on('blur', function() {
-    return updateSettings(settingsEditor);
+    return environmentsJsonChanged(settingsEditor);
   });
 
   $('#tabEnvironments').click(function() {
@@ -44,11 +44,23 @@ export function ready() {
 
   $('#environmentSelector').on('change', function() {
     theEnv = this.value;
-    updateEnvironment();
+    activateEnvironment();
+  });
+
+  $('#authorizeBearer').on('click', () => {
+    getCurrentEnv().useBasicAuth = false;
+    getCurrentEnv().bearer = $('#bearer').val();
+    setAuthHeader();
+  });
+
+  $('#authorizeBasic').on('click', () => {
+    getCurrentEnv().useBasicAuth = true;
+    getCurrentEnv().usernamePassword = $('#userName').val() + ':' + $('#password');
+    setAuthHeader();
   });
 }
 
-function updateSettings(editor) {
+function environmentsJsonChanged(editor) {
   environments = JSON.parse(editor.getValue());
   $('#environmentSelector').empty();
   if (theEnv && !getCurrentEnv()) {
@@ -61,16 +73,20 @@ function updateSettings(editor) {
     };
   };
   $('#environmentSelector').val(theEnv);
-  updateEnvironment();
+  activateEnvironment();
 }
 
-function updateEnvironment() {
+function activateEnvironment() {
   if (!getCurrentEnv()['fieldList']) {
     getCurrentEnv().fieldList = [];
-  }
+  };
   if (!getCurrentEnv()['filterList']) {
     getCurrentEnv().filterList = [];
-  }
+  };
+  const usernamePassword = getCurrentEnv().usernamePassword ? getCurrentEnv().usernamePassword : ':';
+  $('#userName').val(usernamePassword.split(':')[0]);
+  $('#password').val(usernamePassword.split(':')[1]);
+  $('#bearer').val(getCurrentEnv().bearer);
   onChangeCallback();
   setAuthHeader();
   // openWebSocket();
