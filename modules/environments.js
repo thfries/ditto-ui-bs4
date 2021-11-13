@@ -30,6 +30,10 @@ export function onChange(callback) {
 };
 
 export function ready() {
+  const envcookie = document.cookie.split('=')[1];
+  if (envcookie) {
+    environments = JSON.parse(window.atob(envcookie));
+  }
   settingsEditor.session.setMode('ace/mode/json');
 
   settingsEditor.setValue(JSON.stringify(environments, null, 2), -1);
@@ -62,6 +66,7 @@ export function ready() {
 
 function environmentsJsonChanged(editor) {
   environments = JSON.parse(editor.getValue());
+  document.cookie = 'ditto-ui-env=' + window.btoa(editor.getValue());
   $('#environmentSelector').empty();
   if (theEnv && !getCurrentEnv()) {
     theEnv = null;
