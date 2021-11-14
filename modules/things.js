@@ -10,30 +10,24 @@ import * as Features from './features.js';
 
 export let theThing;
 let theAttribute;
-
-
-let searchTimeout;
-let theFieldIndex = -1;
+let keyStrokeTimeout;
 
 const thingJsonEditor = ace.edit('thingJsonEditor');
 
 export function ready() {
   thingJsonEditor.session.setMode('ace/mode/json');
 
-  $('#searchFavourite').click(() => {
-    $('#favIcon').toggleClass('fas');
-    toggleFilterFavourite($('#filterEdit').val());
-  });
   $('#searchThings').click(() => {
     searchThings();
   });
-  $('#filterEdit').on('keyup', function(e) {
+
+  $('#searchFilterEdit').on('keyup', function(e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
       searchThings();
     } else {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        if (getCurrentEnv().filterList.indexOf($('#filterEdit').val()) >= 0) {
+      clearTimeout(keyStrokeTimeout);
+      keyStrokeTimeout = setTimeout(() => {
+        if (getCurrentEnv().filterList.indexOf($('#searchFilterEdit').val()) >= 0) {
           $('#favIcon').addClass('fas');
         } else {
           $('#favIcon').removeClass('fas');
@@ -41,11 +35,7 @@ export function ready() {
       }, 1000);
     }
   });
-  $('#filterEdit').on('click', function() {
-    if ($(this)[0].selectionStart == $(this)[0].selectionEnd) {
-      $(this).select();
-    };
-  });
+
   $('#createThing').click(function() {
     $.ajax(getCurrentEnv().api_uri + '/api/2/things', {
       type: 'POST',
@@ -66,73 +56,6 @@ export function ready() {
     refreshThing($(this)[0].id);
   });
 
-  $('#fieldList').on('click', 'tr', function() {
-    console.log(theFieldIndex);
-    if (theFieldIndex == $(this).index()) {
-      theFieldIndex = -1;
-    } else {
-      theFieldIndex = $(this).index();
-      $('#fieldActive')[0].active = getCurrentEnv().fieldList[theFieldIndex].active;
-      $('#fieldPath').val(getCurrentEnv().fieldList[theFieldIndex].path);
-    }
-    // getCurrentEnv().fieldList[$(this).index()].active = !getCurrentEnv().fieldList[$(this).index()].active;
-    console.log('theFieldIndex: ' + theFieldIndex);
-  });
-
-  $('#fieldActive').click(function() {
-    if (theFieldIndex < 0) {
-      return;
-    };
-    getCurrentEnv().fieldList[theFieldIndex].active = !getCurrentEnv().fieldList[theFieldIndex].active;
-    updateFieldList();
-  });
-
-  $('#fieldUpdate').click(function() {
-    if ($('#fieldPath').val() === '') {
-      return;
-    };
-    if (theFieldIndex < 0) {
-      getCurrentEnv().fieldList.push({
-        active: true,
-        path: $('#fieldPath').val(),
-      });
-      theFieldIndex = getCurrentEnv().fieldList.length - 1;
-    } else {
-      getCurrentEnv().fieldList[theFieldIndex].path = $('#fieldPath').val();
-    }
-    updateFieldList();
-  });
-
-  $('#fieldDelete').click(function() {
-    if (theFieldIndex < 0) {
-      return;
-    }
-    getCurrentEnv().fieldList.splice(theFieldIndex, 1);
-    updateFieldList();
-    theFieldIndex = -1;
-  });
-
-  $('#fieldUp').click(function() {
-    if (theFieldIndex <= 0) {
-      return;
-    }
-    const movedItem = getCurrentEnv().fieldList[theFieldIndex];
-    getCurrentEnv().fieldList.splice(theFieldIndex, 1);
-    theFieldIndex--;
-    getCurrentEnv().fieldList.splice(theFieldIndex, 0, movedItem);
-    updateFieldList();
-  });
-
-  $('#fieldDown').click(function() {
-    if (theFieldIndex < 0 || theFieldIndex === getCurrentEnv().fieldList.length - 1) {
-      return;
-    }
-    const movedItem = getCurrentEnv().fieldList[theFieldIndex];
-    getCurrentEnv().fieldList.splice(theFieldIndex, 1);
-    theFieldIndex++;
-    getCurrentEnv().fieldList.splice(theFieldIndex, 0, movedItem);
-    updateFieldList();
-  });
 
   // Attributes -------------------------------
   $('#attributesTable').on('click', 'tr', function(event) {
@@ -144,40 +67,8 @@ export function ready() {
   $('#deleteAttribute').click(clickAttribute('DELETE'));
 }
 
-function toggleFilterFavourite(filter) {
-  if (filter === '') {
-    return;
-  };
-  const i = getCurrentEnv().filterList.indexOf(filter);
-  if (i >= 0) {
-    getCurrentEnv().filterList.splice(i, 1);
-  } else {
-    getCurrentEnv().filterList.push(filter);
-  }
-  updateFilterList();
-};
-
-export function updateFieldList() {
-  $('#fieldList').empty();
-  for (let i = 0; i < getCurrentEnv().fieldList.length; i++) {
-    const field = getCurrentEnv().fieldList[i];
-    Main.addTableRow($('#fieldList')[0], field.active, field.path, $('#fieldPath').val() === field.path);
-  }
-};
-
-export function updateFilterList() {
-  $('#filterList').empty();
-  getCurrentEnv().filterList.forEach((filter, i) => {
-    Main.addTableRow($('#filterList')[0], filter);
-  });
-  $('#filterEdit').autocomplete({
-    source: getCurrentEnv().filterList,
-  });
-};
-
-
 export function searchThings() {
-  const filter = $('#filterEdit').val();
+  const filter = $('#searchFilterEdit').val();
   const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
   $.getJSON(getCurrentEnv().api_uri + '/api/2/search/things' +
     '?fields=thingId' +

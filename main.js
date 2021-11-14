@@ -9,11 +9,6 @@ import * as Environments from './modules/environments.js';
 // let ws;
 
 $(document).ready(function() {
-  Environments.onChange(() => {
-    Things.updateFieldList();
-    Things.updateFilterList();
-  });
-
   $('.nav-item').on('click', function() {
     $(this).addClass('active').siblings().removeClass('active');
   });

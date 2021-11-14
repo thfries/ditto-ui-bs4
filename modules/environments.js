@@ -1,5 +1,7 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
+import * as Main from '../main.js';
+
 let environments = {
   local_ditto: {
     api_uri: 'http://localhost:8080',
@@ -19,14 +21,10 @@ let environments = {
 
 let theEnv;
 const settingsEditor = ace.edit('settingsEditor');
-let onChangeCallback;
+let theFieldIndex = -1;
 
 export function getCurrentEnv() {
   return environments[theEnv];
-};
-
-export function onChange(callback) {
-  onChangeCallback = callback;
 };
 
 export function ready() {
@@ -37,9 +35,11 @@ export function ready() {
   settingsEditor.session.setMode('ace/mode/json');
 
   settingsEditor.setValue(JSON.stringify(environments, null, 2), -1);
-  environmentsJsonChanged(settingsEditor);
-  settingsEditor.on('blur', function() {
-    return environmentsJsonChanged(settingsEditor);
+  environmentsJsonChanged();
+
+  settingsEditor.on('blur', () => {
+    environments = JSON.parse(settingsEditor.getValue());
+    environmentsJsonChanged();
   });
 
   $('#tabEnvironments').click(function() {
@@ -62,11 +62,99 @@ export function ready() {
     getCurrentEnv().usernamePassword = $('#userName').val() + ':' + $('#password');
     setAuthHeader();
   });
+
+  $('#fieldList').on('click', 'tr', function() {
+    if (theFieldIndex == $(this).index()) {
+      theFieldIndex = -1;
+      $('#fieldPath').val('');
+    } else {
+      theFieldIndex = $(this).index();
+      $('#fieldPath').val(getCurrentEnv().fieldList[theFieldIndex].path);
+    }
+  });
+
+  $('#fieldActive').click(function() {
+    if (theFieldIndex < 0) {
+      return;
+    };
+    getCurrentEnv().fieldList[theFieldIndex].active = !getCurrentEnv().fieldList[theFieldIndex].active;
+    environmentsJsonChanged();
+  });
+
+  $('#fieldUpdate').click(function() {
+    if ($('#fieldPath').val() === '') {
+      return;
+    };
+    if (theFieldIndex < 0) {
+      getCurrentEnv().fieldList.push({
+        active: true,
+        path: $('#fieldPath').val(),
+      });
+      theFieldIndex = getCurrentEnv().fieldList.length - 1;
+    } else {
+      getCurrentEnv().fieldList[theFieldIndex].path = $('#fieldPath').val();
+    }
+    environmentsJsonChanged();
+  });
+
+  $('#fieldDelete').click(function() {
+    if (theFieldIndex < 0) {
+      return;
+    }
+    getCurrentEnv().fieldList.splice(theFieldIndex, 1);
+    environmentsJsonChanged();
+    theFieldIndex = -1;
+  });
+
+  $('#fieldUp').click(function() {
+    if (theFieldIndex <= 0) {
+      return;
+    }
+    const movedItem = getCurrentEnv().fieldList[theFieldIndex];
+    getCurrentEnv().fieldList.splice(theFieldIndex, 1);
+    theFieldIndex--;
+    getCurrentEnv().fieldList.splice(theFieldIndex, 0, movedItem);
+    environmentsJsonChanged();
+  });
+
+  $('#fieldDown').click(function() {
+    if (theFieldIndex < 0 || theFieldIndex === getCurrentEnv().fieldList.length - 1) {
+      return;
+    }
+    const movedItem = getCurrentEnv().fieldList[theFieldIndex];
+    getCurrentEnv().fieldList.splice(theFieldIndex, 1);
+    theFieldIndex++;
+    getCurrentEnv().fieldList.splice(theFieldIndex, 0, movedItem);
+    environmentsJsonChanged();
+  });
+
+  $('#filterEdit').on('click', function() {
+    if ($(this)[0].selectionStart == $(this)[0].selectionEnd) {
+      $(this).select();
+    };
+  });
+
+  $('#searchFavourite').click(() => {
+    $('#favIcon').toggleClass('fas');
+    toggleFilterFavourite($('#searchFilterEdit').val());
+  });
 }
 
-function environmentsJsonChanged(editor) {
-  environments = JSON.parse(editor.getValue());
-  document.cookie = 'ditto-ui-env=' + window.btoa(editor.getValue());
+function toggleFilterFavourite(filter) {
+  if (filter === '') {
+    return;
+  };
+  const i = getCurrentEnv().filterList.indexOf(filter);
+  if (i >= 0) {
+    getCurrentEnv().filterList.splice(i, 1);
+  } else {
+    getCurrentEnv().filterList.push(filter);
+  }
+  environmentsJsonChanged();
+};
+
+function environmentsJsonChanged() {
+  document.cookie = 'ditto-ui-env=' + window.btoa(JSON.stringify(environments));
   $('#environmentSelector').empty();
   if (theEnv && !getCurrentEnv()) {
     theEnv = null;
@@ -88,11 +176,13 @@ function activateEnvironment() {
   if (!getCurrentEnv()['filterList']) {
     getCurrentEnv().filterList = [];
   };
+  updateFilterList();
+  updateFieldList();
+
   const usernamePassword = getCurrentEnv().usernamePassword ? getCurrentEnv().usernamePassword : ':';
   $('#userName').val(usernamePassword.split(':')[0]);
   $('#password').val(usernamePassword.split(':')[1]);
   $('#bearer').val(getCurrentEnv().bearer);
-  onChangeCallback();
   setAuthHeader();
   // openWebSocket();
 }
@@ -111,4 +201,29 @@ function setAuthHeader() {
   });
 };
 
+function updateFieldList() {
+  $('#fieldList').empty();
+  theFieldIndex = -1;
+  for (let i = 0; i < getCurrentEnv().fieldList.length; i++) {
+    const field = getCurrentEnv().fieldList[i];
+    const fieldSelected = $('#fieldPath').val() === field.path;
+    if (fieldSelected) {
+      theFieldIndex = i;
+    }
+    Main.addTableRow($('#fieldList')[0], field.active, field.path, fieldSelected );
+  }
+  if (theFieldIndex < 0) {
+    $('#fieldPath').val('');
+  }
+};
+
+function updateFilterList() {
+  $('#filterList').empty();
+  getCurrentEnv().filterList.forEach((filter, i) => {
+    Main.addTableRow($('#filterList')[0], filter);
+  });
+  $('#searchFilterEdit').autocomplete({
+    source: getCurrentEnv().filterList,
+  });
+};
 
