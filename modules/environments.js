@@ -19,6 +19,16 @@ let environments = {
   },
 };
 
+const filterExamples = [
+  'eq(attributes/location,"kitchen")',
+  'ge(thingId,"myThing1")',
+  'gt(_created,"2020-08-05T12:17")',
+  'exists(features/featureId)',
+  'and(eq(attributes/location,"kitchen"),eq(attributes/color,"red"))',
+  'or(eq(attributes/location,"kitchen"),eq(attributes/location,"living-room"))',
+  'like(attributes/key1,"known-chars-at-start*")',
+];
+
 let theEnv;
 const settingsEditor = ace.edit('settingsEditor');
 let theFieldIndex = -1;
@@ -223,7 +233,7 @@ function updateFilterList() {
     Main.addTableRow($('#filterList')[0], filter);
   });
   $('#searchFilterEdit').autocomplete({
-    source: getCurrentEnv().filterList,
+    source: getCurrentEnv().filterList.concat(filterExamples),
   });
 };
 
