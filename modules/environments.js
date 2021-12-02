@@ -38,7 +38,7 @@ export function getCurrentEnv() {
 };
 
 export function ready() {
-  const envcookie = document.cookie.split('=')[1];
+  const envcookie = document.cookie.split(';')[0].split('=')[1];
   if (envcookie) {
     environments = JSON.parse(window.atob(envcookie));
   }
@@ -64,13 +64,13 @@ export function ready() {
   $('#authorizeBearer').on('click', () => {
     getCurrentEnv().useBasicAuth = false;
     getCurrentEnv().bearer = $('#bearer').val();
-    setAuthHeader();
+    environmentsJsonChanged();
   });
 
   $('#authorizeBasic').on('click', () => {
     getCurrentEnv().useBasicAuth = true;
     getCurrentEnv().usernamePassword = $('#userName').val() + ':' + $('#password');
-    setAuthHeader();
+    environmentsJsonChanged();
   });
 
   $('#fieldList').on('click', 'tr', function() {
@@ -164,7 +164,9 @@ function toggleFilterFavourite(filter) {
 };
 
 function environmentsJsonChanged() {
-  document.cookie = 'ditto-ui-env=' + window.btoa(JSON.stringify(environments));
+  const d = new Date();
+  d.setTime(d.getTime() + 30*24*60*60*1000);
+  document.cookie = 'ditto-ui-env=' + window.btoa(JSON.stringify(environments)) + ';expires=' + d.toUTCString();
   $('#environmentSelector').empty();
   if (theEnv && !getCurrentEnv()) {
     theEnv = null;
@@ -194,7 +196,7 @@ function activateEnvironment() {
   $('#password').val(usernamePassword.split(':')[1]);
   $('#bearer').val(getCurrentEnv().bearer);
   setAuthHeader();
-  // openWebSocket();
+  // Main.openWebSocket();
 }
 
 function setAuthHeader() {
