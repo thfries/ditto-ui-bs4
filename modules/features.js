@@ -6,6 +6,12 @@ import * as Things from './things.js';
 
 let theFeature;
 
+const NAME_SPACE = 0;
+const THING_NAME = 1;
+const CHANNEL = 3;
+const CRITERION = 4;
+const ACTION = 5;
+
 const featurePropertiesEditor = ace.edit('featurePropertiesEditor');
 const featureDesiredPropertiesEditor = ace.edit('featureDesiredPropertiesEditor');
 
@@ -15,8 +21,13 @@ export function ready() {
     refreshFeature(Things.theThing, theFeature);
   });
 
-  $('#putFeature').click(clickFeature('PUT'));
-  $('#deleteFeature').click(clickFeature('DELETE'));
+  $('#tabCrudFeatureLink‚').click(() => {
+    featurePropertiesEditor.renderer.updateFull();
+    featureDesiredPropertiesEditor.renderer.updateFull();
+  });
+
+  $('#putFeature').click(updateFeature('PUT'));
+  $('#deleteFeature').click(updateFeature('DELETE'));
 
   featurePropertiesEditor.session.setMode('ace/mode/json');
   featureDesiredPropertiesEditor.session.setMode('ace/mode/json');
@@ -32,9 +43,13 @@ export function ready() {
   // });
 
   $('#messageFeature').click(messageFeature);
+
+  $('#featureMessagesTable').on('click', 'tr', function(event) {
+    $('#featureMessageDetail').val(JSON.stringify($(this).data('message'), null, 2));
+  });
 }
 
-function clickFeature(method) {
+function updateFeature(method) {
   return function() {
     if (!Things.theThing) {
       Main.showError(null, 'Error', 'No Thing selected'); return;
@@ -86,6 +101,8 @@ function refreshFeature(thing, feature) {
     featurePropertiesEditor.setValue('');
     featureDesiredPropertiesEditor.setValue('');
   }
+  $('#featureMessagesTable').empty();
+  $('#featureMessagesCount').text('');
 }
 
 export function refreshThing(thing) {
@@ -132,6 +149,26 @@ const messageFeature = function() {
     );
   } else {
     Main.showError(null, 'Error', 'FeatureId or Subject or Payload is empty');
+  }
+};
+
+export function onMessage(message) {
+  console.log(message);
+  if (message.data.startsWith('START') || !Things.theThing) {
+    return;
+  };
+  const dittoJson = JSON.parse(message.data);
+  const topicThingId = Things.theThing.thingId.replace(':', '/');
+  if (dittoJson.topic.startsWith(topicThingId)) {
+    const pathFeature = '/features/' + theFeature;
+    if (dittoJson.path.startsWith(pathFeature)) {
+      const row = $('#featureMessagesTable')[0].insertRow();
+      row.insertCell(0).innerHTML = new Date().toLocaleTimeString();
+      row.insertCell().innerHTML = dittoJson.topic.replace(topicThingId, '');
+      row.insertCell().innerHTML = dittoJson.path.replace(pathFeature, '');
+      $(row).data('message', dittoJson);
+      $('#featureMessagesCount').text($('#featureMessagesTable tr').length);
+    }
   }
 };
 

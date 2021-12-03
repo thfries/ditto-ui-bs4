@@ -170,59 +170,81 @@
             <h5 data-toggle="collapse" href="#collapseFeatures" role="button" aria-expanded="true" aria-controls="collapseFeatures">Features <span class="badge badge-info" id="featureCount"></span></h5>
             <hr/>
             <div class="collapse show" id="collapseFeatures">
-                <div class="row">
-                    <div class="col-md-4">
-                        <table class="table table-striped table-hover table-sm">
-                            <tbody id="featuresTable"></tbody>
-                        </table>
+                <div class="row resizable_pane" style="height:300px;">
+                    <div class="col-md-4 resizable_flex_column">
+                        <div class="table-wrap">
+                            <table class="table table-striped table-hover table-sm">
+                                <tbody id="featuresTable"></tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-8 resizable_flex_column">
                         <ul class="nav nav-tabs">
-                            <li class="nav-item">
+                            <li class="nav-item" id='tabCrudFeatureLink'>
                               <a class="nav-link active" data-toggle="tab" href="#tabCrudFeature">Feature Details</a>
                             </li>
                             <li class="nav-item">
                               <a class="nav-link" data-toggle="tab" href="#tabMessage2Feature">Message to Feature</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#tabFeatureMessages">Messages <span class="badge badge-info" id="featureMessagesCount"></span></a>
+                            </li>
                         </ul>
-                        <div class="tab-content">
+                        <div class="tab-content" style="flex-grow: 1;">
                             <div class="tab-pane container active no-margin" id="tabCrudFeature">
-                                <div class="input-group input-group-sm">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">FeatureId and Definition</label>
+                                <div class="resizable_flex_column">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">FeatureId and Definition</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="featureId">
+                                        <input type="text" class="form-control" id="featureDefinition"></input>
+                                        <button class="btn btn-secondary btn-sm" id="putFeature">create/update</button>
+                                        <button class="btn btn-secondary btn-sm" id="deleteFeature">delete</button>
                                     </div>
-                                    <input type="text" class="form-control" id="featureId">
-                                    <input type="text" class="form-control" id="featureDefinition"></input>
-                                    <button class="btn btn-secondary btn-sm" id="putFeature">create/update</button>
-                                    <button class="btn btn-secondary btn-sm" id="deleteFeature">delete</button>
-                                </div>
-                                <div class="input-group input-group-sm resizable_pane" style="height:300px;">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Properties<br>and<br>Desired<br>Properties</label>
-                                    </div>
-                                    <div class="ace_container" style="flex-grow: 1;">
-                                        <div class="script_editor" id="featurePropertiesEditor"></div>
-                                    </div>
-                                    <div class="ace_container" style="flex-grow: 1;">
-                                        <div class="script_editor" id="featureDesiredPropertiesEditor"></div>
+                                    <div class="input-group input-group-sm" style="flex-grow: 1; display: flex;">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Properties<br>and<br>Desired<br>Properties</label>
+                                        </div>
+                                        <div class="ace_container" style="flex-grow: 1;">
+                                            <div class="script_editor" id="featurePropertiesEditor"></div>
+                                        </div>
+                                        <div class="ace_container" style="flex-grow: 1;">
+                                            <div class="script_editor" id="featureDesiredPropertiesEditor"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tab-pane container fade no-margin" id="tabMessage2Feature">
-                                <div class="input-group input-group-sm">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Subject and Timeout</label>
+                                <div class="resizable_flex_column">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Subject and Timeout</label>
+                                        </div>
+                                        <input type="text" class="form-control" id="messageFeatureSubject"></input>
+                                        <input type="number" class="form-control form-control-sm" id="messageTimeout" value="10"></input>
+                                        <button class="btn btn-secondary btn-sm" id="messageFeature">send</button>
                                     </div>
-                                    <input type="text" class="form-control" id="messageFeatureSubject"></input>
-                                    <input type="number" class="form-control form-control-sm" id="messageTimeout" value="10"></input>
-                                    <button class="btn btn-secondary btn-sm" id="messageFeature">send</button>
+                                    <div class="input-group input-group-sm" style="flex-grow: 1; display: flex;">
+                                        <div class="input-group-prepend">
+                                            <label class="input-group-text">Payload<br>and<br>Response</label>
+                                        </div>
+                                        <textarea class="form-control form-control-sm" style="resize:none; flex-grow: 1;" spellcheck="false" id="messageFeaturePayload">{}</textarea>
+                                        <textarea class="form-control form-control-sm" style="resize:none; flex-grow: 1;" spellcheck="false" id="messageFeatureResponse"></textarea>
+                                    </div>
+
                                 </div>
-                                <div class="input-group input-group-sm resizable_pane" style="height:300px;">
-                                    <div class="input-group-prepend">
-                                        <label class="input-group-text">Payload<br>and<br>Response</label>
+                            </div>
+                            <div class="tab-pane container fade no-margin" id="tabFeatureMessages">
+                                <div class="row" style="height: 100%;">
+                                    <div class="col-sm table-wrap">
+                                        <table class="table table-striped table-hover table-sm">
+                                            <tbody id="featureMessagesTable"></tbody>
+                                        </table>
                                     </div>
-                                    <textarea class="form-control form-control-sm" style="resize:none;" spellcheck="false" id="messageFeaturePayload">{}</textarea>
-                                    <textarea class="form-control form-control-sm" style="resize:none;" spellcheck="false" id="messageFeatureResponse"></textarea>
+                                    <div class="col-sm">
+                                        <textarea class="form-control form-control-sm" style="resize:none; height: 100%;" spellcheck="false" id="featureMessageDetail"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>

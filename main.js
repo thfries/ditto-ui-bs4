@@ -6,7 +6,7 @@ import * as Policies from './modules/policies.js';
 import * as Connections from './modules/connections.js';
 import * as Environments from './modules/environments.js';
 
-// let ws;
+let ws;
 
 $(document).ready(function() {
   $('.nav-item').on('click', function() {
@@ -33,27 +33,37 @@ $(document).ready(function() {
   Environments.ready();
 });
 
-// function openWebSocket() {
-//   ws = new WebSocket('ws://' +
-//     Environments.getCurrentEnv().usernamePassword + '@' +
-//     Environments.getCurrentEnv().api_uri + '/ws/1');
-//   // ?access_token=' + Environments.getCurrentEnv().bearer);
+export function openWebSocket() {
+  let wsuri = Environments.getCurrentEnv().api_uri;
+  wsuri = wsuri.replace(/https/, 'wss');
+  try {
+    ws = new WebSocket(wsuri + '/ws/2' +
+      '?access_token=' + Environments.getCurrentEnv().bearer);
+    // Environments.getCurrentEnv().usernamePassword + '@' +
+    // Environments.getCurrentEnv().api_uri + '/ws/1');
+    // ?access_token=' + Environments.getCurrentEnv().bearer
+    ws.onopen = function() {
+      ws.onmessage = onMessage;
+      ws.onerror = onMessage;
+      ws.onclose = onClose;
+      ws.send('START-SEND-EVENTS');
+      ws.send('START-SEND-MESSAGES');
+      ws.send('START-SEND-LIVE-EVENTS');
+      ws.send('START-SEND-LIVE-COMMANDS');
+    };
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-//   ws.onopen = function() {
-//     ws.onmessage = onMessage;
-//     ws.onerror = onMessage;
-//     ws.onclose = onClose;
-//     ws.send('START-SEND-MESSAGES');
-//   };
-// };
+function onClose() {
+  console.log('CLOSE: WebSocket was closed');
+};
 
-// function onClose() {
-//   console.log('WebSocket was closed');
-// };
-
-// function onMessage(message) {
-//   console.log(message);
-// };
+function onMessage(message) {
+  console.log(message);
+  Features.onMessage(message);
+};
 
 // function buildfilterEditFilter() {
 //   const query = $('#filterEdit').val();

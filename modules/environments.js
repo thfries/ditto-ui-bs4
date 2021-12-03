@@ -196,7 +196,7 @@ function activateEnvironment() {
   $('#password').val(usernamePassword.split(':')[1]);
   $('#bearer').val(getCurrentEnv().bearer);
   setAuthHeader();
-  // Main.openWebSocket();
+  Main.openWebSocket();
 }
 
 function setAuthHeader() {
