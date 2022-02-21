@@ -27,6 +27,10 @@ textarea {
     padding-bottom: 0.1rem;
 }
 
+.tab-pane {
+    max-width: none;
+}
+
 .no-margin {
     margin-left: 0px;
     padding-left: 0px;

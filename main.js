@@ -35,7 +35,7 @@ $(document).ready(function() {
 
 export function openWebSocket() {
   let wsuri = Environments.getCurrentEnv().api_uri;
-  wsuri = wsuri.replace(/https/, 'wss');
+  wsuri = wsuri.replace(/https/, 'wss').replace(/http/,'ws');
   try {
     ws = new WebSocket(wsuri + '/ws/2' +
       '?access_token=' + Environments.getCurrentEnv().bearer);
