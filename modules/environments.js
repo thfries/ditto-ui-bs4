@@ -29,6 +29,7 @@ const filterExamples = [
   'like(attributes/key1,"known-chars-at-start*")',
 ];
 
+const cookieId = 'ditto-ui-env';
 let theEnv;
 const settingsEditor = ace.edit('settingsEditor');
 let theFieldIndex = -1;
@@ -38,10 +39,13 @@ export function getCurrentEnv() {
 };
 
 export function ready() {
-  const envcookie = document.cookie.split(';')[0].split('=')[1];
-  if (envcookie) {
-    environments = JSON.parse(window.atob(envcookie));
-  }
+  document.cookie.split(';').forEach((value, i) => {
+    const cookie = value.split('=');
+    if (cookie[0] === cookieId) {
+      environments = JSON.parse(window.atob(cookie[1]));
+    }
+  });
+
   settingsEditor.session.setMode('ace/mode/json');
 
   settingsEditor.setValue(JSON.stringify(environments, null, 2), -1);
@@ -166,7 +170,7 @@ function toggleFilterFavourite(filter) {
 function environmentsJsonChanged() {
   const d = new Date();
   d.setTime(d.getTime() + 30*24*60*60*1000);
-  document.cookie = 'ditto-ui-env=' + window.btoa(JSON.stringify(environments)) + ';expires=' + d.toUTCString();
+  document.cookie = cookieId + '=' + window.btoa(JSON.stringify(environments)) + ';expires=' + d.toUTCString();
   $('#environmentSelector').empty();
   if (theEnv && !getCurrentEnv()) {
     theEnv = null;
@@ -187,6 +191,9 @@ function activateEnvironment() {
   };
   if (!getCurrentEnv()['filterList']) {
     getCurrentEnv().filterList = [];
+  };
+  if (!getCurrentEnv()['pinnedThings']) {
+    getCurrentEnv().pinnedThings = [];
   };
   updateFilterList();
   updateFieldList();

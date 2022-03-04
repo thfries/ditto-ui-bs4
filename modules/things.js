@@ -21,6 +21,10 @@ export function ready() {
     searchThings();
   });
 
+  $('#pinnedThings').click(() => {
+    getPinnedThings();
+  });
+
   $('#searchFilterEdit').on('keyup', function(e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
       searchThings();
@@ -65,38 +69,59 @@ export function ready() {
 
   $('#putAttribute').click(clickAttribute('PUT'));
   $('#deleteAttribute').click(clickAttribute('DELETE'));
-}
+};
+
+function fieldsQueryParameter() {
+  const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
+  return 'fields=thingId' + (fields != '' ? ',' + fields : '');
+};
+
+function fillThingsTable(thingsList) {
+  const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
+  $('#thingsTable').empty();
+  thingsList.items.forEach((item, t) => {
+    const row = $('#thingsTable')[0].insertRow();
+    row.id = item.thingId;
+    row.insertCell(0).innerHTML = item.thingId;
+    fields.forEach((key, i) => {
+      let path = key.replace(/\//g, '.');
+      if (path.charAt(0) != '.') {
+        path = '$.' + path;
+      }
+      const elem = JSONPath({
+        json: item,
+        path: path,
+      });
+      row.insertCell(-1).innerHTML = elem.length != 0 ? elem[0] : '';
+    });
+  });
+};
 
 export function searchThings() {
   const filter = $('#searchFilterEdit').val();
-  const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
-  $.getJSON(getCurrentEnv().api_uri + '/api/2/search/things' +
-    '?fields=thingId' +
-    (fields != '' ? ',' + fields : '') +
+  $.getJSON(getCurrentEnv().api_uri + '/api/2/search/things?' +
+    fieldsQueryParameter() +
     (filter != '' ? '&filter=' + encodeURIComponent(filter) : '') +
     '&option=sort(%2BthingId)')
       .done(function(searchResult) {
-        $('#thingsTable').empty();
-        searchResult.items.forEach((item, t) => {
-          const row = $('#thingsTable')[0].insertRow();
-          row.id = item.thingId;
-          row.insertCell(0).innerHTML = item.thingId;
-          fields.forEach((key, i) => {
-            let path = key.replace(/\//g, '.');
-            if (path.charAt(0) != '.') {
-              path = '$.' + path;
-            }
-            const elem = JSONPath({
-              json: item,
-              path: path,
-            });
-            row.insertCell(-1).innerHTML = elem.length != 0 ? elem[0] : '';
-          });
-        });
+        fillThingsTable(searchResult);
         $('#filter-examples').append($('<option>', {
           text: filter,
         }));
       }).fail(Main.showError);
+};
+
+function getPinnedThings() {
+  const pinnedThings = getCurrentEnv()['pinnedThings'];
+  if (pinnedThings.length === 0) {
+    return;
+  };
+  $.getJSON(getCurrentEnv().api_uri + '/api/2/things?' +
+    fieldsQueryParameter() +
+    '&ids=' + pinnedThings +
+    '&option=sort(%2BthingId)')
+      .done(fillThingsTable)
+      .fail(Main.showError);
 };
 
 function clickModifyThing(method) {
