@@ -79,7 +79,7 @@ function fieldsQueryParameter() {
 function fillThingsTable(thingsList) {
   const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
   $('#thingsTable').empty();
-  thingsList.items.forEach((item, t) => {
+  thingsList.forEach((item, t) => {
     const row = $('#thingsTable')[0].insertRow();
     row.id = item.thingId;
     row.insertCell(0).innerHTML = item.thingId;
@@ -104,7 +104,7 @@ export function searchThings() {
     (filter != '' ? '&filter=' + encodeURIComponent(filter) : '') +
     '&option=sort(%2BthingId)')
       .done(function(searchResult) {
-        fillThingsTable(searchResult);
+        fillThingsTable(searchResult.items);
         $('#filter-examples').append($('<option>', {
           text: filter,
         }));
@@ -114,6 +114,7 @@ export function searchThings() {
 function getPinnedThings() {
   const pinnedThings = getCurrentEnv()['pinnedThings'];
   if (pinnedThings.length === 0) {
+    $('#thingsTable').empty();
     return;
   };
   $.getJSON(getCurrentEnv().api_uri + '/api/2/things?' +
