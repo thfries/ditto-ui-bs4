@@ -6,12 +6,6 @@ import * as Things from './things.js';
 
 let theFeature;
 
-const NAME_SPACE = 0;
-const THING_NAME = 1;
-const CHANNEL = 3;
-const CRITERION = 4;
-const ACTION = 5;
-
 const featurePropertiesEditor = ace.edit('featurePropertiesEditor');
 const featureDesiredPropertiesEditor = ace.edit('featureDesiredPropertiesEditor');
 
