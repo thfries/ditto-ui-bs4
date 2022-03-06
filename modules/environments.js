@@ -40,7 +40,7 @@ export function getCurrentEnv() {
 
 export function ready() {
   document.cookie.split(';').forEach((value, i) => {
-    const cookie = value.split('=');
+    const cookie = value.trim().split('=');
     if (cookie[0] === cookieId) {
       environments = JSON.parse(window.atob(cookie[1]));
     }
@@ -164,6 +164,18 @@ function toggleFilterFavourite(filter) {
   } else {
     getCurrentEnv().filterList.push(filter);
   }
+  environmentsJsonChanged();
+};
+
+export function togglePinnedThing(evt) {
+  if (evt.target.checked) {
+    getCurrentEnv().pinnedThings.push(this.id);
+  } else {
+    const index = getCurrentEnv().pinnedThings.indexOf(this.id);
+    if (index > -1) {
+      getCurrentEnv().pinnedThings.splice(index, 1);
+    };
+  };
   environmentsJsonChanged();
 };
 

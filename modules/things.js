@@ -3,7 +3,7 @@
 /* eslint-disable require-jsdoc */
 import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
 
-import {getCurrentEnv} from './environments.js';
+import {getCurrentEnv, togglePinnedThing} from './environments.js';
 import * as Main from '../main.js';
 import * as Policies from './policies.js';
 import * as Features from './features.js';
@@ -82,7 +82,10 @@ function fillThingsTable(thingsList) {
   thingsList.forEach((item, t) => {
     const row = $('#thingsTable')[0].insertRow();
     row.id = item.thingId;
-    row.insertCell(0).innerHTML = item.thingId;
+    const td = row.insertCell(0);
+    td.style.verticalAlign = 'middle';
+    td.append(createCheckbox(item.thingId, getCurrentEnv().pinnedThings.includes(item.thingId)));
+    row.insertCell(-1).innerHTML = item.thingId;
     fields.forEach((key, i) => {
       let path = key.replace(/\//g, '.');
       if (path.charAt(0) != '.') {
@@ -96,6 +99,15 @@ function fillThingsTable(thingsList) {
     });
   });
 };
+
+function createCheckbox(id, checked) {
+  const checkBox = document.createElement('input');
+  checkBox.type = 'checkbox';
+  checkBox.id = id;
+  checkBox.checked = checked;
+  checkBox.onchange = togglePinnedThing;
+  return checkBox;
+}
 
 export function searchThings() {
   const filter = $('#searchFilterEdit').val();
