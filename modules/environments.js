@@ -216,6 +216,7 @@ function activateEnvironment() {
   $('#bearer').val(getCurrentEnv().bearer);
   setAuthHeader();
   Main.openWebSocket();
+  $('#searchFilterEdit').focus();
 }
 
 function setAuthHeader() {

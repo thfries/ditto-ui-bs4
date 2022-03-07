@@ -18,16 +18,23 @@ export function ready() {
   thingJsonEditor.session.setMode('ace/mode/json');
 
   $('#searchThings').click(() => {
-    searchThings();
+    const filter = $('#searchFilterEdit').val();
+    searchThings(filter);
   });
 
   $('#pinnedThings').click(() => {
-    getPinnedThings();
+    getThings(getCurrentEnv()['pinnedThings']);
   });
 
   $('#searchFilterEdit').on('keyup', function(e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
-      searchThings();
+      const filter = $('#searchFilterEdit').val();
+      const regex = /^(eq\(|ne\(|gt\(|ge\(|lt\(|le\(|in\(|like\(|exists\(|and\(|or\(|not\().*/;
+      if (filter === '' || regex.test(filter)) {
+        searchThings(filter);
+      } else {
+        getThings([filter]);
+      }
     } else {
       clearTimeout(keyStrokeTimeout);
       keyStrokeTimeout = setTimeout(() => {
@@ -69,6 +76,8 @@ export function ready() {
 
   $('#putAttribute').click(clickAttribute('PUT'));
   $('#deleteAttribute').click(clickAttribute('DELETE'));
+
+  $('#searchFilterEdit').focus();
 };
 
 function fieldsQueryParameter() {
@@ -109,8 +118,7 @@ function createCheckbox(id, checked) {
   return checkBox;
 }
 
-export function searchThings() {
-  const filter = $('#searchFilterEdit').val();
+export function searchThings(filter) {
   $.getJSON(getCurrentEnv().api_uri + '/api/2/search/things?' +
     fieldsQueryParameter() +
     (filter != '' ? '&filter=' + encodeURIComponent(filter) : '') +
@@ -123,15 +131,14 @@ export function searchThings() {
       }).fail(Main.showError);
 };
 
-function getPinnedThings() {
-  const pinnedThings = getCurrentEnv()['pinnedThings'];
-  if (pinnedThings.length === 0) {
+function getThings(thingIds) {
+  if (thingIds.length === 0) {
     $('#thingsTable').empty();
     return;
   };
   $.getJSON(getCurrentEnv().api_uri + '/api/2/things?' +
     fieldsQueryParameter() +
-    '&ids=' + pinnedThings +
+    '&ids=' + thingIds +
     '&option=sort(%2BthingId)')
       .done(fillThingsTable)
       .fail(Main.showError);
