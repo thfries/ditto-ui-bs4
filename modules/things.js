@@ -125,9 +125,6 @@ export function searchThings(filter) {
     '&option=sort(%2BthingId)')
       .done(function(searchResult) {
         fillThingsTable(searchResult.items);
-        $('#filter-examples').append($('<option>', {
-          text: filter,
-        }));
       }).fail(Main.showError);
 };
 
