@@ -24,7 +24,7 @@
                 <li class="nav-item active">
                     <a class="nav-link" data-target="#collapseThings:not(.show)" data-toggle="collapse" href="#">Things</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="tabPolicies">
                     <a class="nav-link" data-target="#collapsePolicy:not(.show)" data-toggle="collapse" href="#">Policies</a>
                 </li>
                 <li class="nav-item">
@@ -285,6 +285,20 @@
                                 load
                             </button>
                         </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="input-group input-group-sm mb-1">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">Who am I</div>
+                            </div>
+                            <textarea class="form-control form-control-sm" spellcheck="false" readonly name="whoami" id="whoami" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <h5>Policy Entries</h5>
+                <hr/>
+                <div class="row">
+                    <div class="col-md-4">
                         <div class="input-group input-group-sm mb-1">
                             <div class="input-group-prepend">
                                 <label class="input-group-text">Entry</label>
@@ -355,7 +369,7 @@
             <div>
                 <div class="row resizable_pane" style="height: 1000px;">
                     <div class="col-md-4 resizable_flex_column">
-                        <div class="input-group input-group-sm mt-1" role="group">
+                        <div class="input-group input-group-sm mt-1 mb-1" role="group">
                             <button class="btn btn-outline-secondary btn-sm" id="loadConnections">
                                 list connections
                             </button>

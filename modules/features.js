@@ -116,7 +116,7 @@ export function refreshThing(thing) {
   }
   $('#featureCount').text(count > 0 ? count : '');
   if (!thingHasFeature) {
-    theFeature = false;
+    theFeature = null;
     refreshFeature();
   }
 }

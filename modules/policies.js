@@ -16,6 +16,14 @@ export function onThingChanged(thing) {
 export function ready() {
   $('#refreshPolicy').click(refreshPolicy);
 
+  $('#tabPolicies').click(function() {
+    $.getJSON(getCurrentEnv().api_uri + '/api/2/whoami')
+        .done(function(whoami, status, xhr) {
+          Main.showSuccess(null, status, xhr);
+          $('#whoami').val(JSON.stringify(whoami, null, 2));
+        }).fail(Main.showError);
+  });
+
   $('#policyEntriesTable').on('click', 'tr', function(event) {
     thePolicyEntry = $(this).text();
     $('#thePolicyEntry').val(thePolicyEntry);
@@ -59,13 +67,20 @@ export function refreshPolicy() {
       .done(function(policy, status, xhr) {
         Main.showSuccess(null, status, xhr);
         thePolicy = policy;
+        const policyHasEntry = false;
         $('#policyEntriesTable').empty();
         for (const key of Object.keys(thePolicy.entries)) {
           Main.addTableRow($('#policyEntriesTable')[0], key, null, key === thePolicyEntry);
           if (key === thePolicyEntry) {
             refillPolicySubjectsAndRessources();
+            policyHasEntry = true;
           }
         };
+        if (!policyHasEntry) {
+          thePolicyEntry = null;
+          // todo: clear policy entry data to be consistent with features.
+          // For now the filled fields can be used to copy data to other policy
+        }
       }).fail(Main.showError);
 };
 
