@@ -12,12 +12,8 @@ const featureDesiredPropertiesEditor = ace.edit('featureDesiredPropertiesEditor'
 export function ready() {
   $('#featuresTable').on('click', 'tr', function(event) {
     theFeature = $(this).text();
+    $('[href="#tabCrudFeature"]').tab('show');
     refreshFeature(Things.theThing, theFeature);
-  });
-
-  $('#tabCrudFeatureLink‚').click(() => {
-    featurePropertiesEditor.renderer.updateFull();
-    featureDesiredPropertiesEditor.renderer.updateFull();
   });
 
   $('#putFeature').click(updateFeature('PUT'));
@@ -147,7 +143,6 @@ const messageFeature = function() {
 };
 
 export function onMessage(message) {
-  console.log(message);
   if (message.data.startsWith('START') || !Things.theThing) {
     return;
   };
