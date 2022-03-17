@@ -50,19 +50,23 @@
                 <div class="row resizable_pane" style="height:300px;">
                     <div class="col-md-6 resizable_flex_column">
                         <div class="input-group input-group-sm mb-1 mt-1" role="group">
-                            <button id="searchFavourite" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Toggle favourite for search filter">
-                                <i id="favIcon" class="far fa-star"></i>
-                            </button>
+                            <div class="input-group-prepend">
+                                <button id="searchFavourite" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Toggle favourite for search filter">
+                                    <i id="favIcon" class="far fa-star"></i>
+                                </button>
+                            </div>
                             <input type="text" class="form-control form-control-sm autocomplete" placeholder="Search things..." id="searchFilterEdit"></input>
-                            <button id="searchThings" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Search things">
-                                search
-                            </button>
-                            <button id="pinnedThings" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Pinned things">
-                                pinned
-                            </button>
-                            <button id="createThing" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Create an empty thing with a default policy">
-                                create
-                            </button>
+                            <div class="input-group-append">
+                                <button id="searchThings" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Search things">
+                                    search
+                                </button>
+                                <button id="pinnedThings" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Pinned things">
+                                    pinned
+                                </button>
+                                <button id="createThing" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" title="Create an empty thing with a default policy">
+                                    create
+                                </button>
+                            </div>
                         </div>
                         <div class="table-wrap mb-3">
                             <table class="table table-striped table-hover table-sm">
@@ -116,8 +120,10 @@
                                             <label class="input-group-text">ThingId</label>
                                         </div>
                                         <input type="text" class="form-control" id="thingId">
-                                        <button class="btn btn-outline-secondary btn-sm" id="putThing">create/update</button>
-                                        <button class="btn btn-outline-secondary btn-sm" id="deleteThing">delete</button>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary btn-sm" id="putThing">create/update</button>
+                                            <button class="btn btn-outline-secondary btn-sm" id="deleteThing">delete</button>
+                                        </div>
                                     </div>
                                     <div class="ace_container" style="flex-grow: 1;">
                                         <div class="script_editor" id="thingJsonEditor"></div>
@@ -128,13 +134,15 @@
                                 <div class="input-group input-group-sm mb-1 mt-1">
                                     <div class="input-group-prepend">
                                         <label class="input-group-text">Field</label>
+                                        <button class="btn btn-outline-secondary btn-sm" id="fieldActive">toggle</button>
                                     </div>
-                                    <button class="btn btn-outline-secondary btn-sm" id="fieldActive">toggle</button>
                                     <input type="text" class="form-control" id="fieldPath"></input>
-                                    <button class="btn btn-outline-secondary btn-sm" id="fieldUpdate">create/update</button>
-                                    <button class="btn btn-outline-secondary btn-sm" id="fieldUp">up</button>
-                                    <button class="btn btn-outline-secondary btn-sm" id="fieldDown">down</button>
-                                    <button class="btn btn-outline-secondary btn-sm" id="fieldDelete">delete</button>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary btn-sm" id="fieldUpdate">create/update</button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="fieldUp">up</button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="fieldDown">down</button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="fieldDelete">delete</button>
+                                    </div>
                                 </div>
                                 <table class="table table-striped table-hover table-sm">
                                     <tbody id="fieldList"></tbody>
@@ -172,8 +180,10 @@
                                         <label class="input-group-text">AttributePath</label>
                                     </div>
                                     <input type="text" class="form-control" id="attributePath"></input>
-                                    <button class="btn btn-outline-secondary btn-sm" id="putAttribute">create/update</button>
-                                    <button class="btn btn-outline-secondary btn-sm" id="deleteAttribute">delete</button>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary btn-sm" id="putAttribute">create/update</button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="deleteAttribute">delete</button>
+                                    </div>
                                 </div>
                                 <div class="input-group input-group-sm mb-1">
                                     <div class="input-group-prepend">
@@ -219,8 +229,10 @@
                                         </div>
                                         <input type="text" class="form-control" id="featureId">
                                         <input type="text" class="form-control" id="featureDefinition"></input>
-                                        <button class="btn btn-outline-secondary btn-sm" id="putFeature">create/update</button>
-                                        <button class="btn btn-outline-secondary btn-sm" id="deleteFeature">delete</button>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary btn-sm" id="putFeature">create/update</button>
+                                            <button class="btn btn-outline-secondary btn-sm" id="deleteFeature">delete</button>
+                                        </div>
                                     </div>
                                     <div class="input-group input-group-sm" style="flex-grow: 1; display: flex;">
                                         <div class="input-group-prepend">
@@ -243,7 +255,9 @@
                                         </div>
                                         <input type="text" class="form-control" id="messageFeatureSubject"></input>
                                         <input type="number" class="form-control form-control-sm" id="messageTimeout" value="10"></input>
-                                        <button class="btn btn-outline-secondary btn-sm" id="messageFeature">send</button>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary btn-sm" id="messageFeature">send</button>
+                                        </div>
                                     </div>
                                     <div class="input-group input-group-sm" style="flex-grow: 1; display: flex;">
                                         <div class="input-group-prepend">
@@ -281,9 +295,11 @@
                     <div class="col-md-4">
                         <div class="input-group input-group-sm mb-1 mt-1" role="group">
                             <input type="text" class="form-control form-control-sm" placeholder="policyId" id="thePolicyId"></input>
-                            <button id="refreshPolicy" class="btn btn-outline-secondary btn-sm" title="Load policy with the given ID">
-                                load
-                            </button>
+                            <div class="input-group-append">
+                                <button id="refreshPolicy" class="btn btn-outline-secondary btn-sm" title="Load policy with the given ID">
+                                    load
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-8">
@@ -304,12 +320,14 @@
                                 <label class="input-group-text">Entry</label>
                             </div>
                             <input type="text" class="form-control form-control-sm" id="thePolicyEntry"></input>
-                            <button id="createPolicyEntry" class="btn btn-outline-secondary btn-sm" title="Create a policy entry with the given name">
-                                create
-                            </button>
-                            <button id="deletePolicyEntry" class="btn btn-outline-secondary btn-sm" title="Delete the selected policy entry">
-                                delete
-                            </button>
+                            <div class="input-group-append">
+                                <button id="createPolicyEntry" class="btn btn-outline-secondary btn-sm" title="Create a policy entry with the given name">
+                                    create
+                                </button>
+                                <button id="deletePolicyEntry" class="btn btn-outline-secondary btn-sm" title="Delete the selected policy entry">
+                                    delete
+                                </button>
+                            </div>
                         </div>
                         <table class="table table-striped table-hover table-sm">
                             <tbody id="policyEntriesTable"></tbody>
@@ -332,9 +350,11 @@
                                 <label class="input-group-text">Subject</label>
                             </div>
                             <input type="text" class="form-control form-control-sm" id="policySubjectId"></input>
-                            <button class="btn btn-outline-secondary btn-sm" id="putPolicySubject">
-                                save
-                            </button>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary btn-sm" id="putPolicySubject">
+                                    save
+                                </button>
+                            </div>
                         </div>
                         <div class="input-group input-group-sm mb-3">
                             <div class="input-group-prepend">
@@ -348,9 +368,11 @@
                                 <label class="input-group-text">Ressource</label>
                             </div>
                             <input type="text" class="form-control form-control-sm" id="policyResourceId"></input>
-                            <button class="btn btn-outline-secondary btn-sm" id="putPolicyResource">
-                                save
-                            </button>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary btn-sm" id="putPolicyResource">
+                                    save
+                                </button>
+                            </div>
                         </div>
                         <div class="input-group input-group-sm">
                             <div class="input-group-prepend">
