@@ -1,8 +1,11 @@
+/* eslint-disable new-cap */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
 import {getCurrentEnv} from './environments.js';
 import * as Main from '../main.js';
 import * as Things from './things.js';
+import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
+
 
 let theFeature;
 
@@ -22,15 +25,20 @@ export function ready() {
   featurePropertiesEditor.session.setMode('ace/mode/json');
   featureDesiredPropertiesEditor.session.setMode('ace/mode/json');
 
-  // featurePropertiesEditor.session.getSelection().on('changeCursor', function() {
-  //     let position = featurePropertiesEditor.getCursorPosition();
-  //     let token = featurePropertiesEditor.session.getTokenAt(position.row, position.column);
-  //     if (!token) {return;};
-  //     let path = '$..' + token.value.replace(/['"]+/g, '').trim();
-  //     let res = JSONPath({json: JSON.parse(featurePropertiesEditor.getValue()), path: path, resultType: 'pointer'});
-  //     // TODO set the featurePath somewhere
-  //     $('#featurePath').val(res);
-  // });
+  featurePropertiesEditor.on('dblclick', function() {
+    setTimeout(() => {
+      const token = featurePropertiesEditor.getSelectedText();
+      if (token) {
+        const path = '$..' + token.replace(/['"]+/g, '').trim();
+        const res = JSONPath({
+          json: JSON.parse(featurePropertiesEditor.getValue()),
+          path: path,
+          resultType: 'pointer',
+        });
+        $('#fieldPath').val('features/' + $('#featureId').val() + '/properties' + res);
+      };
+    }, 10);
+  });
 
   $('#messageFeature').click(messageFeature);
 
