@@ -91,9 +91,7 @@ function fillThingsTable(thingsList) {
   thingsList.forEach((item, t) => {
     const row = $('#thingsTable')[0].insertRow();
     row.id = item.thingId;
-    const td = row.insertCell(0);
-    td.style.verticalAlign = 'middle';
-    td.append(createCheckbox(item.thingId, getCurrentEnv().pinnedThings.includes(item.thingId)));
+    Main.addCheckboxToRow(row, item.thingId, getCurrentEnv().pinnedThings.includes(item.thingId), togglePinnedThing);
     row.insertCell(-1).innerHTML = item.thingId;
     fields.forEach((key, i) => {
       let path = key.replace(/\//g, '.');
@@ -108,15 +106,6 @@ function fillThingsTable(thingsList) {
     });
   });
 };
-
-function createCheckbox(id, checked) {
-  const checkBox = document.createElement('input');
-  checkBox.type = 'checkbox';
-  checkBox.id = id;
-  checkBox.checked = checked;
-  checkBox.onchange = togglePinnedThing;
-  return checkBox;
-}
 
 export function searchThings(filter) {
   $.getJSON(getCurrentEnv().api_uri + '/api/2/search/things?' +

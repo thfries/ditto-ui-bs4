@@ -85,14 +85,6 @@ export function ready() {
     }
   });
 
-  $('#fieldActive').click(function() {
-    if (theFieldIndex < 0) {
-      return;
-    };
-    getCurrentEnv().fieldList[theFieldIndex].active = !getCurrentEnv().fieldList[theFieldIndex].active;
-    environmentsJsonChanged();
-  });
-
   $('#fieldUpdate').click(function() {
     if ($('#fieldPath').val() === '') {
       return;
@@ -234,17 +226,24 @@ function setAuthHeader() {
 function updateFieldList() {
   $('#fieldList').empty();
   theFieldIndex = -1;
-  for (let i = 0; i < getCurrentEnv().fieldList.length; i++) {
-    const field = getCurrentEnv().fieldList[i];
+  getCurrentEnv().fieldList.forEach((field, i) => {
     const fieldSelected = $('#fieldPath').val() === field.path;
+    const row = $('#fieldList')[0].insertRow();
+    Main.addCheckboxToRow(row, i, field.active, toggleFieldActive);
+    row.insertCell(-1).innerHTML = field.path;
     if (fieldSelected) {
       theFieldIndex = i;
+      row.classList.add('bg-info');
     }
-    Main.addTableRow($('#fieldList')[0], field.active, field.path, fieldSelected );
-  }
+  });
   if (theFieldIndex < 0) {
     $('#fieldPath').val('');
   }
+};
+
+function toggleFieldActive(evt) {
+  getCurrentEnv().fieldList[this.id].active = evt.target.checked;
+  environmentsJsonChanged();
 };
 
 function updateFilterList() {

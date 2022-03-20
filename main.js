@@ -107,6 +107,17 @@ export const addTableRow = function(table, key, value, selected) {
   }
 };
 
+export function addCheckboxToRow(row, id, checked, onToggle) {
+  const td = row.insertCell(0);
+  td.style.verticalAlign = 'middle';
+  const checkBox = document.createElement('input');
+  checkBox.type = 'checkbox';
+  checkBox.id = id;
+  checkBox.checked = checked;
+  checkBox.onchange = onToggle;
+  td.append(checkBox);
+}
+
 export function showError(xhr, status, message) {
   $('#errorHeader').text(xhr ? xhr.status : status);
   $('#errorBody').text(xhr ? (xhr.responseJSON ? JSON.stringify(xhr.responseJSON, null, 2) : xhr.statusText) : message);
