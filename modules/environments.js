@@ -39,12 +39,10 @@ export function getCurrentEnv() {
 };
 
 export function ready() {
-  document.cookie.split(';').forEach((value, i) => {
-    const cookie = value.trim().split('=');
-    if (cookie[0] === cookieId) {
-      environments = JSON.parse(window.atob(cookie[1]));
-    }
-  });
+  const cookie = document.cookie.match('(^|;)\\s*' + cookieId + '\\s*=\\s*([^;]+)')?.pop();
+  if (cookie) {
+    environments = JSON.parse(window.atob(cookie));
+  }
 
   settingsEditor.session.setMode('ace/mode/json');
 
