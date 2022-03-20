@@ -61,7 +61,6 @@ function onClose() {
 };
 
 function onMessage(message) {
-  console.log(message);
   Features.onMessage(message);
 };
 
