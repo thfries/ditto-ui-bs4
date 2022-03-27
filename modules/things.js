@@ -157,11 +157,11 @@ export function refreshThing(thingId) {
 
         // Update fields of Thing table
         $('#thingDetails').empty();
-        Main.addTableRow($('#thingDetails')[0], 'thingId', thing.thingId);
-        Main.addTableRow($('#thingDetails')[0], 'policyId', thing._policy.policyId);
-        Main.addTableRow($('#thingDetails')[0], 'revision', thing._revision);
-        Main.addTableRow($('#thingDetails')[0], 'created', thing._created);
-        Main.addTableRow($('#thingDetails')[0], 'modified', thing._modified);
+        Main.addTableRow($('#thingDetails')[0], 'thingId', thing.thingId, null, true);
+        Main.addTableRow($('#thingDetails')[0], 'policyId', thing._policy.policyId, null, true);
+        Main.addTableRow($('#thingDetails')[0], 'revision', thing._revision, null, true);
+        Main.addTableRow($('#thingDetails')[0], 'created', thing._created, null, true);
+        Main.addTableRow($('#thingDetails')[0], 'modified', thing._modified, null, true);
 
         // Update attributes table
         $('#attributesTable').empty();

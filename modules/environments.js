@@ -231,6 +231,7 @@ function updateFieldList() {
     const row = $('#fieldList')[0].insertRow();
     Main.addCheckboxToRow(row, i, field.active, toggleFieldActive);
     row.insertCell(-1).innerHTML = field.path;
+    Main.addClipboardCopyToRow(row);
     if (fieldSelected) {
       theFieldIndex = i;
       row.classList.add('bg-info');
@@ -242,7 +243,7 @@ function updateFieldList() {
 };
 
 function toggleFieldActive(evt) {
-  getCurrentEnv().fieldList[this.id].active = evt.target.checked;
+  getCurrentEnv().fieldList[evt.target.id].active = evt.target.checked;
   environmentsJsonChanged();
 };
 

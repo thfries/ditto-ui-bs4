@@ -16,13 +16,7 @@ export function onThingChanged(thing) {
 export function ready() {
   $('#refreshPolicy').click(refreshPolicy);
 
-  $('#tabPolicies').click(function() {
-    $.getJSON(getCurrentEnv().api_uri + '/api/2/whoami')
-        .done(function(whoami, status, xhr) {
-          Main.showSuccess(null, status, xhr);
-          $('#whoami').val(JSON.stringify(whoami, null, 2));
-        }).fail(Main.showError);
-  });
+  $('#tabPolicies').click(refreshWhoAmI);
 
   $('#policyEntriesTable').on('click', 'tr', function(event) {
     thePolicyEntry = $(this).text();
@@ -56,6 +50,19 @@ export function ready() {
   $('#putPolicyResource').click(function() {
     modifyPolicyEntry('/resources/', $('#policyResourceId').val(), $('#policyResourceValue').val());
   });
+}
+
+function refreshWhoAmI() {
+  $.getJSON(getCurrentEnv().api_uri + '/api/2/whoami')
+      .done(function(whoami, status, xhr) {
+        Main.showSuccess(null, status, xhr);
+        $('#whoami').empty();
+        whoami.subjects.forEach((subject, i) => {
+          Main.addTableRow($('#whoami')[0],
+            subject === whoami.defaultSubject ? 'defaultSubject' : 'subject',
+            subject, false, true);
+        });
+      }).fail(Main.showError);
 }
 
 export function refreshPolicy() {

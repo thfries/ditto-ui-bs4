@@ -96,7 +96,7 @@ export function callDittoREST(method, path, body, success) {
     error: showError});
 };
 
-export const addTableRow = function(table, key, value, selected) {
+export const addTableRow = function(table, key, value, selected, withClipBoardCopy) {
   const row = table.insertRow();
   row.insertCell(0).innerHTML = key;
   if (value) {
@@ -104,6 +104,9 @@ export const addTableRow = function(table, key, value, selected) {
   }
   if (selected) {
     row.classList.add('bg-info');
+  }
+  if (withClipBoardCopy) {
+    addClipboardCopyToRow(row);
   }
 };
 
@@ -116,6 +119,20 @@ export function addCheckboxToRow(row, id, checked, onToggle) {
   checkBox.checked = checked;
   checkBox.onchange = onToggle;
   td.append(checkBox);
+}
+
+export function addClipboardCopyToRow(row) {
+  const td = row.insertCell();
+  td.style.textAlign = 'right';
+  const button = document.createElement('button');
+  button.classList.add('btn', 'btn-sm');
+  button.style.padding = 0;
+  button.innerHTML = `<i class="fa-regular fa-clone"></i>`;
+  button.onclick = (evt) => {
+    const td = evt.currentTarget.parentNode.previousSibling;
+    navigator.clipboard.writeText(td.innerText);
+  };
+  td.appendChild(button);
 }
 
 export function showError(xhr, status, message) {
