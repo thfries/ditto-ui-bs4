@@ -219,7 +219,7 @@ function updateConnectionRow(targetRow, fieldToExtract, index) {
 
 function callConnectionsAPI(params, successCallback, connectionId) {
   if (env() === 'things' && !getCurrentEnv().solutionId) {
-    showError(null, 'Error', 'SolutionId is empty'); return;
+    Main.showError(null, 'Error', 'SolutionId is empty'); return;
   };
   $.ajax(getCurrentEnv().api_uri + params.path.replace('{{solutionId}}',
       getCurrentEnv().solutionId).replace('{{connectionId}}',
