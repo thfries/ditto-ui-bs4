@@ -9,6 +9,7 @@ import * as Policies from './policies.js';
 import * as Features from './features.js';
 
 export let theThing;
+let theSearchCursor;
 let theAttribute;
 let keyStrokeTimeout;
 
@@ -17,24 +18,20 @@ const thingJsonEditor = ace.edit('thingJsonEditor');
 export function ready() {
   thingJsonEditor.session.setMode('ace/mode/json');
 
-  $('#searchThings').click(() => {
-    const filter = $('#searchFilterEdit').val();
-    searchThings(filter);
-  });
+  $('#searchThings').click(searchClicked);
 
   $('#pinnedThings').click(() => {
     getThings(getCurrentEnv()['pinnedThings']);
   });
 
+  $('#searchFilterEdit').on('change', function(e) {
+    theSearchCursor = null;
+    removeMoreFromThingList();
+  });
+
   $('#searchFilterEdit').on('keyup', function(e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
-      const filter = $('#searchFilterEdit').val();
-      const regex = /^(eq\(|ne\(|gt\(|ge\(|lt\(|le\(|in\(|like\(|exists\(|and\(|or\(|not\().*/;
-      if (filter === '' || regex.test(filter)) {
-        searchThings(filter);
-      } else {
-        getThings([filter]);
-      }
+      searchClicked();
     } else {
       clearTimeout(keyStrokeTimeout);
       keyStrokeTimeout = setTimeout(() => {
@@ -64,9 +61,13 @@ export function ready() {
   $('#deleteThing').click(clickModifyThing('DELETE'));
 
   $('#thingsTable').on('click', 'tr', function(event) {
-    refreshThing($(this)[0].id);
+    if ($(this)[0].id === 'searchThingsMore') {
+      $(this)[0].style.pointerEvents = 'none';
+      searchThings($('#searchFilterEdit').val());
+    } else {
+      refreshThing($(this)[0].id);
+    }
   });
-
 
   // Attributes -------------------------------
   $('#attributesTable').on('click', 'tr', function(event) {
@@ -80,6 +81,17 @@ export function ready() {
   $('#searchFilterEdit').focus();
 };
 
+function searchClicked() {
+  theSearchCursor = null;
+  const filter = $('#searchFilterEdit').val();
+  const regex = /^(eq\(|ne\(|gt\(|ge\(|lt\(|le\(|in\(|like\(|exists\(|and\(|or\(|not\().*/;
+  if (filter === '' || regex.test(filter)) {
+    searchThings(filter);
+  } else {
+    getThings([filter]);
+  }
+}
+
 function fieldsQueryParameter() {
   const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
   return 'fields=thingId' + (fields != '' ? ',' + fields : '');
@@ -87,7 +99,6 @@ function fieldsQueryParameter() {
 
 function fillThingsTable(thingsList) {
   const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
-  $('#thingsTable').empty();
   thingsList.forEach((item, t) => {
     const row = $('#thingsTable')[0].insertRow();
     row.id = item.thingId;
@@ -108,18 +119,26 @@ function fillThingsTable(thingsList) {
 };
 
 export function searchThings(filter) {
+  document.body.style.cursor = 'progress';
   $.getJSON(getCurrentEnv().api_uri + '/api/2/search/things?' +
-    fieldsQueryParameter() +
-    (filter != '' ? '&filter=' + encodeURIComponent(filter) : '') +
-    '&option=sort(%2BthingId)')
+  fieldsQueryParameter() +
+  (filter != '' ? '&filter=' + encodeURIComponent(filter) : '') +
+  '&option=sort(%2BthingId)' +
+  (theSearchCursor ? ',cursor(' + theSearchCursor + ')' : ''))
       .done(function(searchResult) {
+        document.body.style.cursor = 'default';
+        checkFirstOrNextPage();
         fillThingsTable(searchResult.items);
-      }).fail(Main.showError);
+        checkLastPage(searchResult);
+      }).fail(function(xhr, status, message) {
+        document.body.style.cursor = 'default';
+        Main.showError(xhr, status, message);
+      });
 };
 
 function getThings(thingIds) {
+  $('#thingsTable').empty();
   if (thingIds.length === 0) {
-    $('#thingsTable').empty();
     return;
   };
   $.getJSON(getCurrentEnv().api_uri + '/api/2/things?' +
@@ -225,6 +244,41 @@ function clickAttribute(method) {
 function refreshAttribute(thing, attribute) {
   $('#attributePath').val(thing ? attribute : '');
   $('#attributeValue').val(thing ? JSON.stringify(thing.attributes[attribute]) : '');
+}
+
+function checkLastPage(searchResult) {
+  if (searchResult['cursor']) {
+    addMoreToThingList();
+    theSearchCursor = searchResult.cursor;
+  } else {
+    theSearchCursor = null;
+  }
+}
+
+function checkFirstOrNextPage() {
+  if (!theSearchCursor) {
+    $('#thingsTable').empty();
+  } else {
+    removeMoreFromThingList();
+  }
+}
+
+function addMoreToThingList() {
+  const moreCell = $('#thingsTable')[0].insertRow().insertCell(-1);
+  moreCell.innerHTML = 'load more...';
+  moreCell.colSpan = $('#thingsTable')[0].rows[0].childElementCount;
+  moreCell.style.textAlign = 'center';
+  moreCell.style.cursor = 'pointer';
+  moreCell.disabled = true;
+  moreCell.parentNode.style.color = '#3a8c9a';
+  moreCell.parentNode.id = 'searchThingsMore';
+};
+
+function removeMoreFromThingList() {
+  const moreRow = $('#searchThingsMore');
+  if (moreRow[0]) {
+    moreRow[0].parentNode.removeChild(moreRow[0]);
+  }
 }
 
 
