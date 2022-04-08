@@ -71,7 +71,7 @@ export function ready() {
 
   $('#authorizeBasic').on('click', () => {
     getCurrentEnv().useBasicAuth = true;
-    getCurrentEnv().usernamePassword = $('#userName').val() + ':' + $('#password');
+    getCurrentEnv().usernamePassword = $('#userName').val() + ':' + $('#password').val();
     environmentsJsonChanged();
   });
 
