@@ -18,6 +18,7 @@
   "homepage": "https://github.com/thfries/ditto-ui-bs4#readme",
   "devDependencies": {
     "eslint": "^8.1.0",
-    "eslint-config-google": "^0.14.0"
+    "eslint-config-google": "^0.14.0",
+    "jest": "^27.5.1"
   }
 }
