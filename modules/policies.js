@@ -74,7 +74,7 @@ export function refreshPolicy() {
       .done(function(policy, status, xhr) {
         Main.showSuccess(null, status, xhr);
         thePolicy = policy;
-        var policyHasEntry = false;
+        let policyHasEntry = false;
         $('#policyEntriesTable').empty();
         for (const key of Object.keys(thePolicy.entries)) {
           Main.addTableRow($('#policyEntriesTable')[0], key, null, key === thePolicyEntry);
