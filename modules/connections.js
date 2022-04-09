@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
 import {getCurrentEnv} from './environments.js';
