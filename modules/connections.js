@@ -226,7 +226,7 @@ function callConnectionsAPI(params, successCallback, connectionId) {
       getCurrentEnv().solutionId).replace('{{connectionId}}',
       connectionId), {
     type: params.method,
-    data: params.body ? JSON.stringify(params.body).replace('{{connectionId}}', connectionId).replace('{{connectionJson}}', JSON.stringify(theConnection)) : null,
+    data: params.body ? JSON.stringify(params.body).replace('"{{connectionId}}"', connectionId).replace('"{{connectionJson}}"', JSON.stringify(theConnection)) : null,
     contentType: 'application/json',
     success: function(data, status, xhr) {
       if (data && data['?'] && data['?']['?'].status >= 400) {
