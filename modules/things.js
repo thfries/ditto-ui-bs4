@@ -51,7 +51,7 @@ export function ready() {
       data: '{}',
       success: function(data, textStatus, xhr) {
         Main.showSuccess(data, textStatus, xhr);
-        searchThings();
+        getThings([data.thingId]);
       },
       error: Main.showError,
     });
@@ -122,7 +122,7 @@ export function searchThings(filter) {
   document.body.style.cursor = 'progress';
   $.getJSON(getCurrentEnv().api_uri + '/api/2/search/things?' +
   fieldsQueryParameter() +
-  (filter != '' ? '&filter=' + encodeURIComponent(filter) : '') +
+  ((filter && filter != '') ? '&filter=' + encodeURIComponent(filter) : '') +
   '&option=sort(%2BthingId)' +
   (theSearchCursor ? ',cursor(' + theSearchCursor + ')' : ''))
       .done(function(searchResult) {
@@ -194,7 +194,8 @@ export function refreshThing(thingId) {
             };
             Main.addTableRow($('#attributesTable')[0],
                 key,
-                JSON.stringify(thing.attributes[key]), key === theAttribute);
+                JSON.stringify(thing.attributes[key]),
+                key === theAttribute);
             count++;
           };
         }
@@ -243,7 +244,7 @@ function clickAttribute(method) {
 
 function refreshAttribute(thing, attribute) {
   $('#attributePath').val(thing ? attribute : '');
-  $('#attributeValue').val(thing ? JSON.stringify(thing.attributes[attribute]) : '');
+  $('#attributeValue').val(thing ? JSON.stringify(thing.attributes[attribute]).slice(1, -1) : '');
 }
 
 function checkLastPage(searchResult) {
