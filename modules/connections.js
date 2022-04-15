@@ -154,10 +154,7 @@ export function ready() {
     if (env() === 'things') {
       delete theConnection['id'];
     }
-    callConnectionsAPI(config[env()].createConnection, function(newConnection) {
-      connectionIdList.push(newConnection.id);
-      Main.addTableRow($('#connectionsTable')[0], newConnection.id);
-    });
+    callConnectionsAPI(config[env()].createConnection, loadConnections);
   });
 
   $('#connectionsTable').on('click', 'tr', function(event) {
@@ -188,7 +185,7 @@ export function ready() {
   });
 
   $('#modifyConnection').click(function() {
-    callConnectionsAPI(config[env()].modifyConnection, Main.showSuccess, $('#connectionId').val());
+    callConnectionsAPI(config[env()].modifyConnection, loadConnections, $('#connectionId').val());
   });
 
   $('#deleteConnection').click(function() {
@@ -226,7 +223,7 @@ function callConnectionsAPI(params, successCallback, connectionId) {
       getCurrentEnv().solutionId).replace('{{connectionId}}',
       connectionId), {
     type: params.method,
-    data: params.body ? JSON.stringify(params.body).replace('"{{connectionId}}"', connectionId).replace('"{{connectionJson}}"', JSON.stringify(theConnection)) : null,
+    data: params.body ? JSON.stringify(params.body).replace('{{connectionId}}', connectionId).replace('"{{connectionJson}}"', JSON.stringify(theConnection)) : null,
     contentType: 'application/json',
     success: function(data, status, xhr) {
       if (data && data['?'] && data['?']['?'].status >= 400) {
