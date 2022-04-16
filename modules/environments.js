@@ -29,7 +29,6 @@ const filterExamples = [
   'like(attributes/key1,"known-chars-at-start*")',
 ];
 
-const cookieId = 'ditto-ui-env';
 let theEnv;
 const settingsEditor = ace.edit('settingsEditor');
 let theFieldIndex = -1;
@@ -39,9 +38,13 @@ export function getCurrentEnv() {
 };
 
 export function ready() {
-  const cookie = document.cookie.match('(^|;)\\s*' + cookieId + '\\s*=\\s*([^;]+)')?.pop();
+  const cookie = document.cookie.match('(^|;)\\s*ditto-ui-env\\s*=\\s*([^;]+)')?.pop();
   if (cookie) {
     environments = JSON.parse(window.atob(cookie));
+  }
+  const restoredEnv = localStorage.getItem('ditto-ui-env');
+  if (restoredEnv) {
+    environments = JSON.parse(restoredEnv);
   }
 
   settingsEditor.session.setMode('ace/mode/json');
@@ -170,9 +173,8 @@ export function togglePinnedThing(evt) {
 };
 
 function environmentsJsonChanged() {
-  const d = new Date();
-  d.setTime(d.getTime() + 30*24*60*60*1000);
-  document.cookie = cookieId + '=' + window.btoa(JSON.stringify(environments)) + ';expires=' + d.toUTCString();
+  localStorage.setItem('ditto-ui-env', JSON.stringify(environments));
+
   $('#environmentSelector').empty();
   if (theEnv && !getCurrentEnv()) {
     theEnv = null;
