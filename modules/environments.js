@@ -30,7 +30,7 @@ const filterExamples = [
 ];
 
 let theEnv;
-const settingsEditor = ace.edit('settingsEditor');
+let settingsEditor;
 let theFieldIndex = -1;
 
 export function getCurrentEnv() {
@@ -47,6 +47,7 @@ export function ready() {
     environments = JSON.parse(restoredEnv);
   }
 
+  settingsEditor = ace.edit('settingsEditor');
   settingsEditor.session.setMode('ace/mode/json');
 
   settingsEditor.setValue(JSON.stringify(environments, null, 2), -1);

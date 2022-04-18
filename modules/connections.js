@@ -139,11 +139,15 @@ const config = {
 let connectionIdList;
 let theConnection;
 
-const connectionEditor = ace.edit('connectionEditor');
-const incomingEditor = ace.edit('connectionIncomingScript');
-const outgoingEditor = ace.edit('connectionOutgoingScript');
+let connectionEditor;
+let incomingEditor;
+let outgoingEditor;
 
 export function ready() {
+  connectionEditor = ace.edit('connectionEditor');
+  incomingEditor = ace.edit('connectionIncomingScript');
+  outgoingEditor = ace.edit('connectionOutgoingScript');
+
   connectionEditor.session.setMode('ace/mode/json');
   incomingEditor.session.setMode('ace/mode/javascript');
   outgoingEditor.session.setMode('ace/mode/javascript');

@@ -13,9 +13,10 @@ let theSearchCursor;
 let theAttribute;
 let keyStrokeTimeout;
 
-const thingJsonEditor = ace.edit('thingJsonEditor');
+let thingJsonEditor;
 
 export function ready() {
+  thingJsonEditor = ace.edit('thingJsonEditor');
   thingJsonEditor.session.setMode('ace/mode/json');
 
   $('#searchThings').click(searchClicked);
@@ -151,7 +152,8 @@ function getThings(thingIds) {
 
 function clickModifyThing(method) {
   return function() {
-    if (!$('#thingId').val()) {
+    const thingId = $('#thingId').val();
+    if (!thingId) {
       Main.showError(null, 'Error', 'thingId is empty'); return;
     }
     Main.callDittoREST(

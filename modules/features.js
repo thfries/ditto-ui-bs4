@@ -9,8 +9,8 @@ import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/in
 
 let theFeature;
 
-const featurePropertiesEditor = ace.edit('featurePropertiesEditor');
-const featureDesiredPropertiesEditor = ace.edit('featureDesiredPropertiesEditor');
+let featurePropertiesEditor;
+let featureDesiredPropertiesEditor;
 
 export function ready() {
   $('#featuresTable').on('click', 'tr', function(event) {
@@ -21,6 +21,9 @@ export function ready() {
 
   $('#putFeature').click(updateFeature('PUT'));
   $('#deleteFeature').click(updateFeature('DELETE'));
+
+  featurePropertiesEditor = ace.edit('featurePropertiesEditor');
+  featureDesiredPropertiesEditor = ace.edit('featureDesiredPropertiesEditor');
 
   featurePropertiesEditor.session.setMode('ace/mode/json');
   featureDesiredPropertiesEditor.session.setMode('ace/mode/json');
