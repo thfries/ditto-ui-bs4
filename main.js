@@ -1,5 +1,8 @@
 /* eslint-disable require-jsdoc */
 /* eslint-disable no-invalid-this */
+// import $ from 'jquery';
+// global.$ = global.jQuery = $;
+
 import * as Things from './modules/things.js';
 import * as Features from './modules/features.js';
 import * as Policies from './modules/policies.js';
@@ -40,14 +43,8 @@ $(document).ready(async function() {
 });
 
 export function openWebSocket() {
-  let wsuri = Environments.getCurrentEnv().api_uri;
-  wsuri = wsuri.replace(/https/, 'wss').replace(/http/, 'ws');
   try {
-    ws = new WebSocket(wsuri + '/ws/2' +
-      '?access_token=' + Environments.getCurrentEnv().bearer);
-    // Environments.getCurrentEnv().usernamePassword + '@' +
-    // Environments.getCurrentEnv().api_uri + '/ws/1');
-    // ?access_token=' + Environments.getCurrentEnv().bearer
+    ws = new WebSocket(createWSURI(Environments.getCurrentEnv()));
     ws.onopen = function() {
       ws.onmessage = onMessage;
       ws.onerror = onMessage;
@@ -60,6 +57,18 @@ export function openWebSocket() {
   } catch (error) {
     console.log(error);
   }
+};
+
+export function createWSURI(environment) {
+  const wsuri = new URL(environment.api_uri.replace(/https/, 'wss').replace(/http/, 'ws'));
+  wsuri.pathname = '/ws/2';
+  if (environment.useBasicAuth) {
+    wsuri.username = environment.usernamePassword.split(':')[0];
+    wsuri.password = environment.usernamePassword.split(':')[1];
+  } else {
+    wsuri.search = '?access_token=' + environment.bearer;
+  }
+  return wsuri.toString();
 };
 
 function onClose() {
