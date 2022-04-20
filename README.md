@@ -3,9 +3,9 @@ This is an explorer UI for [Eclipse Ditto](https://www.eclipse.org/ditto/). It i
 
 ## Features
 - Search Things
--- Save filters as favorites
--- Configure fields for the search result
--- Pin things to easily access them
+  - Save filters as favorites
+  - Configure fields for the search result
+  - Pin things to easily access them
 - Maintain attributes of things
 - Maintain features of things
 - Send live messages to features
@@ -42,8 +42,8 @@ Choose one of the configured environments in the environment selector.
 
 Use "Authorize" to provide the credentials for the active environment
 
+- For ditto set "useBasicAuth" to true and set a usernamePassword separated by a colon ("username:password"). For managing connections, you need to use a different username and password in the standard ditto configuration (see [DevOps commands](https://www.eclipse.org/ditto/installation-operating.html#devops-commands))
 - For Bosch IoT Things set "useBasicAuth" to false and set a Bearer token for your OAuth2 client and (for managing connections) your solution Id
-- For Ditto set "useBasicAuth" to true and set a usernamePassword separated by a colon ("username:password")
 
 Note: Additional settings will be stored in the environment configuration, like the favorite search filters, the search fields and the pinned things.
 
@@ -58,8 +58,14 @@ Pin things in the table to easily access them later. Click "pinned" to get all y
 Navigate through things and features
 
 ## Open Issues
-Yes, e.g.:
-- "Load more" for things list
+
+- WoT support (and unify and optimize the creation of new objects)
+- Templates for connections
+- Extend WebSocket support (listen to multiple features and things)
+- Add column names for fields and show a header in the things table
+- Remove jquery dependency (and upgrade to latest Bootstrap)
+- Allow alternative authorization for devops api
+- Automated tests
 - Treatment for Namespaces
 - Get/Refresh bearer token
 - ...?
