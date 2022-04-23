@@ -21,16 +21,16 @@
         <a class="navbar-brand">ditto explorer</a>
         <div class="navbar-collapse collapse w-100 justify-content-center">
             <ul class="navbar-nav text-center">
-                <li class="nav-item active">
+                <li class="nav-item active mainUser">
                     <a class="nav-link" data-target="#collapseThings:not(.show)" data-toggle="collapse" href="#">Things</a>
                 </li>
-                <li class="nav-item" id="tabPolicies">
+                <li class="nav-item mainUser" id="tabPolicies">
                     <a class="nav-link" data-target="#collapsePolicy:not(.show)" data-toggle="collapse" href="#">Policies</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item devOpsUser">
                     <a class="nav-link" data-target="#collapseConnections:not(.show)" data-toggle="collapse" href="#">Connections</a>
                 </li>
-                <li class="nav-item" id="tabEnvironments">
+                <li class="nav-item mainUser" id="tabEnvironments">
                     <a class="nav-link" data-target="#collapseSettings:not(.show)" data-toggle="collapse" href="#">Environments</a>
                 </li>
             </ul>
@@ -69,7 +69,7 @@
     </div>
       <!-- Authorization modal ----------------------------------------------------------------->
     <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-sm">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     Authorize
@@ -79,18 +79,44 @@
                 </div>
                 <div class="modal-body">
                     <h5>Basic Auth</h5>
-                    <hr/>   
-                    <div class="input-group input-group-sm mb-1 mt-1">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text">Username</label>
+                    <hr/>
+                    <div class="row">                        
+                        <div class="col-md-4">
+                            <label>Main User</label>
                         </div>
-                        <input type="text" class="form-control form-control-sm" id="userName"></input>
+                        <div class="col-md-8">
+                            <div class="input-group input-group-sm mb-1">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">Username</label>
+                                </div>
+                                <input type="text" class="form-control form-control-sm" id="userName"></input>
+                            </div>
+                            <div class="input-group input-group-sm mb-1">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">Password</label>
+                                </div>
+                                <input type="password" class="form-control form-control-sm" id="password"></input>
+                            </div>
+                        </div>
                     </div>
-                    <div class="input-group input-group-sm mb-1">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text">Password</label>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>DevOps User<br/><small>(for Connections, optional)</small></label>
                         </div>
-                        <input type="password" class="form-control form-control-sm" id="password"></input>
+                        <div class="col-md-8">
+                            <div class="input-group input-group-sm mb-1">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">DevOps Username</label>
+                                </div>
+                                <input type="text" class="form-control form-control-sm" id="devOpsUserName"></input>
+                            </div>
+                            <div class="input-group input-group-sm mb-1">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">DevOps Password</label>
+                                </div>
+                                <input type="password" class="form-control form-control-sm" id="devOpsPassword"></input>
+                            </div>
+                        </div>
                     </div>
                     <div class="input-group input-group-sm" style="flex-direction: row-reverse;">
                         <button class="btn btn-outline-secondary btn-sm" data-dismiss="modal" id="authorizeBasic">Authorize</button>

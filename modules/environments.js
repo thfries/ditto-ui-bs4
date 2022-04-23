@@ -8,6 +8,7 @@ let environments = {
     solutionId: null,
     bearer: null,
     usernamePassword: 'ditto:ditto',
+    usernamePasswordDevOps: 'devops:foobar',
     useBasicAuth: true,
   },
   cloud_things_aws: {
@@ -62,6 +63,12 @@ export function ready() {
     settingsEditor.setValue(JSON.stringify(environments, null, 2), -1);
   });
 
+  document.querySelectorAll('.mainUser,.devOpsUser').forEach((menuTab) => {
+    menuTab.addEventListener('click', (event) => {
+      setAuthHeader(event.target.parentNode.classList.contains('devOpsUser'));
+    });
+  });
+
   $('#environmentSelector').on('change', function() {
     theEnv = this.value;
     activateEnvironment();
@@ -76,6 +83,7 @@ export function ready() {
   $('#authorizeBasic').on('click', () => {
     getCurrentEnv().useBasicAuth = true;
     getCurrentEnv().usernamePassword = $('#userName').val() + ':' + $('#password').val();
+    getCurrentEnv().usernamePasswordDevOps = $('#devOpsUserName').val() + ':' + $('#devOpsPassword').val();
     environmentsJsonChanged();
   });
 
@@ -136,7 +144,7 @@ export function ready() {
     environmentsJsonChanged();
   });
 
-  $('#filterEdit').on('click', function() {
+  $('#searchFilterEdit').on('click', function() {
     if ($(this)[0].selectionStart == $(this)[0].selectionEnd) {
       $(this).select();
     };
@@ -203,22 +211,32 @@ function activateEnvironment() {
   updateFilterList();
   updateFieldList();
 
-  const usernamePassword = getCurrentEnv().usernamePassword ? getCurrentEnv().usernamePassword : ':';
+  let usernamePassword = getCurrentEnv().usernamePassword ? getCurrentEnv().usernamePassword : ':';
   $('#userName').val(usernamePassword.split(':')[0]);
   $('#password').val(usernamePassword.split(':')[1]);
+  usernamePassword = getCurrentEnv().usernamePasswordDevOps ? getCurrentEnv().usernamePasswordDevOps : ':';
+  $('#devOpsUserName').val(usernamePassword.split(':')[0]);
+  $('#devOpsPassword').val(usernamePassword.split(':')[1]);
   $('#bearer').val(getCurrentEnv().bearer);
   setAuthHeader();
   Main.openWebSocket();
   $('#searchFilterEdit').focus();
 }
 
-function setAuthHeader() {
+export function setAuthHeader(forDevOps) {
   if (!getCurrentEnv().bearer && !getCurrentEnv().usernamePassword) {
     return;
   };
-  const auth = getCurrentEnv().useBasicAuth ?
-    'Basic ' + window.btoa(getCurrentEnv().usernamePassword) :
-    'Bearer ' + getCurrentEnv().bearer;
+  let auth;
+  if (getCurrentEnv().useBasicAuth) {
+    if (forDevOps && getCurrentEnv().usernamePasswordDevOps) {
+      auth = 'Basic ' + window.btoa(getCurrentEnv().usernamePasswordDevOps);
+    } else {
+      auth = 'Basic ' + window.btoa(getCurrentEnv().usernamePassword);
+    }
+  } else {
+    auth ='Bearer ' + getCurrentEnv().bearer;
+  }
   $.ajaxSetup({
     beforeSend: function(xhr) {
       xhr.setRequestHeader('Authorization', auth);
