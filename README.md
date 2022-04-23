@@ -42,7 +42,7 @@ Choose one of the configured environments in the environment selector.
 
 Use "Authorize" to provide the credentials for the active environment
 
-- For ditto set "useBasicAuth" to true and set a usernamePassword separated by a colon ("username:password"). For managing connections, you need to use a different username and password in the standard ditto configuration (see [DevOps commands](https://www.eclipse.org/ditto/installation-operating.html#devops-commands))
+- For ditto set "useBasicAuth" to true and set a *usernamePassword* separated by a colon ("username:password"). For managing connections [ditto DevOps commands](https://www.eclipse.org/ditto/installation-operating.html#devops-commands) are being used. The default ditto configuration uses a separate user for that, so you can specify *usernamePasswordDevOps* that is used on the Connection tabs if set.
 - For Bosch IoT Things set "useBasicAuth" to false and set a Bearer token for your OAuth2 client and (for managing connections) your solution Id
 
 Note: Additional settings will be stored in the environment configuration, like the favorite search filters, the search fields and the pinned things.
