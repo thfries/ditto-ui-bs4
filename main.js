@@ -12,11 +12,11 @@ import * as Environments from './modules/environments.js';
 let ws;
 
 $(document).ready(async function() {
-  document.getElementById('thingsHtml').innerHTML = await (await fetch('html/things.html')).text();
-  document.getElementById('featuresHtml').innerHTML = await (await fetch('html/features.html')).text();
-  document.getElementById('policyHtml').innerHTML = await (await fetch('html/policies.html')).text();
-  document.getElementById('connectionsHtml').innerHTML = await (await fetch('html/connections.html')).text();
-  document.getElementById('environmentsHtml').innerHTML = await (await fetch('html/environments.html')).text();
+  document.getElementById('thingsHtml').innerHTML = await (await fetch('modules/things.html')).text();
+  document.getElementById('featuresHtml').innerHTML = await (await fetch('modules/features.html')).text();
+  document.getElementById('policyHtml').innerHTML = await (await fetch('modules/policies.html')).text();
+  document.getElementById('connectionsHtml').innerHTML = await (await fetch('modules/connections.html')).text();
+  document.getElementById('environmentsHtml').innerHTML = await (await fetch('modules/environments.html')).text();
 
   $('.nav-item').on('click', function() {
     $(this).addClass('active').siblings().removeClass('active');
