@@ -150,6 +150,18 @@ export function addClipboardCopyToRow(row) {
   td.appendChild(button);
 }
 
+export function addRadioButton(target, groupName, value, checked) {
+  const radio = document.createElement('div');
+  radio.innerHTML = `<div class="form-check">
+    <input class="form-check-input" type="radio" name="${ groupName}" value="${ value}"
+        ${checked ? 'checked' : ''}>
+    <label class="form-check-label" for="gridRadios1">
+      ${ value}
+    </label>
+  </div>`;
+  target.appendChild(radio);
+}
+
 export function showError(xhr, status, message) {
   $('#errorHeader').text(xhr ? xhr.status : status);
   $('#errorBody').text(xhr ? (xhr.responseJSON ? JSON.stringify(xhr.responseJSON, null, 2) : xhr.statusText) : message);

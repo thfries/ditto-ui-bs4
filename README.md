@@ -64,10 +64,10 @@ Navigate through things and features
 - Extend WebSocket support (listen to multiple features and things)
 - Add column names for fields and show a header in the things table
 - Remove jquery dependency (and upgrade to latest Bootstrap)
-- Allow alternative authorization for devops api
 - Automated tests
 - Treatment for Namespaces
 - Get/Refresh bearer token
+- Find a better solution for user assertiongs (e.g. "no ting selected" errors)
 - ...?
 
 ## Main Dependencies

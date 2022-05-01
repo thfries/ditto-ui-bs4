@@ -7,18 +7,22 @@ import * as Things from './things.js';
 import {JSONPath} from '../node_modules/jsonpath-plus/dist/index-browser-esm.js';
 
 
-let theFeature;
+let theFeatureId;
+let lastNewFeatureBase;
 
 let featurePropertiesEditor;
 let featureDesiredPropertiesEditor;
 
 export function ready() {
   $('#featuresTable').on('click', 'tr', function(event) {
-    theFeature = $(this).text();
+    theFeatureId = $(this).text();
     $('[href="#tabCrudFeature"]').tab('show');
-    refreshFeature(Things.theThing, theFeature);
+    refreshFeature(Things.theThing, theFeatureId);
   });
 
+  $('#createFeature').click(() => {
+    createFeature($('#featureId').val());
+  });
   $('#putFeature').click(updateFeature('PUT'));
   $('#deleteFeature').click(updateFeature('DELETE'));
 
@@ -50,13 +54,39 @@ export function ready() {
   });
 }
 
+export function createFeature(newFeatureId) {
+  if (!newFeatureId || newFeatureId === '') {
+    newFeatureId = 'new-feature';
+  } else if (newFeatureId.startsWith(lastNewFeatureBase)) {
+    newFeatureId = lastNewFeatureBase;
+  }
+  if (!Things.theThing) {
+    Main.showError(null, 'Error', 'No Thing selected'); return;
+  };
+  if (!Things.theThing['features']) {
+    Things.theThing.features = {};
+  }
+  let resultingFeatureId = newFeatureId;
+  let countExisting = 0;
+  while (Object.keys(Things.theThing.features).includes(resultingFeatureId)) {
+    countExisting++;
+    resultingFeatureId = newFeatureId + '-' + countExisting;
+  }
+  theFeatureId = resultingFeatureId;
+  Main.callDittoREST('PUT',
+      '/things/' + Things.theThing.thingId + '/features/' + resultingFeatureId,
+      '{}',
+      () => Things.refreshThing(Things.theThing.thingId),
+  );
+}
+
 function updateFeature(method) {
   return function() {
     if (!Things.theThing) {
       Main.showError(null, 'Error', 'No Thing selected'); return;
     };
     if (!$('#featureId').val()) {
-      Main.showError(null, 'Error', 'FeatureId is empty'); return;
+      Main.showError(null, 'Error', 'No Feature selected'); return;
     };
     const featureObject = {};
     const featureProperties = featurePropertiesEditor.getValue();
@@ -113,17 +143,17 @@ export function refreshThing(thing) {
   let thingHasFeature = false;
   if (thing.features) {
     for (const key of Object.keys(thing.features)) {
-      if (key === theFeature) {
+      if (key === theFeatureId) {
         refreshFeature(thing, key);
         thingHasFeature = true;
       };
-      Main.addTableRow($('#featuresTable')[0], key, null, key === theFeature);
+      Main.addTableRow($('#featuresTable')[0], key, null, key === theFeatureId);
       count++;
     };
   }
   $('#featureCount').text(count > 0 ? count : '');
   if (!thingHasFeature) {
-    theFeature = null;
+    theFeatureId = null;
     refreshFeature();
   }
 }
@@ -160,7 +190,7 @@ export function onMessage(message) {
   const dittoJson = JSON.parse(message.data);
   const topicThingId = Things.theThing.thingId.replace(':', '/');
   if (dittoJson.topic.startsWith(topicThingId)) {
-    const pathFeature = '/features/' + theFeature;
+    const pathFeature = '/features/' + theFeatureId;
     if (dittoJson.path.startsWith(pathFeature)) {
       const row = $('#featureMessagesTable')[0].insertRow();
       row.insertCell(0).innerHTML = new Date().toLocaleTimeString();

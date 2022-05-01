@@ -143,6 +143,8 @@ let connectionEditor;
 let incomingEditor;
 let outgoingEditor;
 
+let connectionTemplates;
+
 export function ready() {
   connectionEditor = ace.edit('connectionEditor');
   incomingEditor = ace.edit('connectionIncomingScript');
@@ -152,9 +154,13 @@ export function ready() {
   incomingEditor.session.setMode('ace/mode/javascript');
   outgoingEditor.session.setMode('ace/mode/javascript');
 
+  loadConnectionTemplates();
+
   $('#loadConnections').click(loadConnections);
 
   $('#createConnection').click(function() {
+    const selectedTemplate = $('input[name=connectionTemplate]:checked').val();
+    setConnection(connectionTemplates[selectedTemplate]);
     if (env() === 'things') {
       delete theConnection['id'];
     }
@@ -162,19 +168,21 @@ export function ready() {
   });
 
   $('#connectionsTable').on('click', 'tr', function(event) {
-    callConnectionsAPI(config[env()].retrieveConnection, function(connection) {
-      theConnection = connection;
-      const withJavaScript = theConnection.mappingDefinitions && theConnection.mappingDefinitions.javascript;
-      $('#connectionId').val(theConnection.id);
-      connectionEditor.setValue(JSON.stringify(theConnection, null, 2));
-      incomingEditor.setValue(withJavaScript ?
-        theConnection.mappingDefinitions.javascript.options.incomingScript :
-        '', -1);
-      outgoingEditor.setValue(withJavaScript ?
-        theConnection.mappingDefinitions.javascript.options.outgoingScript :
-        '', -1);
-    }, $(this)[0].id);
+    callConnectionsAPI(config[env()].retrieveConnection, setConnection, $(this)[0].id);
   });
+
+  function setConnection(connection) {
+    theConnection = connection;
+    const withJavaScript = theConnection.mappingDefinitions && theConnection.mappingDefinitions.javascript;
+    $('#connectionId').val(theConnection.id);
+    connectionEditor.setValue(JSON.stringify(theConnection, null, 2));
+    incomingEditor.setValue(withJavaScript ?
+      theConnection.mappingDefinitions.javascript.options.incomingScript :
+      '', -1);
+    outgoingEditor.setValue(withJavaScript ?
+      theConnection.mappingDefinitions.javascript.options.outgoingScript :
+      '', -1);
+  }
 
   incomingEditor.on('blur', function() {
     theConnection.mappingDefinitions.javascript.options.incomingScript = incomingEditor.getValue();
@@ -251,5 +259,17 @@ function callConnectionsAPI(params, successCallback, connectionId) {
 function env() {
   return getCurrentEnv().api_uri.startsWith('https://things') ? 'things' : 'ditto';
 };
+
+function loadConnectionTemplates() {
+  fetch('templates/connectionTemplates.json')
+      .then((response) => {
+        response.json().then((loadedTemplates) => {
+          connectionTemplates = loadedTemplates;
+          Object.keys(connectionTemplates).forEach((templateName, i) => {
+            Main.addRadioButton($('#connectionTemplateRadios')[0], 'connectionTemplate', templateName, i == 0);
+          });
+        });
+      });
+}
 
 

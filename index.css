@@ -42,8 +42,22 @@ textarea {
     overflow-y: scroll;    
 }
 
-.ace_container{
+.ace_container {
     position: relative;
+}
+
+.button_round_right {
+    border-bottom-right-radius: 0.2rem !important;
+    border-top-right-radius: 0.2rem !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-left-radius: 0 !important;
+}
+
+.button_round_left {
+    border-bottom-right-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: 0.2rem !important;
+    border-top-left-radius: 0.2rem !important;
 }
 
 .resizable_pane {
