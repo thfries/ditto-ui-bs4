@@ -52,6 +52,7 @@ export function ready() {
       data: '{}',
       success: function(data, textStatus, xhr) {
         Main.showSuccess(data, textStatus, xhr);
+        refreshThing(data.thingId);
         getThings([data.thingId]);
       },
       error: Main.showError,
@@ -103,6 +104,9 @@ function fillThingsTable(thingsList) {
   thingsList.forEach((item, t) => {
     const row = $('#thingsTable')[0].insertRow();
     row.id = item.thingId;
+    if (theThing && (item.thingId == theThing.thingId)) {
+      row.classList.add('bg-info');
+    };
     Main.addCheckboxToRow(row, item.thingId, getCurrentEnv().pinnedThings.includes(item.thingId), togglePinnedThing);
     row.insertCell(-1).innerHTML = item.thingId;
     fields.forEach((key, i) => {
@@ -125,15 +129,16 @@ export function searchThings(filter) {
   fieldsQueryParameter() +
   ((filter && filter != '') ? '&filter=' + encodeURIComponent(filter) : '') +
   '&option=sort(%2BthingId)' +
+  // ',size(3)' +
   (theSearchCursor ? ',cursor(' + theSearchCursor + ')' : ''))
       .done(function(searchResult) {
-        document.body.style.cursor = 'default';
         checkFirstOrNextPage();
         fillThingsTable(searchResult.items);
         checkLastPage(searchResult);
       }).fail(function(xhr, status, message) {
-        document.body.style.cursor = 'default';
         Main.showError(xhr, status, message);
+      }).always(function() {
+        document.body.style.cursor = 'default';
       });
 };
 
@@ -173,57 +178,57 @@ export function refreshThing(thingId) {
   '?fields=thingId%2Cattributes%2Cfeatures%2C_created%2C_modified%2C_revision%2C_policy')
       .done(function(thing, status, xhr) {
         Main.showSuccess(null, status, xhr);
-        theThing = thing;
-        Policies.onThingChanged(thing);
-
-        // Update fields of Thing table
-        $('#thingDetails').empty();
-        Main.addTableRow($('#thingDetails')[0], 'thingId', thing.thingId, null, true);
-        Main.addTableRow($('#thingDetails')[0], 'policyId', thing._policy.policyId, null, true);
-        Main.addTableRow($('#thingDetails')[0], 'revision', thing._revision, null, true);
-        Main.addTableRow($('#thingDetails')[0], 'created', thing._created, null, true);
-        Main.addTableRow($('#thingDetails')[0], 'modified', thing._modified, null, true);
-
-        // Update attributes table
-        $('#attributesTable').empty();
-        let count = 0;
-        let thingHasAttribute = false;
-        if (thing.attributes) {
-          for (const key of Object.keys(thing.attributes)) {
-            if (key === theAttribute) {
-              refreshAttribute(thing, key);
-              thingHasAttribute = true;
-            };
-            Main.addTableRow($('#attributesTable')[0],
-                key,
-                JSON.stringify(thing.attributes[key]),
-                key === theAttribute);
-            count++;
-          };
-        }
-        $('#attributeCount').text(count > 0 ? count : '');
-        if (!thingHasAttribute) {
-          theAttribute = false;
-          refreshAttribute();
-        }
-
-        Features.refreshThing(thing);
-
-        // Update edit thing area
-        const thingCopy = theThing;
-        delete thingCopy['_revision'];
-        delete thingCopy['_created'];
-        delete thingCopy['_modified'];
-        delete thingCopy['_policy'];
-        thingCopy.policyId = Policies.thePolicy.policyId;
-        $('#thingId').val(theThing.thingId);
-        thingJsonEditor.setValue(JSON.stringify(thingCopy, null, 2));
-
-        // Update policy
-        $('#thePolicyId').val(Policies.thePolicy.policyId);
-        Policies.refreshPolicy();
+        setTheThing(thing);
       }).fail(Main.showError);
 };
+
+export function setTheThing(thingJson) {
+  theThing = thingJson;
+
+  // Update fields of Thing table
+  $('#thingDetails').empty();
+  Main.addTableRow($('#thingDetails')[0], 'thingId', theThing.thingId, null, true);
+  Main.addTableRow($('#thingDetails')[0], 'policyId', theThing._policy.policyId, null, true);
+  Main.addTableRow($('#thingDetails')[0], 'revision', theThing._revision, null, true);
+  Main.addTableRow($('#thingDetails')[0], 'created', theThing._created, null, true);
+  Main.addTableRow($('#thingDetails')[0], 'modified', theThing._modified, null, true);
+
+  // Update attributes table
+  $('#attributesTable').empty();
+  let count = 0;
+  let thingHasAttribute = false;
+  if (theThing.attributes) {
+    for (const key of Object.keys(theThing.attributes)) {
+      if (key === theAttribute) {
+        refreshAttribute(theThing, key);
+        thingHasAttribute = true;
+      };
+      Main.addTableRow($('#attributesTable')[0],
+          key,
+          JSON.stringify(theThing.attributes[key]),
+          key === theAttribute);
+      count++;
+    };
+  }
+  $('#attributeCount').text(count > 0 ? count : '');
+  if (!thingHasAttribute) {
+    theAttribute = false;
+    refreshAttribute();
+  }
+
+  // Update edit thing area
+  $('#thingId').val(theThing.thingId);
+  const thingCopy = JSON.parse(JSON.stringify(theThing));
+  delete thingCopy['_revision'];
+  delete thingCopy['_created'];
+  delete thingCopy['_modified'];
+  delete thingCopy['_policy'];
+  thingCopy.policyId = theThing._policy.policyId;
+  thingJsonEditor.setValue(JSON.stringify(thingCopy, null, 2));
+
+  Features.onThingChanged(theThing);
+  Policies.onThingChanged(theThing);
+}
 
 function clickAttribute(method) {
   return function() {

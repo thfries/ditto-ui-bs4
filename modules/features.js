@@ -136,7 +136,7 @@ function refreshFeature(thing, feature) {
   $('#featureMessagesCount').text('');
 }
 
-export function refreshThing(thing) {
+export function onThingChanged(thing) {
   // Update features table
   $('#featuresTable').empty();
   let count = 0;

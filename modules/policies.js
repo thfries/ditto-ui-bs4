@@ -2,7 +2,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import {getCurrentEnv} from './environments.js';
+import {getCurrentEnv, setAuthHeader} from './environments.js';
 import * as Main from '../main.js';
 
 
@@ -11,12 +11,23 @@ let thePolicyEntry;
 
 export function onThingChanged(thing) {
   thePolicy = thing._policy;
+  $('#thePolicyId').val(thePolicy.policyId);
+  refreshPolicy(thePolicy.policyId);
 }
 
 export function ready() {
-  $('#refreshPolicy').click(refreshPolicy);
+  $('#loadPolicy').click(function() {
+    const policyId = $('#thePolicyId').val();
+    if (policyId === '') {
+      Main.showError(null, 'Error', 'policyId is empty'); return;
+    }
+    refreshPolicy(policyId);
+  });
 
-  $('#tabPolicies').click(refreshWhoAmI);
+  $('#tabPolicies').click(function() {
+    setAuthHeader(false);
+    refreshWhoAmI();
+  });
 
   $('#policyEntriesTable').on('click', 'tr', function(event) {
     thePolicyEntry = $(this).text();
@@ -65,11 +76,7 @@ function refreshWhoAmI() {
       }).fail(Main.showError);
 }
 
-export function refreshPolicy() {
-  const policyId = thePolicy ? thePolicy.policyId : $('#thePolicyId').val();
-  if (policyId === '') {
-    Main.showError(null, 'Error', 'policyId is empty'); return;
-  }
+export function refreshPolicy(policyId) {
   $.getJSON(getCurrentEnv().api_uri + '/api/2/policies/' + policyId)
       .done(function(policy, status, xhr) {
         Main.showSuccess(null, status, xhr);
@@ -116,7 +123,9 @@ const addOrDeletePolicyEntry = function(method) {
         resources: {}
       }),
       contentType: 'application/json',
-      success: refreshPolicy,
+      success: function() {
+        refreshPolicy(thePolicy.policyId);
+      },
       error: Main.showError
     });
   } else {
@@ -134,7 +143,9 @@ function modifyPolicyEntry(type, key, value) {
         type: 'PUT',
         contentType: 'application/json',
         data: value,
-        success: refreshPolicy,
+        success: function() {
+          refreshPolicy(thePolicy.policyId);
+        },
         error: Main.showError
       });
     } else {
@@ -143,7 +154,9 @@ function modifyPolicyEntry(type, key, value) {
       '/entries/' + thePolicyEntry +
       type + key, {
         type: 'DELETE',
-        success: refreshPolicy,
+        success: function() {
+          refreshPolicy(thePolicy.policyId);
+        },
         error: Main.showError
       });
     }
