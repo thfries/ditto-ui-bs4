@@ -153,9 +153,9 @@ export function addClipboardCopyToRow(row) {
 export function addRadioButton(target, groupName, value, checked) {
   const radio = document.createElement('div');
   radio.innerHTML = `<div class="form-check">
-    <input class="form-check-input" type="radio" name="${ groupName}" value="${ value}"
+    <input class="form-check-input" type="radio" id="${ value}" name="${ groupName}" value="${ value}"
         ${checked ? 'checked' : ''}>
-    <label class="form-check-label" for="gridRadios1">
+    <label class="form-check-label" for="${ value}">
       ${ value}
     </label>
   </div>`;
