@@ -1,7 +1,7 @@
 /* eslint-disable new-cap */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import {JSONPath} from '../node_modules/jsonpath-plus/dist/index-browser-esm.js';
+import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
 
 import {getCurrentEnv, togglePinnedThing} from './environments.js';
 import * as Main from '../main.js';

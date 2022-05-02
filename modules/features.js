@@ -4,7 +4,7 @@
 import {getCurrentEnv} from './environments.js';
 import * as Main from '../main.js';
 import * as Things from './things.js';
-import {JSONPath} from '../node_modules/jsonpath-plus/dist/index-browser-esm.js';
+import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
 
 
 let theFeatureId;
