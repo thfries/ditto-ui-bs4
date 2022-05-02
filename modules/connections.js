@@ -231,6 +231,7 @@ function callConnectionsAPI(params, successCallback, connectionId) {
   if (env() === 'things' && !getCurrentEnv().solutionId) {
     Main.showError(null, 'Error', 'SolutionId is empty'); return;
   };
+  document.body.style.cursor = 'progress';
   $.ajax(getCurrentEnv().api_uri + params.path.replace('{{solutionId}}',
       getCurrentEnv().solutionId).replace('{{connectionId}}',
       connectionId), {
@@ -253,6 +254,9 @@ function callConnectionsAPI(params, successCallback, connectionId) {
       }
     },
     error: Main.showError,
+    complete: function() {
+      document.body.style.cursor = 'default';
+    },
   });
 };
 
