@@ -113,6 +113,7 @@ export function callDittoREST(method, path, body, success) {
 
 export const addTableRow = function(table, key, value, selected, withClipBoardCopy) {
   const row = table.insertRow();
+  row.id = key;
   row.insertCell(0).innerHTML = key;
   if (value) {
     row.insertCell(1).innerHTML = value;

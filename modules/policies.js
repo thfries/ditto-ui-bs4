@@ -2,7 +2,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import {getCurrentEnv, setAuthHeader} from './environments.js';
+import {getCurrentEnv, setAuthHeader, addPinnedSubject, deletePinnedSubject} from './environments.js';
 import * as Main from '../main.js';
 
 
@@ -35,6 +35,18 @@ export function ready() {
     refillPolicySubjectsAndRessources();
   });
 
+  $('#whoami,#pinnedSubjects').on('click', 'tr', function(event) {
+    $('#policySubjectId').val(event.currentTarget.id);
+  });
+
+  $('#addPinnedSubject').click(function() {
+    addPinnedSubject(navigator.clipboard.readText());
+  });
+
+  $('#deletePinnedSubject').click(function() {
+    deletePinnedSubject($('#policySubjectId').val());
+  });
+
   $('#createPolicyEntry').click(function() {
     return addOrDeletePolicyEntry('PUT');
   });
@@ -64,14 +76,15 @@ export function ready() {
 }
 
 function refreshWhoAmI() {
+  $('#whoami').empty();
   $.getJSON(getCurrentEnv().api_uri + '/api/2/whoami')
       .done(function(whoami, status, xhr) {
         Main.showSuccess(null, status, xhr);
-        $('#whoami').empty();
         whoami.subjects.forEach((subject, i) => {
           Main.addTableRow($('#whoami')[0],
-            subject === whoami.defaultSubject ? 'defaultSubject' : 'subject',
-            subject, false, true);
+              subject,
+              subject === whoami.defaultSubject ? 'defaultSubject' : 'subject',
+              false, true);
         });
       }).fail(Main.showError);
 }

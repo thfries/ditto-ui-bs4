@@ -181,6 +181,19 @@ export function togglePinnedThing(evt) {
   environmentsJsonChanged();
 };
 
+export function addPinnedSubject(subject) {
+  getCurrentEnv().pinnedSubjects.push(subject);
+  environmentsJsonChanged();
+};
+
+export function deletePinnedSubject(subject) {
+  const i = getCurrentEnv().pinnedSubjects.indexOf(subject);
+  if (i >= 0) {
+    getCurrentEnv().pinnedSubjects.splice(i, 1);
+  }
+  environmentsJsonChanged();
+}
+
 function environmentsJsonChanged() {
   localStorage.setItem('ditto-ui-env', JSON.stringify(environments));
 
@@ -208,8 +221,12 @@ function activateEnvironment() {
   if (!getCurrentEnv()['pinnedThings']) {
     getCurrentEnv().pinnedThings = [];
   };
+  if (!getCurrentEnv()['pinnedSubjects']) {
+    getCurrentEnv().pinnedSubjects = [];
+  };
   updateFilterList();
   updateFieldList();
+  updatePinnedSubjectsList();
 
   let usernamePassword = getCurrentEnv().usernamePassword ? getCurrentEnv().usernamePassword : ':';
   $('#userName').val(usernamePassword.split(':')[0]);
@@ -262,6 +279,13 @@ function updateFieldList() {
     $('#fieldPath').val('');
   }
 };
+
+function updatePinnedSubjectsList() {
+  $('#pinnedSubjects').empty();
+  getCurrentEnv().pinnedSubjects.forEach((subject, i) => {
+    Main.addTableRow($('#pinnedSubjects')[0], subject, null, false, true);
+  });
+}
 
 function toggleFieldActive(evt) {
   getCurrentEnv().fieldList[evt.target.id].active = evt.target.checked;
