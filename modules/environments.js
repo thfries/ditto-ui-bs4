@@ -65,7 +65,7 @@ export function ready() {
 
   document.querySelectorAll('.mainUser,.devOpsUser').forEach((menuTab) => {
     menuTab.addEventListener('click', (event) => {
-      setAuthHeader(event.target.parentNode.classList.contains('devOpsUser'));
+      Main.setAuthHeader(event.target.parentNode.classList.contains('devOpsUser'));
     });
   });
 
@@ -218,31 +218,10 @@ function activateEnvironment() {
   $('#devOpsUserName').val(usernamePassword.split(':')[0]);
   $('#devOpsPassword').val(usernamePassword.split(':')[1]);
   $('#bearer').val(getCurrentEnv().bearer);
-  setAuthHeader();
+  Main.setAuthHeader();
   Main.openWebSocket();
   $('#searchFilterEdit').focus();
 }
-
-export function setAuthHeader(forDevOps) {
-  if (!getCurrentEnv().bearer && !getCurrentEnv().usernamePassword) {
-    return;
-  };
-  let auth;
-  if (getCurrentEnv().useBasicAuth) {
-    if (forDevOps && getCurrentEnv().usernamePasswordDevOps) {
-      auth = 'Basic ' + window.btoa(getCurrentEnv().usernamePasswordDevOps);
-    } else {
-      auth = 'Basic ' + window.btoa(getCurrentEnv().usernamePassword);
-    }
-  } else {
-    auth ='Bearer ' + getCurrentEnv().bearer;
-  }
-  $.ajaxSetup({
-    beforeSend: function(xhr) {
-      xhr.setRequestHeader('Authorization', auth);
-    },
-  });
-};
 
 function updateFieldList() {
   $('#fieldList').empty();

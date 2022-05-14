@@ -2,7 +2,6 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import {getCurrentEnv, setAuthHeader} from './environments.js';
 import * as Main from '../main.js';
 
 
@@ -25,7 +24,7 @@ export function ready() {
   });
 
   $('#tabPolicies').click(function() {
-    setAuthHeader(false);
+    Main.setAuthHeader(false);
     refreshWhoAmI();
   });
 
@@ -36,10 +35,12 @@ export function ready() {
   });
 
   $('#createPolicyEntry').click(function() {
-    return addOrDeletePolicyEntry('PUT');
+    addOrDeletePolicyEntry('PUT');
   });
   $('#deletePolicyEntry').click(function() {
-    return addOrDeletePolicyEntry('DELETE');
+    addOrDeletePolicyEntry('DELETE');
+    thePolicyEntry = null;
+    $('#thePolicyEntry').val(null);
   });
 
   $('#policySubjectsTable').on('click', 'tr', function(event) {
@@ -64,22 +65,20 @@ export function ready() {
 }
 
 function refreshWhoAmI() {
-  $.getJSON(getCurrentEnv().api_uri + '/api/2/whoami')
-      .done(function(whoami, status, xhr) {
-        Main.showSuccess(null, status, xhr);
+  Main.callDittoREST('GET', '/whoami')
+      .then((whoami) => {
         $('#whoami').empty();
         whoami.subjects.forEach((subject, i) => {
           Main.addTableRow($('#whoami')[0],
             subject === whoami.defaultSubject ? 'defaultSubject' : 'subject',
             subject, false, true);
         });
-      }).fail(Main.showError);
+      });
 }
 
 export function refreshPolicy(policyId) {
-  $.getJSON(getCurrentEnv().api_uri + '/api/2/policies/' + policyId)
-      .done(function(policy, status, xhr) {
-        Main.showSuccess(null, status, xhr);
+  Main.callDittoREST('GET', '/policies/' + policyId)
+      .then((policy) => {
         thePolicy = policy;
         let policyHasEntry = false;
         $('#policyEntriesTable').empty();
@@ -95,7 +94,7 @@ export function refreshPolicy(policyId) {
           // todo: clear policy entry data to be consistent with features.
           // For now the filled fields can be used to copy data to other policy
         }
-      }).fail(Main.showError);
+      });
 };
 
 function refillPolicySubjectsAndRessources() {
@@ -113,52 +112,33 @@ function refillPolicySubjectsAndRessources() {
   }
 };
 
-const addOrDeletePolicyEntry = function(method) {
+function addOrDeletePolicyEntry(method) {
   let label = $('#thePolicyEntry').val();
-  if (label && !(label === thePolicyEntry)) {
-    $.ajax(getCurrentEnv().api_uri + '/api/2/policies/' + thePolicy.policyId + '/entries/' + label, {
-      type: method,
-      data: JSON.stringify({
-        subjects: {},
-        resources: {}
-      }),
-      contentType: 'application/json',
-      success: function() {
-        refreshPolicy(thePolicy.policyId);
-      },
-      error: Main.showError
-    });
+  if (!label) {
+    Main.showError(null, 'Error', 'Entry is empty');
+  } else if (method === 'PUT' && label === thePolicyEntry) {
+    Main.showError(null, 'Error', 'Entry already exists');
   } else {
-    Main.showError(null, 'Error', 'Entry already exists or is empty');
+    thePolicyEntry = label;
+    Main.callDittoREST(method, `/policies/${thePolicy.policyId}/entries/${label}`,
+        JSON.stringify({
+          subjects: {},
+          resources: {}
+        })).then(() => refreshPolicy(thePolicy.policyId));
   }
 };
 
 function modifyPolicyEntry(type, key, value) {
   if (thePolicyEntry && key) {
     if (value) {
-      $.ajax(getCurrentEnv().api_uri +
-      '/api/2/policies/' + thePolicy.policyId +
-      '/entries/' + thePolicyEntry +
-      type + key, {
-        type: 'PUT',
-        contentType: 'application/json',
-        data: value,
-        success: function() {
-          refreshPolicy(thePolicy.policyId);
-        },
-        error: Main.showError
-      });
+      Main.callDittoREST('PUT',
+          `/policies/${thePolicy.policyId}/entries/${thePolicyEntry}${type}${key}`,
+          value
+      ).then(() => refreshPolicy(thePolicy.policyId));
     } else {
-      $.ajax(Environments.getCurrentEnv()().api_uri +
-      '/api/2/policies/' + thePolicy.policyId +
-      '/entries/' + thePolicyEntry +
-      type + key, {
-        type: 'DELETE',
-        success: function() {
-          refreshPolicy(thePolicy.policyId);
-        },
-        error: Main.showError
-      });
+      Main.callDittoREST('DELETE',
+          `/policies/${thePolicy.policyId}/entries/${thePolicyEntry}${type}${key}`
+      ).then(() => refreshPolicy(thePolicy.policyId));
     }
   } else {
     Main.showError(null, 'Error', 'No Policy Entry selected or Subject or Ressource is empty');

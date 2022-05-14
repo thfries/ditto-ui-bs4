@@ -101,14 +101,51 @@ function onMessage(message) {
 //         error: showError
 //     });
 // };
+export let authHeader;
 
-export function callDittoREST(method, path, body, success) {
-  $.ajax(Environments.getCurrentEnv().api_uri + '/api/2' + path, {
-    type: method,
-    contentType: 'application/json',
-    data: body,
-    success: success,
-    error: showError});
+export function setAuthHeader(forDevOps) {
+  if (!Environments.getCurrentEnv().bearer && !Environments.getCurrentEnv().usernamePassword) {
+    return;
+  };
+  if (Environments.getCurrentEnv().useBasicAuth) {
+    if (forDevOps && Environments.getCurrentEnv().usernamePasswordDevOps) {
+      authHeader = 'Basic ' + window.btoa(Environments.getCurrentEnv().usernamePasswordDevOps);
+    } else {
+      authHeader = 'Basic ' + window.btoa(Environments.getCurrentEnv().usernamePassword);
+    }
+  } else {
+    authHeader ='Bearer ' + Environments.getCurrentEnv().bearer;
+  }
+  $.ajaxSetup({
+    beforeSend: function(xhr) {
+      xhr.setRequestHeader('Authorization', authHeader);
+    },
+  });
+};
+
+export async function callDittoREST(method, path, body, success) {
+  const response = await fetch(Environments.getCurrentEnv().api_uri + '/api/2' + path, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader,
+    },
+    body: body,
+  });
+  if (!response.ok) {
+    showError(null, response.status, response.statusText);
+  };
+  if (response.status != 204) {
+    return response.json();
+  } else {
+    return null;
+  }
+  // $.ajax(Environments.getCurrentEnv().api_uri + '/api/2' + path, {
+  //   type: method,
+  //   contentType: 'application/json',
+  //   data: body,
+  //   success: success,
+  //   error: showError});
 };
 
 export const addTableRow = function(table, key, value, selected, withClipBoardCopy) {

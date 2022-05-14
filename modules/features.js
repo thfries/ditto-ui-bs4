@@ -1,7 +1,6 @@
 /* eslint-disable new-cap */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import {getCurrentEnv} from './environments.js';
 import * as Main from '../main.js';
 import * as Things from './things.js';
 import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
@@ -76,8 +75,7 @@ export function createFeature(newFeatureId) {
   Main.callDittoREST('PUT',
       '/things/' + Things.theThing.thingId + '/features/' + resultingFeatureId,
       '{}',
-      () => Things.refreshThing(Things.theThing.thingId),
-  );
+  ).then(() => Things.refreshThing(Things.theThing.thingId));
 }
 
 function updateFeature(method) {
@@ -105,10 +103,7 @@ function updateFeature(method) {
         method,
         '/things/' + Things.theThing.thingId + '/features/' + $('#featureId').val(),
       method === 'PUT' ? featureValue : null,
-      function() {
-        Things.refreshThing(Things.theThing.thingId);
-      },
-    );
+    ).then(() => Things.refreshThing(Things.theThing.thingId));
   };
 }
 
@@ -165,19 +160,16 @@ const messageFeature = function() {
   const payload = $('#messageFeaturePayload').val();
   if (subject && feature && payload) {
     $('#messageFeatureResponse').val('');
-    $.post(getCurrentEnv().api_uri +
-    '/api/2/things/' + Things.theThing.thingId +
+    Main.callDittoREST('POST', '/things/' + Things.theThing.thingId +
     '/features/' + feature +
     '/inbox/messages/' + subject +
     '?timeout=' + timeout,
     payload,
-    function(data, status, xhr) {
-      Main.showSuccess(data, status, xhr);
+    ).then((data) => {
       if (timeout > 0) {
         $('#messageFeatureResponse').val(JSON.stringify(data, null, 2));
       };
-    },
-    );
+    });
   } else {
     Main.showError(null, 'Error', 'FeatureId or Subject or Payload is empty');
   }

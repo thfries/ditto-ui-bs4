@@ -125,19 +125,17 @@ function fillThingsTable(thingsList) {
 
 export function searchThings(filter) {
   document.body.style.cursor = 'progress';
-  $.getJSON(getCurrentEnv().api_uri + '/api/2/search/things?' +
+  Main.callDittoREST('GET', '/search/things?' +
   fieldsQueryParameter() +
   ((filter && filter != '') ? '&filter=' + encodeURIComponent(filter) : '') +
   '&option=sort(%2BthingId)' +
   // ',size(3)' +
   (theSearchCursor ? ',cursor(' + theSearchCursor + ')' : ''))
-      .done(function(searchResult) {
+      .then((searchResult) => {
         checkFirstOrNextPage();
         fillThingsTable(searchResult.items);
         checkLastPage(searchResult);
-      }).fail(function(xhr, status, message) {
-        Main.showError(xhr, status, message);
-      }).always(function() {
+      }).finally(() => {
         document.body.style.cursor = 'default';
       });
 };
@@ -147,12 +145,11 @@ function getThings(thingIds) {
   if (thingIds.length === 0) {
     return;
   };
-  $.getJSON(getCurrentEnv().api_uri + '/api/2/things?' +
+  Main.callDittoREST('GET', '/things?' +
     fieldsQueryParameter() +
     '&ids=' + thingIds +
     '&option=sort(%2BthingId)')
-      .done(fillThingsTable)
-      .fail(Main.showError);
+      .then(fillThingsTable);
 };
 
 function clickModifyThing(method) {
@@ -165,10 +162,9 @@ function clickModifyThing(method) {
         method,
         '/things/' + $('#thingId').val(),
       method === 'PUT' ? thingJsonEditor.getValue() : null,
-      function() {
-        method === 'PUT' ? refreshThing(thingId) : searchThings();
-      },
-    );
+    ).then(() => {
+      method === 'PUT' ? refreshThing(thingId) : searchThings();
+    });
   };
 };
 
@@ -242,10 +238,7 @@ function clickAttribute(method) {
         method,
         '/things/' + theThing.thingId + '/attributes/' + $('#attributePath').val(),
       method === 'PUT' ? '"' + $('#attributeValue').val() + '"' : null,
-      function() {
-        refreshThing(theThing.thingId);
-      },
-    );
+    ).then(() => refreshThing(theThing.thingId));
   };
 };
 

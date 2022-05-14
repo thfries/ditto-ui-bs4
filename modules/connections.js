@@ -227,36 +227,39 @@ function updateConnectionRow(targetRow, fieldToExtract, index) {
   };
 };
 
-function callConnectionsAPI(params, successCallback, connectionId) {
+async function callConnectionsAPI(params, successCallback, connectionId) {
   if (env() === 'things' && !getCurrentEnv().solutionId) {
-    Main.showError(null, 'Error', 'SolutionId is empty'); return;
+    Main.showError(null, 'Error', 'No solutionId configured in environment'); return;
   };
   document.body.style.cursor = 'progress';
-  $.ajax(getCurrentEnv().api_uri + params.path.replace('{{solutionId}}',
+  const response = await fetch(getCurrentEnv().api_uri + params.path.replace('{{solutionId}}',
       getCurrentEnv().solutionId).replace('{{connectionId}}',
       connectionId), {
-    type: params.method,
-    data: params.body ? JSON.stringify(params.body).replace('{{connectionId}}', connectionId).replace('"{{connectionJson}}"', JSON.stringify(theConnection)) : null,
-    contentType: 'application/json',
-    success: function(data, status, xhr) {
-      if (data && data['?'] && data['?']['?'].status >= 400) {
-        Main.showError(null, data['?']['?'].status, JSON.stringify(data['?']['?'].payload));
-      } else {
-        if (params.unwrapJsonPath) {
-          params.unwrapJsonPath.split('.').forEach(function(node) {
-            if (node === '?') {
-              node = Object.keys(data)[0];
-            }
-            data = data[node];
-          });
-        };
-        successCallback(data, status, xhr);
-      }
+    method: params.method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': Main.authHeader,
     },
-    error: Main.showError,
-    complete: function() {
-      document.body.style.cursor = 'default';
-    },
+    body: params.body ? JSON.stringify(params.body).replace('{{connectionId}}', connectionId).replace('"{{connectionJson}}"', JSON.stringify(theConnection)) : null,
+  });
+  response.json().then((data) => {
+    if (data && data['?'] && data['?']['?'].status >= 400) {
+      Main.showError(null, data['?']['?'].status, JSON.stringify(data['?']['?'].payload));
+    } else {
+      if (params.unwrapJsonPath) {
+        params.unwrapJsonPath.split('.').forEach(function(node) {
+          if (node === '?') {
+            node = Object.keys(data)[0];
+          }
+          data = data[node];
+        });
+      };
+      successCallback(data);
+    }
+  }).catch((error) => {
+    Main.showError(null, 'Error', 'Error calling connections API');
+  }).finally(() => {
+    document.body.style.cursor = 'default';
   });
 };
 
