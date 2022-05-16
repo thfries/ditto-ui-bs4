@@ -123,7 +123,7 @@ export function setAuthHeader(forDevOps) {
   });
 };
 
-export async function callDittoREST(method, path, body, success) {
+export async function callDittoREST(method, path, body) {
   const response = await fetch(Environments.getCurrentEnv().api_uri + '/api/2' + path, {
     method: method,
     headers: {
@@ -140,16 +140,11 @@ export async function callDittoREST(method, path, body, success) {
   } else {
     return null;
   }
-  // $.ajax(Environments.getCurrentEnv().api_uri + '/api/2' + path, {
-  //   type: method,
-  //   contentType: 'application/json',
-  //   data: body,
-  //   success: success,
-  //   error: showError});
 };
 
 export const addTableRow = function(table, key, value, selected, withClipBoardCopy) {
   const row = table.insertRow();
+  row.id = key;
   row.insertCell(0).innerHTML = key;
   if (value) {
     row.insertCell(1).innerHTML = value;

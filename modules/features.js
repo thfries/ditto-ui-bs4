@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable new-cap */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
@@ -6,24 +7,39 @@ import * as Things from './things.js';
 import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
 
 
-let theFeatureId;
+// let theFeatureId;
 let lastNewFeatureBase;
 
 let featurePropertiesEditor;
 let featureDesiredPropertiesEditor;
 
-export function ready() {
-  $('#featuresTable').on('click', 'tr', function(event) {
-    theFeatureId = $(this).text();
-    $('[href="#tabCrudFeature"]').tab('show');
-    refreshFeature(Things.theThing, theFeatureId);
-  });
+let dom = {};
 
-  $('#createFeature').click(() => {
-    createFeature($('#featureId').val());
-  });
-  $('#putFeature').click(updateFeature('PUT'));
-  $('#deleteFeature').click(updateFeature('DELETE'));
+export function ready() {
+  dom.theFeatureId = document.getElementById('theFeatureId');
+  dom.featureMessageDetail = document.getElementById('featureMessageDetail');
+  dom.featureDefinition = document.getElementById('featureDefinition');
+  dom.featureMessagesTable = document.getElementById('featureMessagesTable');
+  dom.featureMessagesCount = document.getElementById('featureMessagesCount');
+  dom.featureCount = document.getElementById('featureCount');
+  dom.featuresTable = document.getElementById('featuresTable');
+  dom.messageFeatureSubject = document.getElementById('messageFeatureSubject');
+  dom.messageTimeout = document.getElementById('messageTimeout');
+  dom.messageFeaturePayload = document.getElementById('messageFeaturePayload');
+  dom.messageFeatureResponse = document.getElementById('messageFeatureResponse');
+
+  dom.featuresTable.onclick = (event) => {
+    dom.theFeatureId.value = event.target.textContent;
+    $('[href="#tabCrudFeature"]').tab('show');
+    refreshFeature(Things.theThing, dom.theFeatureId.value);
+  };
+
+  document.getElementById('createFeature').onclick = () => {
+    createFeature(dom.theFeatureId.value);
+  };
+
+  document.getElementById('putFeature').onclick = () => updateFeature('PUT');
+  document.getElementById('deleteFeature').onclick = () => updateFeature('DELETE');
 
   featurePropertiesEditor = ace.edit('featurePropertiesEditor');
   featureDesiredPropertiesEditor = ace.edit('featureDesiredPropertiesEditor');
@@ -46,11 +62,11 @@ export function ready() {
     }, 10);
   });
 
-  $('#messageFeature').click(messageFeature);
+  document.getElementById('messageFeature').onclick = messageFeature;
 
-  $('#featureMessagesTable').on('click', 'tr', function(event) {
-    $('#featureMessageDetail').val(JSON.stringify($(this).data('message'), null, 2));
-  });
+  document.getElementById('featureMessagesTable').onclick = (event) => {
+    dom.featureMessageDetail.value = event.target.parentNode.getAttribute('data-message');
+  };
 }
 
 export function createFeature(newFeatureId) {
@@ -71,7 +87,7 @@ export function createFeature(newFeatureId) {
     countExisting++;
     resultingFeatureId = newFeatureId + '-' + countExisting;
   }
-  theFeatureId = resultingFeatureId;
+  dom.theFeatureId.value = resultingFeatureId;
   Main.callDittoREST('PUT',
       '/things/' + Things.theThing.thingId + '/features/' + resultingFeatureId,
       '{}',
@@ -79,38 +95,36 @@ export function createFeature(newFeatureId) {
 }
 
 function updateFeature(method) {
-  return function() {
-    if (!Things.theThing) {
-      Main.showError(null, 'Error', 'No Thing selected'); return;
-    };
-    if (!$('#featureId').val()) {
-      Main.showError(null, 'Error', 'No Feature selected'); return;
-    };
-    const featureObject = {};
-    const featureProperties = featurePropertiesEditor.getValue();
-    const featureDesiredProperties = featureDesiredPropertiesEditor.getValue();
-    if ($('#featureDefinition').val()) {
-      featureObject.definition = $('#featureDefinition').val().split(',');
-    };
-    if (featureProperties) {
-      featureObject.properties = JSON.parse(featureProperties);
-    };
-    if (featureDesiredProperties) {
-      featureObject.desiredProperties = JSON.parse(featureDesiredProperties);
-    };
-    const featureValue = JSON.stringify(featureObject) === '{}' ? null : JSON.stringify(featureObject);
-    Main.callDittoREST(
-        method,
-        '/things/' + Things.theThing.thingId + '/features/' + $('#featureId').val(),
-      method === 'PUT' ? featureValue : null,
-    ).then(() => Things.refreshThing(Things.theThing.thingId));
+  if (!Things.theThing) {
+    Main.showError(null, 'Error', 'No Thing selected'); return;
   };
+  if (!dom.theFeatureId.value) {
+    Main.showError(null, 'Error', 'No Feature selected'); return;
+  };
+  const featureObject = {};
+  const featureProperties = featurePropertiesEditor.getValue();
+  const featureDesiredProperties = featureDesiredPropertiesEditor.getValue();
+  if (dom.featureDefinition.value) {
+    featureObject.definition = dom.featureDefinition.value.split(',');
+  };
+  if (featureProperties) {
+    featureObject.properties = JSON.parse(featureProperties);
+  };
+  if (featureDesiredProperties) {
+    featureObject.desiredProperties = JSON.parse(featureDesiredProperties);
+  };
+  const featureValue = JSON.stringify(featureObject) === '{}' ? null : JSON.stringify(featureObject);
+  Main.callDittoREST(
+      method,
+      '/things/' + Things.theThing.thingId + '/features/' + dom.theFeatureId.value,
+    method === 'PUT' ? featureValue : null,
+  ).then(() => Things.refreshThing(Things.theThing.thingId));
 }
 
 function refreshFeature(thing, feature) {
   if (thing) {
-    $('#featureId').val(feature);
-    $('#featureDefinition').val(thing.features[feature].definition);
+    dom.theFeatureId.value = feature;
+    dom.featureDefinition.value = thing.features[feature]['definition'] ? thing.features[feature].definition : null;
     if (thing.features[feature]['properties']) {
       featurePropertiesEditor.setValue(JSON.stringify(thing.features[feature].properties, null, 4), -1);
     } else {
@@ -122,44 +136,44 @@ function refreshFeature(thing, feature) {
       featureDesiredPropertiesEditor.setValue('');
     }
   } else {
-    $('#featureId').val('');
-    $('#featureDefinition').val('');
+    dom.theFeatureId.value = null;
+    dom.featureDefinition.value = null;
     featurePropertiesEditor.setValue('');
     featureDesiredPropertiesEditor.setValue('');
   }
-  $('#featureMessagesTable').empty();
-  $('#featureMessagesCount').text('');
+  dom.featureMessagesTable.innerHTML = '';
+  dom.featureMessagesCount.textContent = '';
 }
 
 export function onThingChanged(thing) {
   // Update features table
-  $('#featuresTable').empty();
+  dom.featuresTable.innerHTML = '';
   let count = 0;
   let thingHasFeature = false;
   if (thing.features) {
     for (const key of Object.keys(thing.features)) {
-      if (key === theFeatureId) {
+      if (key === dom.theFeatureId.value) {
         refreshFeature(thing, key);
         thingHasFeature = true;
       };
-      Main.addTableRow($('#featuresTable')[0], key, null, key === theFeatureId);
+      Main.addTableRow(dom.featuresTable, key, null, key === dom.theFeatureId.value);
       count++;
     };
   }
-  $('#featureCount').text(count > 0 ? count : '');
+  dom.featureCount.textContent = count > 0 ? count : '';
   if (!thingHasFeature) {
-    theFeatureId = null;
+    dom.theFeatureId.value = null;
     refreshFeature();
   }
 }
 
 const messageFeature = function() {
-  const subject = $('#messageFeatureSubject').val();
-  const feature = $('#featureId').val();
-  const timeout = $('#messageTimeout').val();
-  const payload = $('#messageFeaturePayload').val();
+  const subject = dom.messageFeatureSubject.value;
+  const feature = dom.theFeatureId.value;
+  const timeout = dom.messageTimeout.value;
+  const payload = dom.messageFeaturePayload.value;
   if (subject && feature && payload) {
-    $('#messageFeatureResponse').val('');
+    dom.messageFeatureResponse.value = null;
     Main.callDittoREST('POST', '/things/' + Things.theThing.thingId +
     '/features/' + feature +
     '/inbox/messages/' + subject +
@@ -167,7 +181,7 @@ const messageFeature = function() {
     payload,
     ).then((data) => {
       if (timeout > 0) {
-        $('#messageFeatureResponse').val(JSON.stringify(data, null, 2));
+        dom.messageFeatureResponse.value = JSON.stringify(data, null, 2);
       };
     });
   } else {
@@ -182,14 +196,14 @@ export function onMessage(message) {
   const dittoJson = JSON.parse(message.data);
   const topicThingId = Things.theThing.thingId.replace(':', '/');
   if (dittoJson.topic.startsWith(topicThingId)) {
-    const pathFeature = '/features/' + theFeatureId;
+    const pathFeature = '/features/' + dom.theFeatureId.value;
     if (dittoJson.path.startsWith(pathFeature)) {
-      const row = $('#featureMessagesTable')[0].insertRow();
+      const row = dom.featureMessagesTable.insertRow();
       row.insertCell(0).innerHTML = new Date().toLocaleTimeString();
       row.insertCell().innerHTML = dittoJson.topic.replace(topicThingId, '');
       row.insertCell().innerHTML = dittoJson.path.replace(pathFeature, '');
-      $(row).data('message', dittoJson);
-      $('#featureMessagesCount').text($('#featureMessagesTable tr').length);
+      row.setAttribute('data-message', JSON.stringify(dittoJson, null, 2));
+      dom.featureMessagesCount.textContent = featureMessagesTable.rows.length;
     }
   }
 };
