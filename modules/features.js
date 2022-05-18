@@ -165,19 +165,23 @@ const messageFeature = function() {
   const payload = $('#messageFeaturePayload').val();
   if (subject && feature && payload) {
     $('#messageFeatureResponse').val('');
-    $.post(getCurrentEnv().api_uri +
+    $.ajax({
+      url: getCurrentEnv().api_uri +
     '/api/2/things/' + Things.theThing.thingId +
     '/features/' + feature +
     '/inbox/messages/' + subject +
     '?timeout=' + timeout,
-    payload,
-    function(data, status, xhr) {
+    type: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: payload,
+    success: function(data, status, xhr) {
       Main.showSuccess(data, status, xhr);
       if (timeout > 0) {
         $('#messageFeatureResponse').val(JSON.stringify(data, null, 2));
       };
     },
-    );
+  });
   } else {
     Main.showError(null, 'Error', 'FeatureId or Subject or Payload is empty');
   }

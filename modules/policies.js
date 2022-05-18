@@ -11,8 +11,10 @@ let thePolicyEntry;
 
 export function onThingChanged(thing) {
   thePolicy = thing._policy;
-  $('#thePolicyId').val(thePolicy.policyId);
-  refreshPolicy(thePolicy.policyId);
+  if (thePolicy) {
+    $('#thePolicyId').val(thePolicy.policyId);
+    refreshPolicy(thePolicy.policyId);
+  }
 }
 
 export function ready() {
@@ -149,7 +151,7 @@ function modifyPolicyEntry(type, key, value) {
         error: Main.showError
       });
     } else {
-      $.ajax(Environments.getCurrentEnv()().api_uri +
+      $.ajax(getCurrentEnv().api_uri +
       '/api/2/policies/' + thePolicy.policyId +
       '/entries/' + thePolicyEntry +
       type + key, {

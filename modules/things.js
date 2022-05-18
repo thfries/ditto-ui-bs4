@@ -188,7 +188,9 @@ export function setTheThing(thingJson) {
   // Update fields of Thing table
   $('#thingDetails').empty();
   Main.addTableRow($('#thingDetails')[0], 'thingId', theThing.thingId, null, true);
-  Main.addTableRow($('#thingDetails')[0], 'policyId', theThing._policy.policyId, null, true);
+  if (theThing['_policy']) {
+    Main.addTableRow($('#thingDetails')[0], 'policyId', theThing._policy.policyId, null, true);
+  }
   Main.addTableRow($('#thingDetails')[0], 'revision', theThing._revision, null, true);
   Main.addTableRow($('#thingDetails')[0], 'created', theThing._created, null, true);
   Main.addTableRow($('#thingDetails')[0], 'modified', theThing._modified, null, true);
@@ -223,7 +225,9 @@ export function setTheThing(thingJson) {
   delete thingCopy['_created'];
   delete thingCopy['_modified'];
   delete thingCopy['_policy'];
-  thingCopy.policyId = theThing._policy.policyId;
+  if (theThing['_policy']) {
+    thingCopy.policyId = theThing._policy.policyId;
+  }
   thingJsonEditor.setValue(JSON.stringify(thingCopy, null, 2));
 
   Features.onThingChanged(theThing);
