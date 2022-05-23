@@ -1,0 +1,29 @@
+<div class="tab-pane container no-margin">
+  <div class="resizable_flex_column">
+      <div class="input-group input-group-sm mb-1 mt-1">
+          <div class="input-group-prepend">
+              <label class="input-group-text">Field</label>
+          </div>
+          <input type="text" class="form-control" id="fieldPath"></input>
+          <div class="input-group-append">
+              <button class="btn btn-outline-secondary btn-sm" id="fieldUpdate">
+                <i class="far fa-square-plus"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" id="fieldDelete">
+                    <i class="far fa-trash-can"></i>
+                </button>
+              <button class="btn btn-outline-secondary btn-sm" id="fieldUp">
+                <i class="fa-solid fa-angle-up"></i>
+                </button>
+              <button class="btn btn-outline-secondary btn-sm" id="fieldDown">
+                <i class="fa-solid fa-angle-down"></i>
+                </button>
+          </div>
+      </div>
+      <div class="table-wrap mb-3">
+          <table class="table table-striped table-hover table-sm">
+              <tbody id="fieldList"></tbody>
+          </table>
+      </div>
+  </div>
+</div>

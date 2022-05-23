@@ -5,6 +5,8 @@ import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/in
 
 import {getCurrentEnv, togglePinnedThing} from './environments.js';
 import * as Main from '../main.js';
+import * as Fields from './things/fields.js';
+import * as SearchFilter from './things/searchFilter.js';
 import * as Policies from './policies.js';
 import * as Features from './features.js';
 
@@ -15,9 +17,13 @@ let keyStrokeTimeout;
 
 let thingJsonEditor;
 
-export function ready() {
+export async function ready() {
+  await Fields.ready();
+  await SearchFilter.ready();
+
   thingJsonEditor = ace.edit('thingJsonEditor');
   thingJsonEditor.session.setMode('ace/mode/json');
+
 
   $('#searchThings').click(searchClicked);
 
@@ -94,11 +100,6 @@ function searchClicked() {
   }
 }
 
-function fieldsQueryParameter() {
-  const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
-  return 'fields=thingId' + (fields != '' ? ',' + fields : '');
-};
-
 function fillThingsTable(thingsList) {
   const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
   thingsList.forEach((item, t) => {
@@ -126,7 +127,7 @@ function fillThingsTable(thingsList) {
 export function searchThings(filter) {
   document.body.style.cursor = 'progress';
   Main.callDittoREST('GET', '/search/things?' +
-  fieldsQueryParameter() +
+  Fields.getQueryParameter() +
   ((filter && filter != '') ? '&filter=' + encodeURIComponent(filter) : '') +
   '&option=sort(%2BthingId)' +
   // ',size(3)' +
@@ -146,7 +147,7 @@ function getThings(thingIds) {
     return;
   };
   Main.callDittoREST('GET', '/things?' +
-    fieldsQueryParameter() +
+    Fields.getQueryParameter() +
     '&ids=' + thingIds +
     '&option=sort(%2BthingId)')
       .then(fillThingsTable);

@@ -1,3 +1,5 @@
+/* eslint-disable arrow-parens */
+/* eslint-disable max-len */
 /* eslint-disable require-jsdoc */
 /* eslint-disable no-invalid-this */
 // import $ from 'jquery';
@@ -10,37 +12,59 @@ import * as Connections from './modules/connections.js';
 import * as Environments from './modules/environments.js';
 
 let ws;
+let resized = false;
 
 $(document).ready(async function() {
-  document.getElementById('thingsHtml').innerHTML = await (await fetch('modules/things.html')).text();
-  document.getElementById('featuresHtml').innerHTML = await (await fetch('modules/features.html')).text();
-  document.getElementById('policyHtml').innerHTML = await (await fetch('modules/policies.html')).text();
-  document.getElementById('connectionsHtml').innerHTML = await (await fetch('modules/connections.html')).text();
-  document.getElementById('environmentsHtml').innerHTML = await (await fetch('modules/environments.html')).text();
+  document.getElementById('thingsHTML').innerHTML = await (await fetch('modules/things.html')).text();
+  document.getElementById('featuresHTML').innerHTML = await (await fetch('modules/features.html')).text();
+  document.getElementById('policyHTML').innerHTML = await (await fetch('modules/policies.html')).text();
+  document.getElementById('connectionsHTML').innerHTML = await (await fetch('modules/connections.html')).text();
+  document.getElementById('environmentsHTML').innerHTML = await (await fetch('modules/environments.html')).text();
+  document.getElementById('authorizationHTML').innerHTML = await (await fetch('modules/environments/authorization.html')).text();
 
-  $('.nav-item').on('click', function() {
-    $(this).addClass('active').siblings().removeClass('active');
-  });
-
-  $('.table').on('click', 'tr', function() {
-    $(this).toggleClass('bg-info').siblings().removeClass('bg-info');
-  });
-
-  // make ace editor resize when user changes height
-  $('.resizable_pane').mouseup(function(event) {
-    const oldHeight = $(this).data('oldHeight');
-    if (oldHeight && oldHeight != $(this).height()) {
-      window.dispatchEvent(new Event('resize'));
-    }
-    $(this).data('oldHeight', $(this).height());
-  });
-
-  Things.ready();
+  await Things.ready();
   Features.ready();
   Policies.ready();
   Connections.ready();
   Environments.ready();
+
+  document.querySelectorAll('.nav-item').forEach((e) => {
+    e.addEventListener('click', (event) => {
+      toggleClassInSiblings(event.currentTarget, 'active');
+    });
+  });
+
+  document.querySelectorAll('.table').forEach((e) => {
+    e.addEventListener('click', (event) => {
+      console.log('click on table');
+      if (event.target && event.target.tagName === 'TD') {
+        toggleClassInSiblings(event.target.parentNode, 'bg-info');
+      };
+    });
+  });
+
+  // make ace editor resize when user changes height
+  const resizeObserver = new ResizeObserver(() => {
+    resized = true;
+  });
+  document.querySelectorAll('.resizable_pane').forEach((e) => {
+    resizeObserver.observe(e);
+    e.addEventListener('mouseup', () => {
+      if (resized) {
+        window.dispatchEvent(new Event('resize'));
+        resized = false;
+        console.log('resized');
+      }
+    });
+  });
 });
+
+function toggleClassInSiblings(node, classToToggle) {
+  Array.from(node.parentNode.children).forEach((n) => {
+    n.classList.remove(classToToggle);
+  });
+  node.classList.add(classToToggle);
+};
 
 export function openWebSocket() {
   try {
@@ -194,14 +218,28 @@ export function addRadioButton(target, groupName, value, checked) {
   target.appendChild(radio);
 }
 
+export function addTab(tabItemsNode, tabContentsNode, title, contentHTML) {
+  const id = 'tab' + title.replace(/\s/g, '');
+
+  const li = document.createElement('li');
+  li.classList.add('nav-item');
+  li.innerHTML = `<a class="nav-link" data-toggle="tab" href="#${id}">${title}</a>`;
+  tabItemsNode.appendChild(li);
+
+  const template = document.createElement('template');
+  template.innerHTML = contentHTML;
+  template.content.firstChild.id = id;
+  tabContentsNode.appendChild(template.content.firstChild);
+};
+
 export function showError(xhr, status, message) {
-  $('#errorHeader').text(xhr ? xhr.status : status);
-  $('#errorBody').text(xhr ? (xhr.responseJSON ? JSON.stringify(xhr.responseJSON, null, 2) : xhr.statusText) : message);
-  $('#errorToast').toast('show');
+  document.getElementById('errorHeader').text(xhr ? xhr.status : status);
+  document.getElementById('errorBody').text(xhr ? (xhr.responseJSON ? JSON.stringify(xhr.responseJSON, null, 2) : xhr.statusText) : message);
+  document.getElementById('errorToast').toast('show');
 }
 
 export function showSuccess(data, status, xhr) {
-  $('#successHeader').text(xhr.status ? xhr.status : status);
-  $('#successBody').text(status);
-  $('#successToast').toast('show');
+  document.getElementById('successHeader').text(xhr.status ? xhr.status : status);
+  document.getElementById('successBody').text(status);
+  document.getElementById('successToast').toast('show');
 }

@@ -40,21 +40,15 @@
             </div>
   
             <div class="col-md-6 resizable_flex_column" id="details">
-                <ul class="nav nav-tabs">
+                <ul id="thingsTabsItems" class="nav nav-tabs">
                     <li class="nav-item">
                         <a class="nav-link active" data-toggle="tab" href="#tabThingDetails">Thing Details</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#tabModifyThing">Thing JSON</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tabFieldList">Fields</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tabFilterList">Search Filter</a>
-                    </li>
                 </ul>
-              <div class="tab-content" style="flex-grow:1; overflow:hidden;">
+              <div id="thingsTabsContent" class="tab-content" style="flex-grow:1; overflow:hidden;">
                   <div class="tab-pane container active no-margin" id="tabThingDetails">
                       <table class="table table-striped table-hover table-sm">
                           <tbody id="thingDetails"></tbody>
@@ -75,40 +69,6 @@
                               <div class="script_editor" id="thingJsonEditor"></div>
                           </div>            
                       </div>
-                  </div>
-                  <div class="tab-pane container no-margin" id="tabFieldList">
-                      <div class="resizable_flex_column">
-                          <div class="input-group input-group-sm mb-1 mt-1">
-                              <div class="input-group-prepend">
-                                  <label class="input-group-text">Field</label>
-                              </div>
-                              <input type="text" class="form-control" id="fieldPath"></input>
-                              <div class="input-group-append">
-                                  <button class="btn btn-outline-secondary btn-sm" id="fieldUpdate">
-                                    <i class="far fa-square-plus"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm" id="fieldDelete">
-                                        <i class="far fa-trash-can"></i>
-                                    </button>
-                                  <button class="btn btn-outline-secondary btn-sm" id="fieldUp">
-                                    <i class="fa-solid fa-angle-up"></i>
-                                    </button>
-                                  <button class="btn btn-outline-secondary btn-sm" id="fieldDown">
-                                    <i class="fa-solid fa-angle-down"></i>
-                                    </button>
-                              </div>
-                          </div>
-                          <div class="table-wrap mb-3">
-                              <table class="table table-striped table-hover table-sm">
-                                  <tbody id="fieldList"></tbody>
-                              </table>
-                          </div>
-                      </div>
-                  </div>
-                  <div class="tab-pane container no-margin" id="tabFilterList">
-                      <table class="table table-striped table-hover table-sm">
-                          <tbody id="filterList"></tbody>
-                      </table>
                   </div>
               </div>
           </div>
