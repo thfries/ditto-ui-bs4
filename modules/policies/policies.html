@@ -1,0 +1,82 @@
+<div>
+    <h5>Policy</h5>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <div class="input-group input-group-sm mb-1 mt-1" role="group">
+                <input type="text" class="form-control form-control-sm" placeholder="policyId" id="thePolicyId"></input>
+                <button id="loadPolicy" class="btn btn-outline-secondary btn-sm"
+                    title="Load policy with the given ID">
+                    load
+                </button>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="input-group input-group-sm mb-1">
+                <div class="input-group-text">Who am I</div>
+                <div>
+                    <table class="table table-striped table-hover table-sm" style="margin-bottom: 0;">
+                        <tbody id="whoami"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h5>Policy Entries</h5>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <div class="input-group input-group-sm mb-1">
+                <label class="input-group-text">Entry</label>
+                <input type="text" class="form-control form-control-sm" id="thePolicyEntry"></input>
+                <button id="createPolicyEntry" class="btn btn-outline-secondary btn-sm"
+                    title="Create a policy entry with the given name">
+                    <i class="far fa-square-plus"></i>
+                </button>
+                <button id="deletePolicyEntry" class="btn btn-outline-secondary btn-sm"
+                    title="Delete the selected policy entry">
+                    <i class="far fa-trash-can"></i>
+                </button>
+            </div>
+            <table class="table table-striped table-hover table-sm">
+                <tbody id="policyEntriesTable"></tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <h6>Subjects</h6>
+            <table class="table table-striped table-hover table-sm">
+                <tbody id="policySubjectsTable"></tbody>
+            </table>
+            <h6>Ressources</h6>
+            <table class="table table-striped table-hover table-sm">
+                <tbody id="policyResourcesTable"></tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <h6>Create/Update/Delete Subject</h6>
+            <div class="input-group input-group-sm mb-1 mt-1">
+                <label class="input-group-text">Subject</label>
+                <input type="text" class="form-control form-control-sm" id="policySubjectId"></input>
+                <button class="btn btn-outline-secondary btn-sm" id="putPolicySubject">
+                    save
+                </button>
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <label class="input-group-text">Value</label>
+                <input type="text" class="form-control form-control-sm" id="policySubjectValue"></input>
+            </div>
+            <h6>Create/Update/Delete Ressource</h6>
+            <div class="input-group input-group-sm mb-1 mt-1">
+                <label class="input-group-text">Ressource</label>
+                <input type="text" class="form-control form-control-sm" id="policyResourceId"></input>
+                <button class="btn btn-outline-secondary btn-sm" id="putPolicyResource">
+                    save
+                </button>
+            </div>
+            <div class="input-group input-group-sm">
+                <label class="input-group-text">Value</label>
+                <input type="text" class="form-control form-control-sm" id="policyResourceValue"></input>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,8 +1,10 @@
+/* eslint-disable prefer-const */
 /* eslint-disable max-len */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import {getCurrentEnv} from './environments.js';
-import * as Main from '../main.js';
+import {getCurrentEnv} from '../environments/environments.js';
+import * as Utils from '../utils.js';
+import * as API from '../api.js';
 
 const config = {
   things: {
@@ -136,6 +138,8 @@ const config = {
   },
 };
 
+let dom = {};
+
 let connectionIdList;
 let theConnection;
 
@@ -146,6 +150,10 @@ let outgoingEditor;
 let connectionTemplates;
 
 export function ready() {
+  dom.connectionTemplateRadios = document.getElementById('connectionTemplateRadios');
+  dom.connectionId = document.getElementById('connectionId');
+  dom.connectionsTable = document.getElementById('connectionsTable');
+
   connectionEditor = ace.edit('connectionEditor');
   incomingEditor = ace.edit('connectionIncomingScript');
   outgoingEditor = ace.edit('connectionOutgoingScript');
@@ -156,25 +164,27 @@ export function ready() {
 
   loadConnectionTemplates();
 
-  $('#loadConnections').click(loadConnections);
+  document.getElementById('loadConnections').onclick = loadConnections;
 
-  $('#createConnection').click(function() {
-    const selectedTemplate = $('input[name=connectionTemplate]:checked').val();
+  document.getElementById('createConnection').onclick = () => {
+    const selectedTemplate = document.querySelector('input[name=connectionTemplate]:checked').value;
     setConnection(connectionTemplates[selectedTemplate]);
     if (env() === 'things') {
       delete theConnection['id'];
     }
     callConnectionsAPI(config[env()].createConnection, loadConnections);
-  });
+  };
 
-  $('#connectionsTable').on('click', 'tr', function(event) {
-    callConnectionsAPI(config[env()].retrieveConnection, setConnection, $(this)[0].id);
+  document.getElementById('connectionsTable').addEventListener('click', (event) => {
+    if (event.target && event.target.tagName === 'TD') {
+      callConnectionsAPI(config[env()].retrieveConnection, setConnection, event.target.parentNode.id);
+    }
   });
 
   function setConnection(connection) {
     theConnection = connection;
     const withJavaScript = theConnection.mappingDefinitions && theConnection.mappingDefinitions.javascript;
-    $('#connectionId').val(theConnection.id);
+    dom.connectionId.value = theConnection.id;
     connectionEditor.setValue(JSON.stringify(theConnection, null, 2));
     incomingEditor.setValue(withJavaScript ?
       theConnection.mappingDefinitions.javascript.options.incomingScript :
@@ -196,23 +206,23 @@ export function ready() {
     theConnection = JSON.parse(connectionEditor.getValue());
   });
 
-  $('#modifyConnection').click(function() {
-    callConnectionsAPI(config[env()].modifyConnection, loadConnections, $('#connectionId').val());
-  });
+  document.getElementById('modifyConnection').onclick = () => {
+    callConnectionsAPI(config[env()].modifyConnection, loadConnections, dom.connectionId.value);
+  };
 
-  $('#deleteConnection').click(function() {
-    callConnectionsAPI(config[env()].deleteConnection, loadConnections, $('#connectionId').val());
-  });
+  document.getElementById('deleteConnection').onclick = () => {
+    callConnectionsAPI(config[env()].deleteConnection, loadConnections, dom.connectionId.value);
+  };
 }
 
 const loadConnections = function() {
   callConnectionsAPI(config[env()].listConnections, function(connections) {
     connectionIdList = [];
-    $('#connectionsTable').empty();
+    dom.connectionsTable.innerHTML = '';
     for (let c = 0; c < connections.length; c++) {
       const id = env() === 'things' ? connections[c].id : connections[c];
       connectionIdList.push(id);
-      const row = $('#connectionsTable')[0].insertRow();
+      const row = dom.connectionsTable.insertRow();
       row.id = id;
       row.insertCell(0).innerHTML = id;
       callConnectionsAPI(config[env()].retrieveStatus, updateConnectionRow(row, 'liveStatus', -1), id);
@@ -229,7 +239,7 @@ function updateConnectionRow(targetRow, fieldToExtract, index) {
 
 async function callConnectionsAPI(params, successCallback, connectionId) {
   if (env() === 'things' && !getCurrentEnv().solutionId) {
-    Main.showError(null, 'Error', 'No solutionId configured in environment'); return;
+    Utils.showError(null, 'Error', 'No solutionId configured in environment'); return;
   };
   document.body.style.cursor = 'progress';
   const response = await fetch(getCurrentEnv().api_uri + params.path.replace('{{solutionId}}',
@@ -238,13 +248,13 @@ async function callConnectionsAPI(params, successCallback, connectionId) {
     method: params.method,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': Main.authHeader,
+      'Authorization': API.authHeader,
     },
     body: params.body ? JSON.stringify(params.body).replace('{{connectionId}}', connectionId).replace('"{{connectionJson}}"', JSON.stringify(theConnection)) : null,
   });
   response.json().then((data) => {
     if (data && data['?'] && data['?']['?'].status >= 400) {
-      Main.showError(null, data['?']['?'].status, JSON.stringify(data['?']['?'].payload));
+      Utils.showError(JSON.stringify(data['?']['?'].payload, data['?']['?'].status));
     } else {
       if (params.unwrapJsonPath) {
         params.unwrapJsonPath.split('.').forEach(function(node) {
@@ -257,7 +267,7 @@ async function callConnectionsAPI(params, successCallback, connectionId) {
       successCallback(data);
     }
   }).catch((error) => {
-    Main.showError(null, 'Error', 'Error calling connections API');
+    Utils.showError('Error calling connections API');
   }).finally(() => {
     document.body.style.cursor = 'default';
   });
@@ -273,7 +283,7 @@ function loadConnectionTemplates() {
         response.json().then((loadedTemplates) => {
           connectionTemplates = loadedTemplates;
           Object.keys(connectionTemplates).forEach((templateName, i) => {
-            Main.addRadioButton($('#connectionTemplateRadios')[0], 'connectionTemplate', templateName, i == 0);
+            Utils.addRadioButton(dom.connectionTemplateRadios, 'connectionTemplate', templateName, i == 0);
           });
         });
       });

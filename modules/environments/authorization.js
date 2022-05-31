@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable require-jsdoc */
-import * as Environments from '../environments.js';
-import * as Main from '../../main.js';
+import * as Environments from './environments.js';
+import * as API from '../api.js';
 
 let dom = {};
 
@@ -36,5 +36,5 @@ function onEnvironmentChanged() {
   dom.devOpsUserName.value = usernamePassword.split(':')[0];
   dom.devOpsPassword.value = usernamePassword.split(':')[1];
   dom.bearer.value = Environments.getCurrentEnv().bearer;
-  Main.setAuthHeader();
+  API.setAuthHeader();
 };

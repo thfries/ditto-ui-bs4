@@ -2,7 +2,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import * as Main from '../main.js';
+import * as API from '../api.js';
 
 let environments = {
   local_ditto: {
@@ -70,7 +70,7 @@ export function ready() {
 
   document.querySelectorAll('.mainUser,.devOpsUser').forEach((menuTab) => {
     menuTab.addEventListener('click', (event) => {
-      Main.setAuthHeader(event.target.parentNode.classList.contains('devOpsUser'));
+      API.setAuthHeader(event.target.parentNode.classList.contains('devOpsUser'));
     });
   });
 
@@ -129,6 +129,6 @@ function activateEnvironment() {
 
   notifyAll();
 
-  Main.openWebSocket();
+  API.openWebSocket();
   dom.searchFilterEdit.focus();
 }

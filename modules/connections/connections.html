@@ -8,10 +8,10 @@
                     list connections
                 </button>
                 <div style="flex-grow: 1;"></div>
-                <button class="btn btn-outline-secondary btn-sm button_round_left" data-toggle="modal" data-target=".create_connection_modal">
+                <button class="btn btn-outline-secondary btn-sm button_round_left" data-bs-toggle="modal" data-bs-target="#create_connection_modal">
                     <i class="far fa-square-plus"></i>
                 </button>
-                <button class="btn btn-outline-secondary btn-sm button_round_right" id="deleteConnection" data-toggle="tooltip" title="Delete connection with the given id">
+                <button class="btn btn-outline-secondary btn-sm button_round_right" id="deleteConnection" data-bs-toggle="tooltip" title="Delete connection with the given id">
                     <i class="far fa-trash-can"></i>
                 </button>
             </div>
@@ -28,15 +28,11 @@
                 
             </div>
             <div class="input-group input-group-sm mb-1">
-                <div class="input-group-prepend">
-                    <label class="input-group-text">Id</label>
-                </div>
+                <label class="input-group-text">Id</label>
                 <input type="text" class="form-control form-control-sm" disabled="true" id="connectionId"></input>
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary btn-sm" id="modifyConnection" data-toggle="tooltip" title="Modify connection with the given id and connection configuration json">
-                        update
-                    </button>
-                </div>
+                <button class="btn btn-outline-secondary btn-sm" id="modifyConnection" data-bs-toggle="tooltip" title="Modify connection with the given id and connection configuration json">
+                    update
+                </button>
             </div>
             <div class="ace_container" style="flex-grow: 1;">
                 <div class="script_editor" id="connectionEditor"></div>
@@ -53,14 +49,12 @@
             </div>
         </div>
     </div>
-    <div class="modal fade create_connection_modal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal fade" id="create_connection_modal" tabindex="-1">
         <div class="modal-dialog dialog-sm">
             <div class="modal-content">
                 <div class="modal-header">
                     Create Connection
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <label>Select Connection Template</label>
@@ -72,13 +66,11 @@
                         </div>
                     </fieldset>
                     <!-- <div class="input-group input-group-sm mb-1">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text">Type</label>
-                        </div>
+                        <label class="input-group-text">Type</label>
                         <select class="form-control form-control-sm" id="connectionTemplate"></select>
                     </div> -->
                     <div class="input-group input-group-sm" style="flex-direction: row-reverse;">
-                        <button class="btn btn-outline-secondary btn-sm" data-dismiss="modal" id="createConnection">Create</button>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" id="createConnection">Create</button>
                     </div>
                 </div>
             </div>

@@ -2,7 +2,8 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import * as Main from '../main.js';
+import * as API from '../api.js';
+import * as Utils from '../utils.js';
 
 export let thePolicy;
 let dom = {};
@@ -22,13 +23,13 @@ export function ready() {
   document.getElementById('loadPolicy').onclick = () => {
     const policyId = dom.thePolicyId.value;
     if (policyId === '') {
-      Main.showError(null, 'Error', 'policyId is empty'); return;
+      Utils.showError('policyId is empty'); return;
     }
     refreshPolicy(policyId);
   };
 
   document.getElementById('tabPolicies').onclick = () => {
-    Main.setAuthHeader(false);
+    API.setAuthHeader(false);
     refreshWhoAmI();
   };
 
@@ -74,25 +75,27 @@ export function onThingChanged(thing) {
 }
 
 function refreshWhoAmI() {
-  Main.callDittoREST('GET', '/whoami')
+  dom.whoami.innerHTML = '';
+  API.callDittoREST('GET', '/whoami')
       .then((whoamiResult) => {
-        dom.whoami.innerHTML = '';
         whoamiResult.subjects.forEach((subject, i) => {
-          Main.addTableRow(dom.whoami,
+          Utils.addTableRow(dom.whoami,
             subject === whoamiResult.defaultSubject ? 'defaultSubject' : 'subject',
             subject, false, true);
         });
+      })
+      .catch((error) => {
       });
 }
 
 export function refreshPolicy(policyId) {
-  Main.callDittoREST('GET', '/policies/' + policyId)
+  API.callDittoREST('GET', '/policies/' + policyId)
       .then((policy) => {
         thePolicy = policy;
         let policyHasEntry = false;
         dom.policyEntriesTable.innerHTML = '';
         for (const key of Object.keys(thePolicy.entries)) {
-          Main.addTableRow(dom.policyEntriesTable, key, null, key === dom.thePolicyEntry.value);
+          Utils.addTableRow(dom.policyEntriesTable, key, null, key === dom.thePolicyEntry.value);
           if (key === dom.thePolicyEntry.value) {
             refillPolicySubjectsAndRessources();
             policyHasEntry = true;
@@ -109,13 +112,13 @@ export function refreshPolicy(policyId) {
 function refillPolicySubjectsAndRessources() {
   dom.policySubjectsTable.innerHTML = '';
   for (const key of Object.keys(thePolicy.entries[dom.thePolicyEntry.value].subjects)) {
-    Main.addTableRow(dom.policySubjectsTable,
+    Utils.addTableRow(dom.policySubjectsTable,
         key,
         JSON.stringify(thePolicy.entries[dom.thePolicyEntry.value].subjects[key]));
   }
   dom.policyResourcesTable.innerHTML = '';
   for (const key of Object.keys(thePolicy.entries[dom.thePolicyEntry.value].resources)) {
-    Main.addTableRow(dom.policyResourcesTable,
+    Utils.addTableRow(dom.policyResourcesTable,
         key,
         JSON.stringify(thePolicy.entries[dom.thePolicyEntry.value].resources[key]));
   }
@@ -123,11 +126,11 @@ function refillPolicySubjectsAndRessources() {
 
 function addOrDeletePolicyEntry(method) {
   if (!dom.thePolicyEntry.value) {
-    Main.showError(null, 'Error', 'Entry is empty');
+    Utils.showError('Entry is empty');
   } else if (method === 'PUT' && thePolicy.entries.includes(dom.thePolicyEntry.value)) {
-    Main.showError(null, 'Error', 'Entry already exists');
+    Utils.showError('Entry already exists');
   } else {
-    Main.callDittoREST(method, `/policies/${thePolicy.policyId}/entries/${dom.thePolicyEntry.value}`,
+    API.callDittoREST(method, `/policies/${thePolicy.policyId}/entries/${dom.thePolicyEntry.value}`,
         JSON.stringify({
           subjects: {},
           resources: {}
@@ -138,17 +141,17 @@ function addOrDeletePolicyEntry(method) {
 function modifyPolicyEntry(type, key, value) {
   if (dom.thePolicyEntry.value && key) {
     if (value) {
-      Main.callDittoREST('PUT',
+      API.callDittoREST('PUT',
           `/policies/${thePolicy.policyId}/entries/${dom.thePolicyEntry.value}${type}${key}`,
           value
       ).then(() => refreshPolicy(thePolicy.policyId));
     } else {
-      Main.callDittoREST('DELETE',
+      API.callDittoREST('DELETE',
           `/policies/${thePolicy.policyId}/entries/${dom.thePolicyEntry.value}${type}${key}`
       ).then(() => refreshPolicy(thePolicy.policyId));
     }
   } else {
-    Main.showError(null, 'Error', 'No Policy Entry selected or Subject or Ressource is empty');
+    Utils.showError('No Policy Entry selected or Subject or Ressource is empty');
   }
 };
 

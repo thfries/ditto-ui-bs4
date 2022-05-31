@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable require-jsdoc */
-import * as Environments from '../environments.js';
-import * as Main from '../../main.js';
+import * as Environments from '../environments/environments.js';
+import * as Utils from '../utils.js';
 
 let theFieldIndex = -1;
 
@@ -12,10 +12,14 @@ export function getQueryParameter() {
   return 'fields=thingId' + (fields != '' ? ',' + fields : '');
 };
 
+export function setFieldPath(fieldPath) {
+  dom.fieldPath.value = fieldPath;
+}
+
 export async function ready() {
   Environments.addChangeListener(onEnvironmentChanged);
 
-  Main.addTab(
+  Utils.addTab(
       document.getElementById('thingsTabsItems'),
       document.getElementById('thingsTabsContent'),
       'Fields',
@@ -96,9 +100,9 @@ function updateFieldList() {
   Environments.getCurrentEnv().fieldList.forEach((field, i) => {
     const fieldSelected = dom.fieldPath.value === field.path;
     const row = dom.fieldList.insertRow();
-    Main.addCheckboxToRow(row, i, field.active, toggleFieldActive);
+    Utils.addCheckboxToRow(row, i, field.active, toggleFieldActive);
     row.insertCell(-1).innerHTML = field.path;
-    Main.addClipboardCopyToRow(row);
+    Utils.addClipboardCopyToRow(row);
     if (fieldSelected) {
       theFieldIndex = i;
       row.classList.add('bg-info');

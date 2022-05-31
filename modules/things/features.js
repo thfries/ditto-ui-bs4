@@ -2,8 +2,10 @@
 /* eslint-disable new-cap */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import * as Main from '../main.js';
+import * as Utils from '../utils.js';
+import * as API from '../api.js';
 import * as Things from './things.js';
+import * as Fields from './fields.js';
 import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
 
 
@@ -30,7 +32,7 @@ export function ready() {
 
   dom.featuresTable.onclick = (event) => {
     dom.theFeatureId.value = event.target.textContent;
-    $('[href="#tabCrudFeature"]').tab('show');
+    // $('[href="#tabCrudFeature"]').tab('show');
     refreshFeature(Things.theThing, dom.theFeatureId.value);
   };
 
@@ -57,7 +59,7 @@ export function ready() {
           path: path,
           resultType: 'pointer',
         });
-        $('#fieldPath').val('features/' + $('#featureId').val() + '/properties' + res);
+        Fields.setFieldPath('features/' + dom.featureId.value + '/properties' + res);
       };
     }, 10);
   });
@@ -67,6 +69,8 @@ export function ready() {
   document.getElementById('featureMessagesTable').onclick = (event) => {
     dom.featureMessageDetail.value = event.target.parentNode.getAttribute('data-message');
   };
+
+  API.addWSSubscriber(onWSMessage);
 }
 
 export function createFeature(newFeatureId) {
@@ -76,7 +80,7 @@ export function createFeature(newFeatureId) {
     newFeatureId = lastNewFeatureBase;
   }
   if (!Things.theThing) {
-    Main.showError(null, 'Error', 'No Thing selected'); return;
+    Utils.showError('No Thing selected'); return;
   };
   if (!Things.theThing['features']) {
     Things.theThing.features = {};
@@ -88,7 +92,7 @@ export function createFeature(newFeatureId) {
     resultingFeatureId = newFeatureId + '-' + countExisting;
   }
   dom.theFeatureId.value = resultingFeatureId;
-  Main.callDittoREST('PUT',
+  API.callDittoREST('PUT',
       '/things/' + Things.theThing.thingId + '/features/' + resultingFeatureId,
       '{}',
   ).then(() => Things.refreshThing(Things.theThing.thingId));
@@ -96,10 +100,10 @@ export function createFeature(newFeatureId) {
 
 function updateFeature(method) {
   if (!Things.theThing) {
-    Main.showError(null, 'Error', 'No Thing selected'); return;
+    Utils.showError('No Thing selected'); return;
   };
   if (!dom.theFeatureId.value) {
-    Main.showError(null, 'Error', 'No Feature selected'); return;
+    Utils.showError('No Feature selected'); return;
   };
   const featureObject = {};
   const featureProperties = featurePropertiesEditor.getValue();
@@ -114,7 +118,7 @@ function updateFeature(method) {
     featureObject.desiredProperties = JSON.parse(featureDesiredProperties);
   };
   const featureValue = JSON.stringify(featureObject) === '{}' ? null : JSON.stringify(featureObject);
-  Main.callDittoREST(
+  API.callDittoREST(
       method,
       '/things/' + Things.theThing.thingId + '/features/' + dom.theFeatureId.value,
     method === 'PUT' ? featureValue : null,
@@ -156,7 +160,7 @@ export function onThingChanged(thing) {
         refreshFeature(thing, key);
         thingHasFeature = true;
       };
-      Main.addTableRow(dom.featuresTable, key, null, key === dom.theFeatureId.value);
+      Utils.addTableRow(dom.featuresTable, key, null, key === dom.theFeatureId.value);
       count++;
     };
   }
@@ -174,7 +178,7 @@ const messageFeature = function() {
   const payload = dom.messageFeaturePayload.value;
   if (subject && feature && payload) {
     dom.messageFeatureResponse.value = null;
-    Main.callDittoREST('POST', '/things/' + Things.theThing.thingId +
+    API.callDittoREST('POST', '/things/' + Things.theThing.thingId +
     '/features/' + feature +
     '/inbox/messages/' + subject +
     '?timeout=' + timeout,
@@ -185,11 +189,11 @@ const messageFeature = function() {
       };
     });
   } else {
-    Main.showError(null, 'Error', 'FeatureId or Subject or Payload is empty');
+    Utils.showError('FeatureId or Subject or Payload is empty');
   }
 };
 
-export function onMessage(message) {
+function onWSMessage(message) {
   if (message.data.startsWith('START') || !Things.theThing) {
     return;
   };

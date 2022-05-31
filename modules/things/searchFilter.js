@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable require-jsdoc */
-import * as Environments from '../environments.js';
-import * as Main from '../../main.js';
+import * as Environments from '../environments/environments.js';
+import * as Utils from '../utils.js';
 
 const filterExamples = [
   'eq(attributes/location,"kitchen")',
@@ -18,7 +18,7 @@ let dom = {};
 export async function ready() {
   Environments.addChangeListener(onEnvironmentChanged);
 
-  Main.addTab(
+  Utils.addTab(
       document.getElementById('thingsTabsItems'),
       document.getElementById('thingsTabsContent'),
       'Search Filter',
@@ -39,11 +39,11 @@ function onEnvironmentChanged() {
 function updateFilterList() {
   dom.filterList.innerHTML = '';
   Environments.getCurrentEnv().filterList.forEach((filter, i) => {
-    Main.addTableRow(dom.filterList, filter);
+    Utils.addTableRow(dom.filterList, filter);
   });
-  $('#searchFilterEdit').autocomplete({
-    source: Environments.getCurrentEnv().filterList.concat(filterExamples),
-  });
+  // $('#searchFilterEdit').autocomplete({
+  //   source: Environments.getCurrentEnv().filterList.concat(filterExamples),
+  // });
 };
 
 export function toggleFilterFavourite(filter) {
