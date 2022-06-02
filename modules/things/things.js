@@ -21,6 +21,7 @@ let thingJsonEditor;
 const dom = {
   searchFilterEdit: null,
   thingsTable: null,
+  thingDetails: null,
   thingId: null,
   favIcon: null,
 };
@@ -53,9 +54,9 @@ export async function ready() {
       clearTimeout(keyStrokeTimeout);
       keyStrokeTimeout = setTimeout(() => {
         if (getCurrentEnv().filterList.indexOf(dom.searchFilterEdit.value) >= 0) {
-          dom.favIcon.classList.add('fas');
+          dom.favIcon.classList.add('bi-star-fill');
         } else {
-          dom.favIcon.classList.remove('fas');
+          dom.favIcon.classList.remove('bi-star-fill');
         }
       }, 1000);
     }
@@ -104,7 +105,7 @@ function fillThingsTable(thingsList) {
     const row = dom.thingsTable.insertRow();
     row.id = item.thingId;
     if (theThing && (item.thingId == theThing.thingId)) {
-      row.classList.add('bg-info');
+      row.classList.add('table-active');
     };
     Utils.addCheckboxToRow(row, item.thingId, getCurrentEnv().pinnedThings.includes(item.thingId), togglePinnedThing);
     row.insertCell(-1).innerHTML = item.thingId;
@@ -124,19 +125,18 @@ function fillThingsTable(thingsList) {
 
 export function searchThings(filter) {
   document.body.style.cursor = 'progress';
-  API.callDittoREST('GET', '/search/things?' +
-  Fields.getQueryParameter() +
-  ((filter && filter != '') ? '&filter=' + encodeURIComponent(filter) : '') +
-  '&option=sort(%2BthingId)' +
-  // ',size(3)' +
-  (theSearchCursor ? ',cursor(' + theSearchCursor + ')' : ''))
-      .then((searchResult) => {
-        checkFirstOrNextPage();
-        fillThingsTable(searchResult.items);
-        checkLastPage(searchResult);
-      }).finally(() => {
-        document.body.style.cursor = 'default';
-      });
+  API.callDittoREST('GET',
+      `/search/things?${Fields.getQueryParameter()}
+      ${((filter && filter != '') ? '&filter=' + encodeURIComponent(filter) : '')}
+      &option=sort(%2BthingId)
+      ${theSearchCursor ? ',cursor(' + theSearchCursor + ')' : ''}`,
+  ).then((searchResult) => {
+    checkFirstOrNextPage();
+    fillThingsTable(searchResult.items);
+    checkLastPage(searchResult);
+  }).finally(() => {
+    document.body.style.cursor = 'default';
+  });
 };
 
 function getThings(thingIds) {
@@ -144,11 +144,9 @@ function getThings(thingIds) {
   if (thingIds.length === 0) {
     return;
   };
-  API.callDittoREST('GET', '/things?' +
-    Fields.getQueryParameter() +
-    '&ids=' + thingIds +
-    '&option=sort(%2BthingId)')
-      .then(fillThingsTable);
+  API.callDittoREST('GET',
+      `/things?${Fields.getQueryParameter()}&ids=${thingIds}&option=sort(%2BthingId)`,
+  ).then(fillThingsTable);
 };
 
 function clickModifyThing(method) {
@@ -157,10 +155,9 @@ function clickModifyThing(method) {
     if (!thingId) {
       Utils.showError('thingId is empty'); return;
     }
-    API.callDittoREST(
-        method,
+    API.callDittoREST(method,
         '/things/' + dom.thingId.value,
-        method === 'PUT' ? thingJsonEditor.getValue() : null,
+        method === 'PUT' ? JSON.parse(thingJsonEditor.getValue()) : null,
     ).then(() => {
       method === 'PUT' ? refreshThing(thingId) : searchThings();
     });
@@ -177,18 +174,18 @@ export function setTheThing(thingJson) {
   theThing = thingJson;
 
   // Update fields of Thing table
-  $('#thingDetails').empty();
-  Utils.addTableRow($('#thingDetails')[0], 'thingId', theThing.thingId, null, true);
-  Utils.addTableRow($('#thingDetails')[0], 'policyId', theThing._policy.policyId, null, true);
-  Utils.addTableRow($('#thingDetails')[0], 'revision', theThing._revision, null, true);
-  Utils.addTableRow($('#thingDetails')[0], 'created', theThing._created, null, true);
-  Utils.addTableRow($('#thingDetails')[0], 'modified', theThing._modified, null, true);
+  dom.thingDetails.innerHTML = '';
+  Utils.addTableRow(dom.thingDetails, 'thingId', theThing.thingId, null, true);
+  Utils.addTableRow(dom.thingDetails, 'policyId', theThing._policy.policyId, null, true);
+  Utils.addTableRow(dom.thingDetails, 'revision', theThing._revision, null, true);
+  Utils.addTableRow(dom.thingDetails, 'created', theThing._created, null, true);
+  Utils.addTableRow(dom.thingDetails, 'modified', theThing._modified, null, true);
 
   // Update attributes table
-  Attributes.updateAttributesTabe();
+  Attributes.updateAttributesTable();
 
   // Update edit thing area
-  $('#thingId').val(theThing.thingId);
+  dom.thingId.value = theThing.thingId;
   const thingCopy = JSON.parse(JSON.stringify(theThing));
   delete thingCopy['_revision'];
   delete thingCopy['_created'];
@@ -212,7 +209,7 @@ function checkLastPage(searchResult) {
 
 function checkFirstOrNextPage() {
   if (!theSearchCursor) {
-    $('#thingsTable').empty();
+    dom.thingsTable.innerHTML = '';
   } else {
     removeMoreFromThingList();
   }
@@ -230,9 +227,9 @@ function addMoreToThingList() {
 };
 
 function removeMoreFromThingList() {
-  const moreRow = $('#searchThingsMore');
-  if (moreRow[0]) {
-    moreRow[0].parentNode.removeChild(moreRow[0]);
+  const moreRow = document.getElementById('searchThingsMore');
+  if (moreRow) {
+    moreRow.parentNode.removeChild(moreRow);
   }
 }
 

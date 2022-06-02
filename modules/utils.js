@@ -14,7 +14,7 @@ export const addTableRow = function(table, key, value, selected, withClipBoardCo
     row.insertCell(1).innerHTML = value;
   }
   if (selected) {
-    row.classList.add('bg-info');
+    row.classList.add('table-active');
   }
   if (withClipBoardCopy) {
     addClipboardCopyToRow(row);
@@ -49,7 +49,7 @@ export function addClipboardCopyToRow(row) {
   const button = document.createElement('button');
   button.classList.add('btn', 'btn-sm');
   button.style.padding = 0;
-  button.innerHTML = `<i class="fa-regular fa-clone"></i>`;
+  button.innerHTML = `<i class="bi bi-clipboard2-plus"></i>`;
   button.onclick = (evt) => {
     const td = evt.currentTarget.parentNode.previousSibling;
     navigator.clipboard.writeText(td.innerText);

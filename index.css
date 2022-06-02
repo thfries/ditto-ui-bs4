@@ -1,5 +1,17 @@
+.table {
+    --bs-table-active-bg: #3a8c9a;
+    --bs-table-active-color: white;
+}
+
+.table-active {
+    --bs-table-striped-bg: #3a8c9a;
+    --bs-table-striped-color: white;
+    --bs-table-hover-bg: #3a8c9a;
+    --bs-table-hover-color: white;
+}
+
 body { 
-    padding-top: 60px; 
+    padding-top: 60px;
 }
 
 textarea {
@@ -79,16 +91,11 @@ textarea {
     left: 0;
 }
 
-.input-group-prepend label {
-    width: 100%;
-    overflow: hidden;
-}
-
 h5 {
     margin-bottom: 0;
 }
 
 hr {
-    margin-top: 0;
+    margin-top: 0.1rem;
 }
 

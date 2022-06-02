@@ -105,7 +105,7 @@ function updateFieldList() {
     Utils.addClipboardCopyToRow(row);
     if (fieldSelected) {
       theFieldIndex = i;
-      row.classList.add('bg-info');
+      row.classList.add('table-active');
     }
   });
   if (theFieldIndex < 0) {

@@ -41,7 +41,7 @@ export async function callDittoREST(method, path, body) {
       'Content-Type': 'application/json',
       'Authorization': authHeader,
     },
-    body: body,
+    body: JSON.stringify(body),
   });
   // } catch (error) {
   //   Utils.showError(error);

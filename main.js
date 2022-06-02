@@ -8,6 +8,7 @@ import * as Features from './modules/things/features.js';
 import * as Policies from './modules/policies/policies.js';
 import * as Connections from './modules/connections/connections.js';
 import * as Environments from './modules/environments/environments.js';
+import * as Authorization from './modules/environments/authorization.js';
 
 let resized = false;
 let mainNavbar;
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   Features.ready();
   Policies.ready();
   Connections.ready();
+  Authorization.ready();
   Environments.ready();
 
   // make top navbar activating
@@ -41,10 +43,10 @@ document.addEventListener('DOMContentLoaded', async function() {
       if (event.target && event.target.tagName === 'TD') {
         Array.from(event.target.parentNode.parentNode.children).forEach((n) => {
           if (n != event.target.parentNode) {
-            n.classList.remove('bg-info');
+            n.classList.remove('table-active');
           }
         });
-        event.target.parentNode.classList.toggle('bg-info');
+        event.target.parentNode.classList.toggle('table-active');
       };
     });
   });

@@ -94,7 +94,7 @@ export function createFeature(newFeatureId) {
   dom.theFeatureId.value = resultingFeatureId;
   API.callDittoREST('PUT',
       '/things/' + Things.theThing.thingId + '/features/' + resultingFeatureId,
-      '{}',
+      {},
   ).then(() => Things.refreshThing(Things.theThing.thingId));
 }
 
@@ -117,11 +117,10 @@ function updateFeature(method) {
   if (featureDesiredProperties) {
     featureObject.desiredProperties = JSON.parse(featureDesiredProperties);
   };
-  const featureValue = JSON.stringify(featureObject) === '{}' ? null : JSON.stringify(featureObject);
   API.callDittoREST(
       method,
       '/things/' + Things.theThing.thingId + '/features/' + dom.theFeatureId.value,
-    method === 'PUT' ? featureValue : null,
+      method === 'PUT' ? featureObject : null,
   ).then(() => Things.refreshThing(Things.theThing.thingId));
 }
 
@@ -175,7 +174,7 @@ const messageFeature = function() {
   const subject = dom.messageFeatureSubject.value;
   const feature = dom.theFeatureId.value;
   const timeout = dom.messageTimeout.value;
-  const payload = dom.messageFeaturePayload.value;
+  const payload = JSON.parse(dom.messageFeaturePayload.value);
   if (subject && feature && payload) {
     dom.messageFeatureResponse.value = null;
     API.callDittoREST('POST', '/things/' + Things.theThing.thingId +

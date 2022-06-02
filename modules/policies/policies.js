@@ -130,11 +130,13 @@ function addOrDeletePolicyEntry(method) {
   } else if (method === 'PUT' && thePolicy.entries.includes(dom.thePolicyEntry.value)) {
     Utils.showError('Entry already exists');
   } else {
-    API.callDittoREST(method, `/policies/${thePolicy.policyId}/entries/${dom.thePolicyEntry.value}`,
-        JSON.stringify({
+    API.callDittoREST(method,
+        `/policies/${thePolicy.policyId}/entries/${dom.thePolicyEntry.value}`,
+        {
           subjects: {},
           resources: {}
-        })).then(() => refreshPolicy(thePolicy.policyId));
+        }
+    ).then(() => refreshPolicy(thePolicy.policyId));
   }
 };
 
@@ -143,7 +145,7 @@ function modifyPolicyEntry(type, key, value) {
     if (value) {
       API.callDittoREST('PUT',
           `/policies/${thePolicy.policyId}/entries/${dom.thePolicyEntry.value}${type}${key}`,
-          value
+          JSON.stringify(value)
       ).then(() => refreshPolicy(thePolicy.policyId));
     } else {
       API.callDittoREST('DELETE',
