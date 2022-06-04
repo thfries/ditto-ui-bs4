@@ -6,19 +6,22 @@ import * as API from '../api.js';
 import * as Utils from '../utils.js';
 
 export let thePolicy;
-let dom = {};
+
+let dom = {
+  thePolicyId: null,
+  thePolicyEntry: null,
+  policySubjectId: null,
+  policySubjectValue: null,
+  policyResourceId: null,
+  policyResourceValue: null,
+  policyEntriesTable: null,
+  policySubjectsTable: null,
+  policyResourcesTable: null,
+  whoami: null,
+};
 
 export function ready() {
-  dom.thePolicyId = document.getElementById('thePolicyId');
-  dom.thePolicyEntry = document.getElementById('thePolicyEntry');
-  dom.policySubjectId = document.getElementById('policySubjectId');
-  dom.policySubjectValue = document.getElementById('policySubjectValue');
-  dom.policyResourceId = document.getElementById('policyResourceId');
-  dom.policyResourceValue = document.getElementById('policyResourceValue');
-  dom.policyEntriesTable = document.getElementById('policyEntriesTable');
-  dom.policySubjectsTable = document.getElementById('policySubjectsTable');
-  dom.policyResourcesTable = document.getElementById('policyResourcesTable');
-  dom.whoami = document.getElementById('whoami');
+  Utils.getAllElementsById(dom);
 
   document.getElementById('loadPolicy').onclick = () => {
     const policyId = dom.thePolicyId.value;

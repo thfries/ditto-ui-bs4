@@ -116,13 +116,15 @@ let errorToast = null;
  * Show an error toast
  * @param {String} message Message for toast
  * @param {String} header Header for toast
+ * @param {String} status Status text for toas
  */
- export function showError(message, header) {
+ export function showError(message, header, status) {
   if (!errorToast) {
     errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
   }
   document.getElementById('errorHeader').innerText = header ? header : 'Error';
   document.getElementById('errorBody').innerText = message;
+  document.getElementById('errorStatus').innerText = status;
   errorToast.show();
 }
 

@@ -11,17 +11,17 @@ let ws;
  * @param {boolean} forDevOps if true, the credentials for the dev ops api will be used.
  */
 export function setAuthHeader(forDevOps) {
-  if (!Environments.getCurrentEnv().bearer && !Environments.getCurrentEnv().usernamePassword) {
+  if (!Environments.current().bearer && !Environments.current().usernamePassword) {
     return;
   };
-  if (Environments.getCurrentEnv().useBasicAuth) {
-    if (forDevOps && Environments.getCurrentEnv().usernamePasswordDevOps) {
-      authHeader = 'Basic ' + window.btoa(Environments.getCurrentEnv().usernamePasswordDevOps);
+  if (Environments.current().useBasicAuth) {
+    if (forDevOps && Environments.current().usernamePasswordDevOps) {
+      authHeader = 'Basic ' + window.btoa(Environments.current().usernamePasswordDevOps);
     } else {
-      authHeader = 'Basic ' + window.btoa(Environments.getCurrentEnv().usernamePassword);
+      authHeader = 'Basic ' + window.btoa(Environments.current().usernamePassword);
     }
   } else {
-    authHeader ='Bearer ' + Environments.getCurrentEnv().bearer;
+    authHeader ='Bearer ' + Environments.current().bearer;
   }
 };
 
@@ -35,7 +35,7 @@ export function setAuthHeader(forDevOps) {
 export async function callDittoREST(method, path, body) {
   // let response;
   // try {
-  const response = await fetch(Environments.getCurrentEnv().api_uri + '/api/2' + path, {
+  const response = await fetch(Environments.current().api_uri + '/api/2' + path, {
     method: method,
     headers: {
       'Content-Type': 'application/json',
@@ -50,7 +50,9 @@ export async function callDittoREST(method, path, body) {
   //   return;
   // }
   if (!response.ok) {
-    Utils.showError(response.statusText, response.status);
+    response.json()
+        .then((dittoErr) => Utils.showError(dittoErr.message, dittoErr.error, dittoErr.status))
+        .catch((err) => Utils.showError(err, response.statusText, response.status));
     throw new Error('An error occured: ' + response.status);
   };
   if (response.status != 204) {
@@ -65,7 +67,7 @@ export async function callDittoREST(method, path, body) {
  */
 export function openWebSocket() {
   try {
-    ws = new WebSocket(createWSURI(Environments.getCurrentEnv()));
+    ws = new WebSocket(createWSURI(Environments.current()));
     ws.onopen = function() {
       ws.onmessage = onMessage;
       ws.onerror = onMessage;

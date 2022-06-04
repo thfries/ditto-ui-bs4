@@ -2,6 +2,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
+import * as Utils from '../utils.js';
 import * as API from '../api.js';
 
 let environments = {
@@ -25,11 +26,14 @@ let environments = {
 let theEnv;
 let settingsEditor;
 
-let dom = {};
+let dom = {
+  environmentSelector: null,
+  searchFilterEdit: null,
+};
 
 let observers = [];
 
-export function getCurrentEnv() {
+export function current() {
   return environments[theEnv];
 };
 
@@ -42,8 +46,7 @@ function notifyAll() {
 }
 
 export function ready() {
-  dom.environmentSelector = document.getElementById('environmentSelector');
-  dom.searchFilterEdit = document.getElementById('searchFilterEdit');
+  Utils.getAllElementsById(dom);
 
   const cookie = document.cookie.match('(^|;)\\s*ditto-ui-env\\s*=\\s*([^;]+)')?.pop();
   if (cookie) {
@@ -93,11 +96,11 @@ export function ready() {
 
 export function togglePinnedThing(evt) {
   if (evt.target.checked) {
-    getCurrentEnv().pinnedThings.push(this.id);
+    current().pinnedThings.push(this.id);
   } else {
-    const index = getCurrentEnv().pinnedThings.indexOf(this.id);
+    const index = current().pinnedThings.indexOf(this.id);
     if (index > -1) {
-      getCurrentEnv().pinnedThings.splice(index, 1);
+      current().pinnedThings.splice(index, 1);
     };
   };
   environmentsJsonChanged();
@@ -107,7 +110,7 @@ export function environmentsJsonChanged() {
   localStorage.setItem('ditto-ui-env', JSON.stringify(environments));
 
   dom.environmentSelector.innerHTML = '';
-  if (theEnv && !getCurrentEnv()) {
+  if (theEnv && !current()) {
     theEnv = null;
   };
   for (const key of Object.keys(environments)) {
@@ -123,8 +126,8 @@ export function environmentsJsonChanged() {
 }
 
 function activateEnvironment() {
-  if (!getCurrentEnv()['pinnedThings']) {
-    getCurrentEnv().pinnedThings = [];
+  if (!current()['pinnedThings']) {
+    current().pinnedThings = [];
   };
 
   notifyAll();

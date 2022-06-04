@@ -2,7 +2,7 @@
 /* eslint-disable max-len */
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
-import {getCurrentEnv} from '../environments/environments.js';
+import {current} from '../environments/environments.js';
 import * as Utils from '../utils.js';
 import * as API from '../api.js';
 
@@ -138,7 +138,11 @@ const config = {
   },
 };
 
-let dom = {};
+let dom = {
+  connectionTemplateRadios: null,
+  connectionId: null,
+  connectionsTable: null,
+};
 
 let connectionIdList;
 let theConnection;
@@ -150,9 +154,7 @@ let outgoingEditor;
 let connectionTemplates;
 
 export function ready() {
-  dom.connectionTemplateRadios = document.getElementById('connectionTemplateRadios');
-  dom.connectionId = document.getElementById('connectionId');
-  dom.connectionsTable = document.getElementById('connectionsTable');
+  Utils.getAllElementsById(dom);
 
   connectionEditor = ace.edit('connectionEditor');
   incomingEditor = ace.edit('connectionIncomingScript');
@@ -175,7 +177,7 @@ export function ready() {
     callConnectionsAPI(config[env()].createConnection, loadConnections);
   };
 
-  document.getElementById('connectionsTable').addEventListener('click', (event) => {
+  dom.connectionsTable.addEventListener('click', (event) => {
     if (event.target && event.target.tagName === 'TD') {
       callConnectionsAPI(config[env()].retrieveConnection, setConnection, event.target.parentNode.id);
     }
@@ -238,12 +240,12 @@ function updateConnectionRow(targetRow, fieldToExtract, index) {
 };
 
 async function callConnectionsAPI(params, successCallback, connectionId) {
-  if (env() === 'things' && !getCurrentEnv().solutionId) {
+  if (env() === 'things' && !current().solutionId) {
     Utils.showError(null, 'Error', 'No solutionId configured in environment'); return;
   };
   document.body.style.cursor = 'progress';
-  const response = await fetch(getCurrentEnv().api_uri + params.path.replace('{{solutionId}}',
-      getCurrentEnv().solutionId).replace('{{connectionId}}',
+  const response = await fetch(current().api_uri + params.path.replace('{{solutionId}}',
+      current().solutionId).replace('{{connectionId}}',
       connectionId), {
     method: params.method,
     headers: {
@@ -274,7 +276,7 @@ async function callConnectionsAPI(params, successCallback, connectionId) {
 };
 
 function env() {
-  return getCurrentEnv().api_uri.startsWith('https://things') ? 'things' : 'ditto';
+  return current().api_uri.startsWith('https://things') ? 'things' : 'ditto';
 };
 
 function loadConnectionTemplates() {

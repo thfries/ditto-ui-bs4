@@ -2,6 +2,7 @@
 /* eslint-disable require-jsdoc */
 import * as Environments from '../environments/environments.js';
 import * as Utils from '../utils.js';
+import * as Things from './things.js';
 
 const filterExamples = [
   'eq(attributes/location,"kitchen")',
@@ -13,7 +14,9 @@ const filterExamples = [
   'like(attributes/key1,"known-chars-at-start*")',
 ];
 
-let dom = {};
+let dom = {
+  filterList: null,
+};
 
 export async function ready() {
   Environments.addChangeListener(onEnvironmentChanged);
@@ -25,20 +28,29 @@ export async function ready() {
       await( await fetch('modules/things/searchFilter.html')).text(),
   );
 
-  dom.filterList = document.getElementById('filterList');
+  Utils.getAllElementsById(dom);
+
+  dom.filterList.addEventListener('click', (event) => {
+    Things.setSearchFilterEdit(event.target.textContent);
+  });
+
+  dom.filterList.addEventListener('dblclick', (event) => {
+    Things.setSearchFilterEdit(event.target.textContent);
+    Things.searchThings(event.target.textContent);
+  });
 };
 
 
 function onEnvironmentChanged() {
-  if (!Environments.getCurrentEnv()['filterList']) {
-    Environments.getCurrentEnv().filterList = [];
+  if (!Environments.current()['filterList']) {
+    Environments.current().filterList = [];
   };
   updateFilterList();
 };
 
 function updateFilterList() {
   dom.filterList.innerHTML = '';
-  Environments.getCurrentEnv().filterList.forEach((filter, i) => {
+  Environments.current().filterList.forEach((filter, i) => {
     Utils.addTableRow(dom.filterList, filter);
   });
   // $('#searchFilterEdit').autocomplete({
@@ -50,11 +62,11 @@ export function toggleFilterFavourite(filter) {
   if (filter === '') {
     return;
   };
-  const i = Environments.getCurrentEnv().filterList.indexOf(filter);
+  const i = Environments.current().filterList.indexOf(filter);
   if (i >= 0) {
-    Environments.getCurrentEnv().filterList.splice(i, 1);
+    Environments.current().filterList.splice(i, 1);
   } else {
-    Environments.getCurrentEnv().filterList.push(filter);
+    Environments.current().filterList.push(filter);
   }
   Environments.environmentsJsonChanged();
 };

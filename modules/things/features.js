@@ -15,20 +15,22 @@ let lastNewFeatureBase;
 let featurePropertiesEditor;
 let featureDesiredPropertiesEditor;
 
-let dom = {};
+let dom = {
+  theFeatureId: null,
+  featureMessageDetail: null,
+  featureDefinition: null,
+  featureMessagesTable: null,
+  featureMessagesCount: null,
+  featureCount: null,
+  featuresTable: null,
+  messageFeatureSubject: null,
+  messageTimeout: null,
+  messageFeaturePayload: null,
+  messageFeatureResponse: null,
+};
 
 export function ready() {
-  dom.theFeatureId = document.getElementById('theFeatureId');
-  dom.featureMessageDetail = document.getElementById('featureMessageDetail');
-  dom.featureDefinition = document.getElementById('featureDefinition');
-  dom.featureMessagesTable = document.getElementById('featureMessagesTable');
-  dom.featureMessagesCount = document.getElementById('featureMessagesCount');
-  dom.featureCount = document.getElementById('featureCount');
-  dom.featuresTable = document.getElementById('featuresTable');
-  dom.messageFeatureSubject = document.getElementById('messageFeatureSubject');
-  dom.messageTimeout = document.getElementById('messageTimeout');
-  dom.messageFeaturePayload = document.getElementById('messageFeaturePayload');
-  dom.messageFeatureResponse = document.getElementById('messageFeatureResponse');
+  Utils.getAllElementsById(dom);
 
   dom.featuresTable.onclick = (event) => {
     dom.theFeatureId.value = event.target.textContent;
@@ -121,7 +123,8 @@ function updateFeature(method) {
       method,
       '/things/' + Things.theThing.thingId + '/features/' + dom.theFeatureId.value,
       method === 'PUT' ? featureObject : null,
-  ).then(() => Things.refreshThing(Things.theThing.thingId));
+  ).then(() => Things.refreshThing(Things.theThing.thingId)
+  ).catch((e) => {console.log('XXX' + e)});
 }
 
 function refreshFeature(thing, feature) {

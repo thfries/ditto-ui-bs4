@@ -3,7 +3,7 @@
 /* eslint-disable require-jsdoc */
 import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
 
-import {getCurrentEnv, togglePinnedThing} from '../environments/environments.js';
+import {current, togglePinnedThing} from '../environments/environments.js';
 import * as API from '../api.js';
 import * as Utils from '../utils.js';
 import * as Fields from './fields.js';
@@ -39,7 +39,8 @@ export async function ready() {
   document.getElementById('searchThings').onclick = searchClicked;
 
   document.getElementById('pinnedThings').onclick = () => {
-    getThings(getCurrentEnv()['pinnedThings']);
+    dom.searchFilterEdit.value = null;
+    getThings(current()['pinnedThings']);
   };
 
   dom.searchFilterEdit.onchange = () => {
@@ -53,7 +54,7 @@ export async function ready() {
     } else {
       clearTimeout(keyStrokeTimeout);
       keyStrokeTimeout = setTimeout(() => {
-        if (getCurrentEnv().filterList.indexOf(dom.searchFilterEdit.value) >= 0) {
+        if (current().filterList.indexOf(dom.searchFilterEdit.value) >= 0) {
           dom.favIcon.classList.add('bi-star-fill');
         } else {
           dom.favIcon.classList.remove('bi-star-fill');
@@ -100,14 +101,14 @@ function searchClicked() {
 }
 
 function fillThingsTable(thingsList) {
-  const fields = getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
+  const fields = current().fieldList.filter((f) => f.active).map((f) => f.path);
   thingsList.forEach((item, t) => {
     const row = dom.thingsTable.insertRow();
     row.id = item.thingId;
     if (theThing && (item.thingId == theThing.thingId)) {
       row.classList.add('table-active');
     };
-    Utils.addCheckboxToRow(row, item.thingId, getCurrentEnv().pinnedThings.includes(item.thingId), togglePinnedThing);
+    Utils.addCheckboxToRow(row, item.thingId, current().pinnedThings.includes(item.thingId), togglePinnedThing);
     row.insertCell(-1).innerHTML = item.thingId;
     fields.forEach((key, i) => {
       let path = key.replace(/\//g, '.');
@@ -122,6 +123,10 @@ function fillThingsTable(thingsList) {
     });
   });
 };
+
+export function setSearchFilterEdit(filter) {
+  dom.searchFilterEdit.value = filter;
+}
 
 export function searchThings(filter) {
   document.body.style.cursor = 'progress';

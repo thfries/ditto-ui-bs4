@@ -14,6 +14,12 @@ body {
     padding-top: 60px;
 }
 
+.toast-header {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+}
+
 textarea {
     white-space: pre;
     overflow-wrap:    normal;

@@ -5,10 +5,13 @@ import * as Utils from '../utils.js';
 
 let theFieldIndex = -1;
 
-let dom = {};
+let dom = {
+  fieldPath: null,
+  fieldList: null,
+};
 
 export function getQueryParameter() {
-  const fields = Environments.getCurrentEnv().fieldList.filter((f) => f.active).map((f) => f.path);
+  const fields = Environments.current().fieldList.filter((f) => f.active).map((f) => f.path);
   return 'fields=thingId' + (fields != '' ? ',' + fields : '');
 };
 
@@ -26,16 +29,17 @@ export async function ready() {
       await( await fetch('modules/things/fields.html')).text(),
   );
 
-  dom.fieldPath = document.getElementById('fieldPath');
-  dom.fieldList = document.getElementById('fieldList');
+  Utils.getAllElementsById(dom);
 
   dom.fieldList.addEventListener('click', (event) => {
-    if (theFieldIndex == event.target.parentNode.rowIndex) {
-      theFieldIndex = -1;
-      dom.fieldPath.value = null;
-    } else {
-      theFieldIndex = event.target.parentNode.rowIndex;
-      dom.fieldPath.value = Environments.getCurrentEnv().fieldList[theFieldIndex].path;
+    if (event.target && event.target.tagName === 'TD') {
+      if (theFieldIndex == event.target.parentNode.rowIndex) {
+        theFieldIndex = -1;
+        dom.fieldPath.value = null;
+      } else {
+        theFieldIndex = event.target.parentNode.rowIndex;
+        dom.fieldPath.value = Environments.current().fieldList[theFieldIndex].path;
+      }
     }
   });
 
@@ -44,13 +48,13 @@ export async function ready() {
       return;
     };
     if (theFieldIndex < 0) {
-      Environments.getCurrentEnv().fieldList.push({
+      Environments.current().fieldList.push({
         active: true,
         path: dom.fieldPath.value,
       });
-      theFieldIndex = Environments.getCurrentEnv().fieldList.length - 1;
+      theFieldIndex = Environments.current().fieldList.length - 1;
     } else {
-      Environments.getCurrentEnv().fieldList[theFieldIndex].path = dom.fieldPath.value;
+      Environments.current().fieldList[theFieldIndex].path = dom.fieldPath.value;
     }
     Environments.environmentsJsonChanged();
   };
@@ -59,7 +63,7 @@ export async function ready() {
     if (theFieldIndex < 0) {
       return;
     }
-    Environments.getCurrentEnv().fieldList.splice(theFieldIndex, 1);
+    Environments.current().fieldList.splice(theFieldIndex, 1);
     Environments.environmentsJsonChanged();
     theFieldIndex = -1;
   };
@@ -68,28 +72,28 @@ export async function ready() {
     if (theFieldIndex <= 0) {
       return;
     }
-    const movedItem = Environments.getCurrentEnv().fieldList[theFieldIndex];
-    Environments.getCurrentEnv().fieldList.splice(theFieldIndex, 1);
+    const movedItem = Environments.current().fieldList[theFieldIndex];
+    Environments.current().fieldList.splice(theFieldIndex, 1);
     theFieldIndex--;
-    Environments.getCurrentEnv().fieldList.splice(theFieldIndex, 0, movedItem);
+    Environments.current().fieldList.splice(theFieldIndex, 0, movedItem);
     Environments.environmentsJsonChanged();
   };
 
   document.getElementById('fieldDown').onclick = () => {
-    if (theFieldIndex < 0 || theFieldIndex === Environments.getCurrentEnv().fieldList.length - 1) {
+    if (theFieldIndex < 0 || theFieldIndex === Environments.current().fieldList.length - 1) {
       return;
     }
-    const movedItem = Environments.getCurrentEnv().fieldList[theFieldIndex];
-    Environments.getCurrentEnv().fieldList.splice(theFieldIndex, 1);
+    const movedItem = Environments.current().fieldList[theFieldIndex];
+    Environments.current().fieldList.splice(theFieldIndex, 1);
     theFieldIndex++;
-    Environments.getCurrentEnv().fieldList.splice(theFieldIndex, 0, movedItem);
+    Environments.current().fieldList.splice(theFieldIndex, 0, movedItem);
     Environments.environmentsJsonChanged();
   };
 };
 
 function onEnvironmentChanged() {
-  if (!Environments.getCurrentEnv()['fieldList']) {
-    Environments.getCurrentEnv().fieldList = [];
+  if (!Environments.current()['fieldList']) {
+    Environments.current().fieldList = [];
   };
   updateFieldList();
 };
@@ -97,7 +101,7 @@ function onEnvironmentChanged() {
 function updateFieldList() {
   dom.fieldList.innerHTML = '';
   theFieldIndex = -1;
-  Environments.getCurrentEnv().fieldList.forEach((field, i) => {
+  Environments.current().fieldList.forEach((field, i) => {
     const fieldSelected = dom.fieldPath.value === field.path;
     const row = dom.fieldList.insertRow();
     Utils.addCheckboxToRow(row, i, field.active, toggleFieldActive);
@@ -114,7 +118,7 @@ function updateFieldList() {
 };
 
 function toggleFieldActive(evt) {
-  Environments.getCurrentEnv().fieldList[evt.target.id].active = evt.target.checked;
+  Environments.current().fieldList[evt.target.id].active = evt.target.checked;
   Environments.environmentsJsonChanged();
 };
 
