@@ -82,11 +82,6 @@ export function ready() {
     activateEnvironment();
   };
 
-  document.getElementById('searchFavourite').onclick = () => {
-    document.getElementById('favIcon').toggleClass('fas');
-    toggleFilterFavourite(dom.searchFilterEdit.value);
-  };
-
   dom.searchFilterEdit.onclick = (event) => {
     if (event.target.selectionStart == event.target.selectionEnd) {
       event.target.select();

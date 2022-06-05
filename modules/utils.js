@@ -118,13 +118,34 @@ let errorToast = null;
  * @param {String} header Header for toast
  * @param {String} status Status text for toas
  */
- export function showError(message, header, status) {
+export function showError(message, header, status) {
   if (!errorToast) {
     errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
   }
   document.getElementById('errorHeader').innerText = header ? header : 'Error';
   document.getElementById('errorBody').innerText = message;
-  document.getElementById('errorStatus').innerText = status;
+  document.getElementById('errorStatus').innerText = status ? status : '';
   errorToast.show();
 }
 
+/**
+ * Error object for user errors
+ * @param {String} message Message that was displayed to the user in an error toast
+ */
+function UserException(message) {
+  this.message = message;
+  this.name = 'UserException';
+}
+
+/**
+ * User assertion. If the condition is false, a message is displayed to the user and execution breaks by throwing
+ * an error.
+ * @param {boolean} condition If false, an error is shown to the user
+ * @param {String} message Message to be shown to the user
+ */
+export function assert(condition, message) {
+  if (!condition) {
+    showError(message, 'Error');
+    throw new UserException(message);
+  }
+}

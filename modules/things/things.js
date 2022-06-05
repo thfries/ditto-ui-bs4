@@ -1,67 +1,48 @@
 /* eslint-disable new-cap */
-/* eslint-disable no-invalid-this */
-/* eslint-disable require-jsdoc */
 import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
 
-import {current, togglePinnedThing} from '../environments/environments.js';
+import * as Environments from '../environments/environments.js';
 import * as API from '../api.js';
 import * as Utils from '../utils.js';
 import * as Fields from './fields.js';
-import * as Attributes from './attributes.js';
-import * as SearchFilter from './searchFilter.js';
-import * as Policies from '../policies/policies.js';
-import * as Features from './features.js';
 
 export let theThing;
 let theSearchCursor;
-let keyStrokeTimeout;
 
 let thingJsonEditor;
+
+const observers = [];
 
 const dom = {
   searchFilterEdit: null,
   thingsTable: null,
   thingDetails: null,
   thingId: null,
-  favIcon: null,
 };
 
-export async function ready() {
-  await Fields.ready();
-  await SearchFilter.ready();
-  Attributes.ready();
+/**
+ * Adds a listener function for the currently selected thing
+ * @param {function} observer function that will be called if the current thing was changed
+ */
+export function addChangeListener(observer) {
+  observers.push(observer);
+}
 
+/**
+ * Initializes components. Should be called after DOMContentLoaded event
+ */
+export async function ready() {
   Utils.getAllElementsById(dom);
 
   thingJsonEditor = ace.edit('thingJsonEditor');
   thingJsonEditor.session.setMode('ace/mode/json');
 
-  document.getElementById('searchThings').onclick = searchClicked;
-
   document.getElementById('pinnedThings').onclick = () => {
     dom.searchFilterEdit.value = null;
-    getThings(current()['pinnedThings']);
+    getThings(Environments.current()['pinnedThings']);
   };
 
-  dom.searchFilterEdit.onchange = () => {
-    theSearchCursor = null;
-    removeMoreFromThingList();
-  };
-
-  dom.searchFilterEdit.onkeyup = (event) => {
-    if (event.key === 'Enter' || event.code === 13) {
-      searchClicked();
-    } else {
-      clearTimeout(keyStrokeTimeout);
-      keyStrokeTimeout = setTimeout(() => {
-        if (current().filterList.indexOf(dom.searchFilterEdit.value) >= 0) {
-          dom.favIcon.classList.add('bi-star-fill');
-        } else {
-          dom.favIcon.classList.remove('bi-star-fill');
-        }
-      }, 1000);
-    }
-  };
+  dom.searchFilterEdit.onchange = removeMoreFromThingList;
 
   document.getElementById('createThing').onclick = () => {
     API.callDittoREST('POST', '/things', {})
@@ -79,7 +60,7 @@ export async function ready() {
       const row = event.target.parentNode;
       if (row.id === 'searchThingsMore') {
         row.style.pointerEvents = 'none';
-        searchThings(dom.searchFilterEdit.value);
+        searchThings(dom.searchFilterEdit.value, theSearchCursor);
       } else {
         refreshThing(row.id);
       }
@@ -89,26 +70,24 @@ export async function ready() {
   dom.searchFilterEdit.focus();
 };
 
-function searchClicked() {
-  theSearchCursor = null;
-  const filter = dom.searchFilterEdit.value;
-  const regex = /^(eq\(|ne\(|gt\(|ge\(|lt\(|le\(|in\(|like\(|exists\(|and\(|or\(|not\().*/;
-  if (filter === '' || regex.test(filter)) {
-    searchThings(filter);
-  } else {
-    getThings([filter]);
-  }
-}
-
+/**
+ * Fills the things table UI with the given things
+ * @param {Array} thingsList Array of thing json objects
+ */
 function fillThingsTable(thingsList) {
-  const fields = current().fieldList.filter((f) => f.active).map((f) => f.path);
+  const fields = Environments.current().fieldList.filter((f) => f.active).map((f) => f.path);
   thingsList.forEach((item, t) => {
     const row = dom.thingsTable.insertRow();
     row.id = item.thingId;
     if (theThing && (item.thingId == theThing.thingId)) {
       row.classList.add('table-active');
     };
-    Utils.addCheckboxToRow(row, item.thingId, current().pinnedThings.includes(item.thingId), togglePinnedThing);
+    Utils.addCheckboxToRow(
+        row,
+        item.thingId,
+        Environments.current().pinnedThings.includes(item.thingId),
+        Environments.togglePinnedThing,
+    );
     row.insertCell(-1).innerHTML = item.thingId;
     fields.forEach((key, i) => {
       let path = key.replace(/\//g, '.');
@@ -124,57 +103,90 @@ function fillThingsTable(thingsList) {
   });
 };
 
+/**
+ * Set the search filter UI component
+ * @param {String} filter filter to be filled
+ */
 export function setSearchFilterEdit(filter) {
   dom.searchFilterEdit.value = filter;
 }
 
-export function searchThings(filter) {
+/**
+ * Calls ditto search api and fills UI with the result
+ * @param {String} filter ditto search filter (rql)
+ * @param {String} cursor (optional) cursor returned from things search for additional pages
+ */
+export function searchThings(filter, cursor) {
+  if (cursor) {
+    removeMoreFromThingList();
+  } else {
+    theSearchCursor = null;
+    dom.thingsTable.innerHTML = '';
+  }
+
   document.body.style.cursor = 'progress';
+
   API.callDittoREST('GET',
-      `/search/things?${Fields.getQueryParameter()}
-      ${((filter && filter != '') ? '&filter=' + encodeURIComponent(filter) : '')}
-      &option=sort(%2BthingId)
-      ${theSearchCursor ? ',cursor(' + theSearchCursor + ')' : ''}`,
+      '/search/things?' + Fields.getQueryParameter() +
+      ((filter && filter != '') ? '&filter=' + encodeURIComponent(filter) : '') +
+      '&option=sort(%2BthingId)' +
+      // ',size(3)' +
+      (cursor ? ',cursor(' + cursor + ')' : ''),
   ).then((searchResult) => {
-    checkFirstOrNextPage();
     fillThingsTable(searchResult.items);
-    checkLastPage(searchResult);
+    checkMorePages(searchResult);
+  }).catch((error) => {
+    // nothing to do if search failed
   }).finally(() => {
     document.body.style.cursor = 'default';
   });
 };
 
+/**
+ * Gets things from ditto by thingIds and fills the UI with the result
+ * @param {Array} thingIds Array of thingIds
+ */
 function getThings(thingIds) {
   dom.thingsTable.innerHTML = '';
-  if (thingIds.length === 0) {
-    return;
+  if (thingIds.length > 0) {
+    API.callDittoREST('GET',
+        `/things?${Fields.getQueryParameter()}&ids=${thingIds}&option=sort(%2BthingId)`,
+    ).then(fillThingsTable);
   };
-  API.callDittoREST('GET',
-      `/things?${Fields.getQueryParameter()}&ids=${thingIds}&option=sort(%2BthingId)`,
-  ).then(fillThingsTable);
 };
 
+/**
+ * Returns a click handler for Update thing and delete thing
+ * @param {String} method PUT or DELETE
+ * @return {function} Click handler function
+ */
 function clickModifyThing(method) {
   return function() {
-    const thingId = dom.thingId.value;
-    if (!thingId) {
-      Utils.showError('thingId is empty'); return;
-    }
+    Utils.assert(dom.thingId.value, 'ThingId is empty');
     API.callDittoREST(method,
         '/things/' + dom.thingId.value,
         method === 'PUT' ? JSON.parse(thingJsonEditor.getValue()) : null,
     ).then(() => {
-      method === 'PUT' ? refreshThing(thingId) : searchThings();
+      // todo: perform last things table update
+      method === 'PUT' ? refreshThing(dom.thingId.value) : searchThings();
     });
   };
 };
 
+/**
+ * Load thing from ditto and update all UI components
+ * @param {String} thingId ThingId
+ */
 export function refreshThing(thingId) {
   API.callDittoREST('GET',
       `/things/${thingId}?fields=thingId%2Cattributes%2Cfeatures%2C_created%2C_modified%2C_revision%2C_policy`)
       .then((thing) => setTheThing(thing));
 };
 
+/**
+ * Update all UI components for the given Thing
+ * @param {Object} thingJson Thing json
+ */
 export function setTheThing(thingJson) {
   theThing = thingJson;
 
@@ -186,9 +198,6 @@ export function setTheThing(thingJson) {
   Utils.addTableRow(dom.thingDetails, 'created', theThing._created, null, true);
   Utils.addTableRow(dom.thingDetails, 'modified', theThing._modified, null, true);
 
-  // Update attributes table
-  Attributes.updateAttributesTable();
-
   // Update edit thing area
   dom.thingId.value = theThing.thingId;
   const thingCopy = JSON.parse(JSON.stringify(theThing));
@@ -199,11 +208,14 @@ export function setTheThing(thingJson) {
   thingCopy.policyId = theThing._policy.policyId;
   thingJsonEditor.setValue(JSON.stringify(thingCopy, null, 2));
 
-  Features.onThingChanged(theThing);
-  Policies.onThingChanged(theThing);
+  observers.forEach((observer) => observer.call(null, theThing));
 }
 
-function checkLastPage(searchResult) {
+/**
+ * Updates UI depepending on existing additional pages on ditto things search
+ * @param {Object} searchResult Result from ditto thing search
+ */
+function checkMorePages(searchResult) {
   if (searchResult['cursor']) {
     addMoreToThingList();
     theSearchCursor = searchResult.cursor;
@@ -212,14 +224,9 @@ function checkLastPage(searchResult) {
   }
 }
 
-function checkFirstOrNextPage() {
-  if (!theSearchCursor) {
-    dom.thingsTable.innerHTML = '';
-  } else {
-    removeMoreFromThingList();
-  }
-}
-
+/**
+ * Adds a clickable "more" line to the things table UI
+ */
 function addMoreToThingList() {
   const moreCell = dom.thingsTable.insertRow().insertCell(-1);
   moreCell.innerHTML = 'load more...';
@@ -231,6 +238,9 @@ function addMoreToThingList() {
   moreCell.parentNode.id = 'searchThingsMore';
 };
 
+/**
+ * remove the "more" line from the things table
+ */
 function removeMoreFromThingList() {
   const moreRow = document.getElementById('searchThingsMore');
   if (moreRow) {

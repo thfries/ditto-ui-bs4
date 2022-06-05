@@ -1,21 +1,14 @@
-/* eslint-disable prefer-const */
 /* eslint-disable new-cap */
-/* eslint-disable no-invalid-this */
-/* eslint-disable require-jsdoc */
 import * as Utils from '../utils.js';
 import * as API from '../api.js';
 import * as Things from './things.js';
 import * as Fields from './fields.js';
 import {JSONPath} from 'https://cdn.jsdelivr.net/npm/jsonpath-plus@5.0.3/dist/index-browser-esm.min.js';
 
-
-// let theFeatureId;
-let lastNewFeatureBase;
-
 let featurePropertiesEditor;
 let featureDesiredPropertiesEditor;
 
-let dom = {
+const dom = {
   theFeatureId: null,
   featureMessageDetail: null,
   featureDefinition: null,
@@ -29,6 +22,9 @@ let dom = {
   messageFeatureResponse: null,
 };
 
+/**
+ * Initializes components. Should be called after DOMContentLoaded event
+ */
 export function ready() {
   Utils.getAllElementsById(dom);
 
@@ -61,7 +57,7 @@ export function ready() {
           path: path,
           resultType: 'pointer',
         });
-        Fields.setFieldPath('features/' + dom.featureId.value + '/properties' + res);
+        Fields.setFieldPath('features/' + dom.theFeatureId.value + '/properties' + res);
       };
     }, 10);
   });
@@ -73,40 +69,35 @@ export function ready() {
   };
 
   API.addWSSubscriber(onWSMessage);
+  Things.addChangeListener(onThingChanged);
 }
 
+/**
+ * Creates a new empty feature for the given thing in ditto
+ * @param {String} newFeatureId Name of the new feature. (optional, if not given, a name is generated)
+ */
 export function createFeature(newFeatureId) {
-  if (!newFeatureId || newFeatureId === '') {
-    newFeatureId = 'new-feature';
-  } else if (newFeatureId.startsWith(lastNewFeatureBase)) {
-    newFeatureId = lastNewFeatureBase;
+  console.assert(newFeatureId && newFeatureId != '', 'newFeatureId expected');
+  Utils.assert(Things.theThing, 'No Thing selected');
+  if (Things.theThing['features']) {
+    Utils.assert(!Object.keys(Things.theThing.features).includes(newFeatureId),
+        `FeatureId ${newFeatureId} already exists in Thing`);
   }
-  if (!Things.theThing) {
-    Utils.showError('No Thing selected'); return;
-  };
-  if (!Things.theThing['features']) {
-    Things.theThing.features = {};
-  }
-  let resultingFeatureId = newFeatureId;
-  let countExisting = 0;
-  while (Object.keys(Things.theThing.features).includes(resultingFeatureId)) {
-    countExisting++;
-    resultingFeatureId = newFeatureId + '-' + countExisting;
-  }
-  dom.theFeatureId.value = resultingFeatureId;
+
   API.callDittoREST('PUT',
       '/things/' + Things.theThing.thingId + '/features/' + resultingFeatureId,
       {},
   ).then(() => Things.refreshThing(Things.theThing.thingId));
 }
 
+/**
+ * Triggers a feature update in ditto according to UI contents
+ * @param {String} method Either PUT to update the feature or DELETE to delete the feature
+ */
 function updateFeature(method) {
-  if (!Things.theThing) {
-    Utils.showError('No Thing selected'); return;
-  };
-  if (!dom.theFeatureId.value) {
-    Utils.showError('No Feature selected'); return;
-  };
+  Utils.assert(Things.theThing, 'No Thing selected');
+  Utils.assert(dom.theFeatureId.value, 'No Feature selected');
+
   const featureObject = {};
   const featureProperties = featurePropertiesEditor.getValue();
   const featureDesiredProperties = featureDesiredPropertiesEditor.getValue();
@@ -119,14 +110,22 @@ function updateFeature(method) {
   if (featureDesiredProperties) {
     featureObject.desiredProperties = JSON.parse(featureDesiredProperties);
   };
+
   API.callDittoREST(
       method,
       '/things/' + Things.theThing.thingId + '/features/' + dom.theFeatureId.value,
       method === 'PUT' ? featureObject : null,
   ).then(() => Things.refreshThing(Things.theThing.thingId)
-  ).catch((e) => {console.log('XXX' + e)});
+  ).catch(
+      // nothing to clean-up if featureUpdate failed
+  );
 }
 
+/**
+ * Initializes all UI components for the given single feature of the given thing, if no thing is given the UI is cleared
+ * @param {Object} thing thing the feature values are taken from
+ * @param {String} feature FeatureId to be refreshed
+ */
 function refreshFeature(thing, feature) {
   if (thing) {
     dom.theFeatureId.value = feature;
@@ -151,7 +150,11 @@ function refreshFeature(thing, feature) {
   dom.featureMessagesCount.textContent = '';
 }
 
-export function onThingChanged(thing) {
+/**
+ * Initializes all feature UI components for the given thing
+ * @param {Object} thing UI is initialized for the features of the given thing
+ */
+function onThingChanged(thing) {
   // Update features table
   dom.featuresTable.innerHTML = '';
   let count = 0;
@@ -195,9 +198,14 @@ const messageFeature = function() {
   }
 };
 
+/**
+ * Processes a message received by ditto web socket
+ * @param {Object} message Message to be processed
+ * @return {boolean} false in case the message was not processed
+ */
 function onWSMessage(message) {
   if (message.data.startsWith('START') || !Things.theThing) {
-    return;
+    return false;
   };
   const dittoJson = JSON.parse(message.data);
   const topicThingId = Things.theThing.thingId.replace(':', '/');
@@ -212,6 +220,7 @@ function onWSMessage(message) {
       dom.featureMessagesCount.textContent = featureMessagesTable.rows.length;
     }
   }
+  return true;
 };
 
 

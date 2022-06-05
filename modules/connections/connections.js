@@ -185,9 +185,9 @@ export function ready() {
 
   function setConnection(connection) {
     theConnection = connection;
-    const withJavaScript = theConnection.mappingDefinitions && theConnection.mappingDefinitions.javascript;
-    dom.connectionId.value = theConnection.id;
-    connectionEditor.setValue(JSON.stringify(theConnection, null, 2));
+    const withJavaScript = theConnection && theConnection.mappingDefinitions && theConnection.mappingDefinitions.javascript;
+    dom.connectionId.value = theConnection ? theConnection.id : '';
+    connectionEditor.setValue(theConnection ? JSON.stringify(theConnection, null, 2) : '');
     incomingEditor.setValue(withJavaScript ?
       theConnection.mappingDefinitions.javascript.options.incomingScript :
       '', -1);
@@ -214,6 +214,7 @@ export function ready() {
 
   document.getElementById('deleteConnection').onclick = () => {
     callConnectionsAPI(config[env()].deleteConnection, loadConnections, dom.connectionId.value);
+    setConnection(null);
   };
 }
 

@@ -3,6 +3,7 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable require-jsdoc */
 import * as API from '../api.js';
+import * as Things from '../things/things.js';
 import * as Utils from '../utils.js';
 
 export let thePolicy;
@@ -69,9 +70,11 @@ export function ready() {
     dom.policyResourceId.value = ressource;
     dom.policyResourceValue.value = JSON.stringify(thePolicy.entries[dom.thePolicyEntry.value].resources[ressource]);
   };
+
+  Things.addChangeListener(onThingChanged);
 }
 
-export function onThingChanged(thing) {
+function onThingChanged(thing) {
   thePolicy = thing._policy;
   dom.thePolicyId.value = thePolicy.policyId;
   refreshPolicy(thePolicy.policyId);

@@ -1,7 +1,7 @@
 /* eslint-disable require-jsdoc */
 import * as Utils from '../utils.js';
 import * as API from '../api.js';
-import {theThing} from './things.js';
+import * as Things from './things.js';
 
 let theAttribute;
 
@@ -20,17 +20,19 @@ export function ready() {
   dom.attributesTable.onclick = (event) => {
     if (event.target && event.target.nodeName === 'TD') {
       theAttribute = event.target.parentNode.chilldren[0].text();
-      refreshAttribute(theThing, theAttribute);
+      refreshAttribute(Things.theThing, theAttribute);
     }
   };
 
   dom.putAttribute.click(clickAttribute('PUT'));
   dom.deleteAttribute.click(clickAttribute('DELETE'));
+
+  Things.addChangeListener(updateAttributesTable);
 };
 
 function clickAttribute(method) {
   return function() {
-    if (!theThing) {
+    if (!Things.theThing) {
       Utils.showError(null, 'Error', 'No Thing selected'); return;
     };
     if (!dom.attributePath.value) {
@@ -38,9 +40,9 @@ function clickAttribute(method) {
     };
     API.callDittoREST(
         method,
-        `/things/${theThing.thingId}/attributes/${dom.attributePath.value}`,
+        `/things/${Things.theThing.thingId}/attributes/${dom.attributePath.value}`,
         method === 'PUT' ? '"' + dom.attributeValue.value + '"' : null,
-    ).then(() => refreshThing(theThing.thingId));
+    ).then(() => refreshThing(Things.theThing.thingId));
   };
 };
 
@@ -49,19 +51,19 @@ function refreshAttribute(thing, attribute) {
   dom.attributeValue.value = thing ? JSON.stringify(thing.attributes[attribute]).slice(1, -1) : '';
 };
 
-export function updateAttributesTable() {
+function updateAttributesTable() {
   dom.attributesTable.innerHTML = '';
   let count = 0;
   let thingHasAttribute = false;
-  if (theThing.attributes) {
-    for (const key of Object.keys(theThing.attributes)) {
+  if (Things.theThing.attributes) {
+    for (const key of Object.keys(Things.theThing.attributes)) {
       if (key === theAttribute) {
-        refreshAttribute(theThing, key);
+        refreshAttribute(Things.theThing, key);
         thingHasAttribute = true;
       };
       Utils.addTableRow(dom.attributesTable,
           key,
-          JSON.stringify(theThing.attributes[key]),
+          JSON.stringify(Things.theThing.attributes[key]),
           key === theAttribute);
       count++;
     };
