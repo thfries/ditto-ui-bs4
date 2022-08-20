@@ -1,3 +1,5 @@
+> :exclamation: **This repository is no longer maintained**. I was moved to a fork of the original [Eclipse Ditto repository](https://github.com/eclipse/ditto) and I am happy that the ui was accepted as a PR there. All features are already available and improved except the WebSocket support (which was only at an early state).
+
 # ditto-ui-bs4
 This is an explorer UI for [Eclipse Ditto](https://www.eclipse.org/ditto/). It is implemented with plain HTML and JavaScript using Bootstrap 4 and jQuery. 
 
